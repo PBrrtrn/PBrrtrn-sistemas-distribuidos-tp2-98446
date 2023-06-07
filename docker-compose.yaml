@@ -1,0 +1,285 @@
+version: '3'
+services:
+  rabbitmq:
+    container_name: rabbitmq
+    build:
+      context: .
+      dockerfile: ./rabbitmq/rabbitmq.dockerfile
+    ports:
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: on-failure
+    volumes:
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    networks:
+      - local_net
+
+  stations-manager:
+    container_name: stations-manager
+    build:
+      context: .
+      dockerfile: ./backend/stations_manager/stations-manager.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - N_MONTREAL_STATIONS_JOINERS=${N_MONTREAL_STATIONS_JOINERS}
+    networks:
+      - local_net
+
+  weather-manager:
+    container_name: weather-manager
+    build:
+      context: .
+      dockerfile: ./backend/weather_manager/weather_manager.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - local_net
+
+  trip-duration-running-avg:
+    container_name: trip-duration-running-avg
+    build:
+      context: .
+      dockerfile: backend/trip_duration_running_avg/trip_duration_running_avg.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - local_net
+
+  by-station-yearly-trips-count:
+    container_name: by-station-yearly-trips-count
+    build:
+      context: .
+      dockerfile: ./backend/by_year_and_station_trips_count/by_year_and_station_trips_count.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - stations-manager
+    environment:
+      - PYTHONUNBUFFERED=1
+      - N_BY_YEAR_TRIPS_FILTERS=${N_BY_YEAR_TRIPS_FILTERS}
+    networks:
+      - local_net
+
+  by-year-trips-filter-1:
+    container_name: by-year-trips-filter-1
+    build:
+      context: .
+      dockerfile: ./backend/by_year_trips_filter/by_year_trips_filter.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - by-station-yearly-trips-count
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - local_net
+
+  weather-filter-1:
+    container_name: weather-filter-1
+    build:
+      context: .
+      dockerfile: ./backend/weather_filter/weather_filter.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - weather-manager
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - local_net
+
+  stations-distance-running-avg:
+    container_name: stations-distance-running-avg
+    build:
+      context: .
+      dockerfile: ./backend/stations_distance_running_avg/stations_distance_running_avg.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - N_DISTANCE_CALCULATORS=${N_DISTANCE_CALCULATORS}
+    networks:
+      - local_net
+
+  distance-calculator-1:
+    container_name: distance-calculator-1
+    build:
+      context: .
+      dockerfile: ./backend/distance_calculator/distance_calculator.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - stations-distance-running-avg
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - N_MONTREAL_STATIONS_JOINERS=${N_MONTREAL_STATIONS_JOINERS}
+    networks:
+      - local_net
+
+  distance-calculator-2:
+    container_name: distance-calculator-2
+    build:
+      context: .
+      dockerfile: ./backend/distance_calculator/distance_calculator.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - stations-distance-running-avg
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - N_MONTREAL_STATIONS_JOINERS=${N_MONTREAL_STATIONS_JOINERS}
+    networks:
+      - local_net
+
+  montreal-stations-joiner-1:
+    container_name: montreal-stations-joiner-1
+    build:
+      context: .
+      dockerfile: backend/montreal_stations_joiner/montreal_stations_joiner.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - distance-calculator-1
+      - distance-calculator-2
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - N_DISTANCE_CALCULATORS=${N_DISTANCE_CALCULATORS}
+    networks:
+      - local_net
+
+  montreal-stations-joiner-2:
+    container_name: montreal-stations-joiner-2
+    build:
+      context: .
+      dockerfile: backend/montreal_stations_joiner/montreal_stations_joiner.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - distance-calculator-1
+      - distance-calculator-2
+      - rabbitmq
+    environment:
+      - PYTHONUNBUFFERED=1
+      - N_DISTANCE_CALCULATORS=${N_DISTANCE_CALCULATORS}
+    networks:
+      - local_net
+
+  montreal-stations-over-6km-avg-trip-distance-ingestor:
+    container_name: montreal-distance-trips-ingestor
+    build:
+      context: .
+      dockerfile: ./backend/montreal_stations_over_6km_avg_trip_distance_ingestor/Dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - stations-manager
+      - montreal-stations-joiner-1
+      - montreal-stations-joiner-2
+    environment:
+      - PYTHONUNBUFFERED=1
+      - N_STATIONS_JOINERS=${N_MONTREAL_STATIONS_JOINERS}
+    networks:
+      - local_net
+
+  doubled-yearly-trips-stations-ingestor:
+    container_name: doubled-yearly-trips-stations-ingestor
+    build:
+      context: .
+      dockerfile: ./backend/doubled_yearly_trips_stations_ingestor/Dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - by-year-trips-filter-1
+    environment:
+      - PYTHONUNBUFFERED=1
+      - N_BY_YEAR_TRIPS_FILTERS=${N_BY_YEAR_TRIPS_FILTERS}
+    networks:
+      - local_net
+
+  with-precipitations-avg-duration-trip-ingestor:
+    container_name: with-precipitations-avg-duration-trip-ingestion
+    build:
+      context: .
+      dockerfile: ./backend/with_precipitations_avg_duration_trip_ingestor/Dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - weather-manager
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - local_net
+
+  data-ingestion-server:
+    container_name: data-ingestion-server
+    build:
+      context: .
+      dockerfile: backend/data_ingestion_server/data_ingestion_server.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+      - stations-manager
+      - weather-filter-1
+      - montreal-stations-over-6km-avg-trip-distance-ingestor
+      - stations-distance-running-avg
+      - by-station-yearly-trips-count
+      - doubled-yearly-trips-stations-ingestor
+    environment:
+      - PYTHONUNBUFFERED=1
+      - STATIONS_EXCHANGE_NAME=stations_exchange
+    networks:
+      - local_net
+
+  client:
+    build:
+      context: .
+      dockerfile: ./frontend/client.dockerfile
+    restart: on-failure
+    depends_on:
+       - data-ingestion-server
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATA_PATH=data
+    networks:
+      - local_net
+    volumes:
+      - ./.data:/data
+
+networks:
+  local_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.125.0/24
+
+volumes:
+  client:
