@@ -1,10 +1,10 @@
 from bully_node import BullyNode
 from common.rabbitmq.exchange_writer import ExchangeWriter
-from common.rabbitmq.queue_reader import QueueReader
+from common.rabbitmq.queue import Queue
 import common.env_utils
 
 
-N_PEERS = 4
+NETWORK_SIZE = 4  # TODO: Parametro
 
 
 def main():
@@ -13,16 +13,16 @@ def main():
     exchange_writer = ExchangeWriter(exchange_name=config['EXCHANGE_NAME'])
 
     queue_name = config['NODE_ID']
-    queue_reader = QueueReader(
-        queue_name=queue_name,
-        queue_bindings={config['EXCHANGE_NAME']: [queue_name]}
+    queue = Queue(
+        name=queue_name,
+        bindings={config['EXCHANGE_NAME']: [queue_name]}
     )
 
     bully_node = BullyNode(
         exchange_writer=exchange_writer,
-        queue_reader=queue_reader,
+        queue=queue,
         node_id=int(config['NODE_ID']),
-        n_peers=N_PEERS
+        network_size=NETWORK_SIZE
     )
     bully_node.start()
 

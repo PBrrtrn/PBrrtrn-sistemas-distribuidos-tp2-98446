@@ -1,15 +1,19 @@
-from time import sleep
-
 import pika
 import pika.exceptions
-from typing import Callable, Dict, List
+from typing import Dict, List
 
-TIME_LIMIT = 2
+DEFAULT_TIMEOUT = 2
 
 
 class Queue:
-    def __init__(self, name: str, bindings: Dict[str, List[str]], exchange_type: str):
+    def __init__(
+            self,
+            name: str,
+            bindings: Dict[str, List[str]],
+            exchange_type: str = 'direct',
+            timeout: int = DEFAULT_TIMEOUT):
         self.name = name
+        self.timeout = timeout
 
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
         self.channel = self.connection.channel()
@@ -33,8 +37,11 @@ class Queue:
     def on_read_callback(self, _ch, _method, _props, body):
         self.message = body
 
-    def read(self):
+    def read(self, timeout: float = None):
+        if not timeout:
+            timeout = self.timeout
+
         self.message = None
-        self.connection.process_data_events(time_limit=TIME_LIMIT)
+        self.connection.process_data_events(time_limit=timeout)
 
         return self.message
