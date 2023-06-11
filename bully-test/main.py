@@ -10,10 +10,13 @@ NETWORK_SIZE = 4  # TODO: Parametro
 def main():
     config = common.env_utils.read_config()
 
-    exchange_writer = ExchangeWriter(exchange_name=config['EXCHANGE_NAME'])
+    exchange_writer = ExchangeWriter(
+        hostname=config['RABBITMQ_HOSTNAME'],
+        exchange_name=config['EXCHANGE_NAME'])
 
     queue_name = config['NODE_ID']
     queue = Queue(
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=queue_name,
         bindings={config['EXCHANGE_NAME']: [queue_name]}
     )

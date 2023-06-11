@@ -1,0 +1,86 @@
+version: '3'
+services:
+  rabbitmq-bully:
+    container_name: rabbitmq-bully
+    build:
+      context: .
+      dockerfile: ./rabbitmq/rabbitmq.dockerfile
+    ports:
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: on-failure
+    volumes:
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    networks:
+      - bully_test_net
+
+  bully-node-1:
+    container_name: bully-node-1
+    build:
+      context: .
+      dockerfile: ./bully-test/bully_node.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq-bully
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=1
+    networks:
+      - bully_test_net
+
+  bully-node-2:
+    container_name: bully-node-2
+    build:
+      context: .
+      dockerfile: ./bully-test/bully_node.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq-bully
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=2
+    networks:
+      - bully_test_net
+
+  bully-node-3:
+    container_name: bully-node-3
+    build:
+      context: .
+      dockerfile: ./bully-test/bully_node.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq-bully
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=3
+    networks:
+      - bully_test_net
+
+  bully-node-4:
+    container_name: bully-node-4
+    build:
+      context: .
+      dockerfile: ./bully-test/bully_node.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq-bully
+    environment:
+      - PYTHONUNBUFFERED=1
+      - NODE_ID=4
+    networks:
+      - bully_test_net
+
+networks:
+  bully_test_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.126.0/24

@@ -8,6 +8,7 @@ DEFAULT_TIMEOUT = 2
 class Queue:
     def __init__(
             self,
+            hostname: str,
             name: str,
             bindings: Dict[str, List[str]],
             exchange_type: str = 'direct',
@@ -15,7 +16,7 @@ class Queue:
         self.name = name
         self.timeout = timeout
 
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostname))
         self.channel = self.connection.channel()
 
         self.channel.queue_declare(self.name, exclusive=True)
