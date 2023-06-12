@@ -27,7 +27,6 @@ class BullyNode:
             message = self.queue.read()
 
             if message is not None:
-                print("INFO - Got message")
                 type_header, peer_id = messages.parse_message(message)
 
                 if type_header == messages.COORDINATOR:
@@ -36,8 +35,6 @@ class BullyNode:
                     self.handle_election_message(peer_id)
                 else:
                     print(f"ERROR - Unknown message type (Got {type_header})")
-            else:
-                print("INFO - Got no messages")
 
     def run_election(self):
         received_response = False
@@ -64,10 +61,14 @@ class BullyNode:
                     break
                 elif response_type == messages.COORDINATOR:
                     # Si llega un COORDINATOR, se termina la elección - los nodos mayores ya la resolvieron entre si
+                    print(f"INFO - Got coordinator message from peer #{response_node_id}")
+                    print(f"INFO - Peer #{response_node_id} is the new leader, ALL HAIL PEER #{response_node_id}!")
                     self.current_leader = response_node_id
                     break
                 elif response_type == messages.ELECTION:
                     # Si llega un ELECTION (nodos menores iniciaron eleccion), se responde y se reduce el timer
+                    print(f"INFO - Got election message from peer #{response_node_id}")
+                    print(f"INFO - Peer #{response_node_id} is not the new leader, SIT DOWN, #{response_node_id}!")
                     self.exchange_writer.write(
                         message=messages.answer_message(self.node_id),
                         routing_key=str(response_node_id)
@@ -83,6 +84,7 @@ class BullyNode:
         return self.node_id + 1 == self.network_size
 
     def announce_as_coordinator(self):
+        print(f"INFO - Looks like node #{self.node_id} the captain of this ship now")
         message = messages.coordinator_message(self.node_id)
         for peer_id in range(0, self.node_id):
             self.exchange_writer.write(message=message, routing_key=str(peer_id))
@@ -91,9 +93,10 @@ class BullyNode:
         print(f"INFO - Got coordinator message from peer #{peer_id}")
         if peer_id > self.node_id:
             print(f"INFO - Peer #{peer_id} is the new leader, ALL HAIL PEER #{peer_id}!")
+            self.current_leader = peer_id
 
     def handle_election_message(self, peer_id: int):
-        print(f"INFO - Got coordinator message from peer #{peer_id}")
+        print(f"INFO - Got election message from peer #{peer_id}")
         if peer_id < self.node_id:
             print(f"INFO - Peer #{peer_id} is not the new leader, SIT DOWN, #{peer_id}!")
             self.exchange_writer.write(
