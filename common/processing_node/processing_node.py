@@ -1,15 +1,16 @@
+from common.processing_node.processor import Processor
 from common.rabbitmq.queue import Queue
 import common.network.constants
-from output_handler import OutputHandler
 
 
 class ProcessingNode:
-    def __init__(self, processor, n_input_peers: int, input_queue: Queue, output_handler: OutputHandler):
+    def __init__(self, processor: Processor, n_input_peers: int, input_queue: Queue, output_handler):
         self.processor = processor
         self.n_input_peers = n_input_peers
         self.input_queue = input_queue
-        self.eof_registry = {}
         self.output_handler = output_handler
+
+        self.eof_registry = {}
         self.running = False
 
     def run(self):
@@ -30,4 +31,5 @@ class ProcessingNode:
         self.eof_registry[client_id] = new_value
 
         if self.eof_registry[client_id] == self.n_input_peers:
+            self.processor.process_eof(client_id)
             self.output_handler.output_eof(client_id)
