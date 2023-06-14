@@ -1,16 +1,20 @@
-from common.processing_node.processor import Processor
+from common.processing_node.input_processor import InputProcessor
 from common.rabbitmq.queue import Queue
 import common.network.constants
 
 
 class ProcessingNode:
-    def __init__(self, processor: Processor, n_input_peers: int, input_queue: Queue, output_handler):
-        self.processor = processor
+    def __init__(self, input_processor: InputProcessor,
+                 input_eof_type: bytes,
+                 n_input_peers: int,
+                 input_queue: Queue,
+                 output_processor):
+        self.input_processor = input_processor
         self.n_input_peers = n_input_peers
         self.input_queue = input_queue
-        self.output_handler = output_handler
+        self.output_processor = output_processor
 
-        self.eof_registry = {}
+        self.received_eof_signals = 0
         self.running = False
 
     def run(self):
@@ -21,15 +25,13 @@ class ProcessingNode:
             message_body = message[common.network.constants.HEADER_TYPE_LEN:]
 
             if message_type == common.network.constants.EOF:
-                self.register_eof(message_body)
+                self.register_eof()
             else:
-                result = self.processor.process(message_type, message_body)
-                self.output_handler.output_message(result)
+                result = self.input_processor.process_input(message_type, message_body)
+                self.output_processor.process_output(result)
 
-    def register_eof(self, client_id):
-        new_value = self.eof_registry.get(client_id, 0) + 1
-        self.eof_registry[client_id] = new_value
+    def register_eof(self):
+        self.received_eof_signals += 1
+        if self.received_eof_signals == self.n_input_peers:
+            self.output_processor.finish_processing()
 
-        if self.eof_registry[client_id] == self.n_input_peers:
-            self.processor.process_eof(client_id)
-            self.output_handler.output_eof(client_id)
