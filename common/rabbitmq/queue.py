@@ -1,11 +1,15 @@
+from time import sleep
+
 import pika
 import pika.exceptions
 from typing import Dict, List
 
-DEFAULT_TIMEOUT = 2
+DEFAULT_TIMEOUT = None
 
 
 class Queue:
+    MAX_RETRIES = 10
+
     def __init__(
             self,
             hostname: str,
@@ -16,10 +20,21 @@ class Queue:
         self.name = name
         self.timeout = timeout
 
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostname))
+        retries = 0
+        while retries < self.MAX_RETRIES:
+            try:
+                self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostname))
+                break
+            except pika.exceptions.AMQPConnectionError:
+                retries += 1
+                sleep(0.5)
+
+        if retries == self.MAX_RETRIES:
+            print(f"ERROR - Failed to connect to RabbitMQ")
+            raise Exception("Failed to connect to RabbitMQ")
         self.channel = self.connection.channel()
 
-        self.channel.queue_declare(self.name, exclusive=True)
+        self.channel.queue_declare(self.name)
         for exchange, routing_keys in bindings.items():
             self.channel.exchange_declare(exchange=exchange, exchange_type=exchange_type)
             for routing_key in routing_keys:

@@ -1,15 +1,18 @@
-from common.processing_node.input_processor import InputProcessor
+from typing import Callable
+
 from common.rabbitmq.queue import Queue
 import common.network.constants
 
 
 class ProcessingNode:
-    def __init__(self, input_processor: InputProcessor,
-                 input_eof_type: bytes,
+    def __init__(self,
+                 process_input: Callable,
+                 input_eof: bytes,
                  n_input_peers: int,
                  input_queue: Queue,
                  output_processor):
-        self.input_processor = input_processor
+        self.process_input = process_input
+        self.input_eof = input_eof
         self.n_input_peers = n_input_peers
         self.input_queue = input_queue
         self.output_processor = output_processor
@@ -24,14 +27,15 @@ class ProcessingNode:
             message_type = message[:common.network.constants.HEADER_TYPE_LEN]
             message_body = message[common.network.constants.HEADER_TYPE_LEN:]
 
-            if message_type == common.network.constants.EOF:
+            if message_type == self.input_eof:
                 self.register_eof()
             else:
-                result = self.input_processor.process_input(message_type, message_body)
+                result = self.process_input(message_type, message_body)
                 self.output_processor.process_output(result)
 
     def register_eof(self):
         self.received_eof_signals += 1
         if self.received_eof_signals == self.n_input_peers:
             self.output_processor.finish_processing()
+            self.running = False
 
