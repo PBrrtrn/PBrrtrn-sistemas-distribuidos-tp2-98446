@@ -42,22 +42,11 @@ class Queue:
                                         queue=self.name,
                                         routing_key=routing_key)
 
-        self.channel.basic_consume(
-            queue=self.name,
-            on_message_callback=self.on_read_callback,
-            auto_ack=True
-        )
+    def read(self):
+        for (_method, _properties, body) in self.channel.consume(queue=self.name, inactivity_timeout=self.timeout):
+            yield body
 
-        self.message = None
-
-    def on_read_callback(self, _ch, _method, _props, body):
-        self.message = body
-
-    def read(self, timeout: float = None):
-        if not timeout:
-            timeout = self.timeout
-
-        self.message = None
-        self.connection.process_data_events(time_limit=timeout)
-
-        return self.message
+    def close(self):
+        self.channel.cancel()
+        self.channel.close()
+        self.connection.close()

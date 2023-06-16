@@ -21,13 +21,10 @@ class ProcessingNode:
         self.running = False
 
     def run(self):
-        self.running = True
-        while self.running:
-            message = self.input_queue.read()
+        for message in self.input_queue.read():
             message_type = message[:common.network.constants.HEADER_TYPE_LEN]
             message_body = message[common.network.constants.HEADER_TYPE_LEN:]
 
-            print(f"Got message of type {message_type} (EOF is {self.input_eof})")
             if message_type == self.input_eof:
                 self.register_eof()
             else:
@@ -36,8 +33,6 @@ class ProcessingNode:
 
     def register_eof(self):
         self.received_eof_signals += 1
-        print(f"DEBUG - Received EOF ({self.received_eof_signals}/{self.n_input_peers})")
         if self.received_eof_signals == self.n_input_peers:
             self.output_processor.finish_processing()
-            self.running = False
-
+            self.input_queue.close()
