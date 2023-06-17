@@ -1,10 +1,13 @@
 import logging
 import pickle
 import socket
+import datetime
 import common.network.serialize
 import common.network.constants
 import common.network.utils
 from common.network.socket_wrapper import SocketWrapper
+
+RESULTS_PATH = "/results/result.txt"
 
 
 class Client:
@@ -151,4 +154,14 @@ def send_queries_request(wrapped_socket):
             to_print_vec.append(f"{len(stations)} rows")
     to_print = "\n".join(to_print_vec)
     logging.info(to_print)
+    save_final_result(to_print)
+
     wrapped_socket.close()
+
+
+def save_final_result(to_write):
+    with open(RESULTS_PATH, 'w') as file:
+        current_time = datetime.datetime.now()
+        file.write(f'{current_time}')
+        file.write(to_write)
+        file.close()

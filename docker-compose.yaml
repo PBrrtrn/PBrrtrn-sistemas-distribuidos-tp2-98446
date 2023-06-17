@@ -273,6 +273,7 @@ services:
       - local_net
     volumes:
       - ./.data:/data
+      - results:/results
 
 networks:
   local_net:
@@ -283,3 +284,4 @@ networks:
 
 volumes:
   client:
+  results:
