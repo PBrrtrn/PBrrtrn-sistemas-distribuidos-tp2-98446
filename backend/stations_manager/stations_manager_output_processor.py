@@ -13,15 +13,17 @@ class StationsManagerOutputProcessor:
         self.eofs_received = 0
 
     def process_output(self, message: bytes):
-        deserialized_message = pickle.loads(message)
+        _output_header = message[:common.network.constants.HEADER_TYPE_LEN]
+        output_body = message[common.network.constants.HEADER_TYPE_LEN:]
+        deserialized_message = pickle.loads(output_body)
 
-        raw_batch, city = deserialized_message[0], deserialized_message[1]
-        batch = common.network.deserialize.deserialize_stations_batch(raw_batch)
+        raw_stations_batch, city = deserialized_message[0], deserialized_message[1]
+        stations_batch = common.network.deserialize.deserialize_stations_batch(raw_stations_batch)
 
         if city not in self.storage:
             self.storage[city] = {}
 
-        for station in batch:
+        for station in stations_batch:
             self.storage[city][station.code] = station
 
     def finish_processing(self):

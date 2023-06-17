@@ -20,7 +20,6 @@ class StationsDistanceRunningAvg:
 
     def run(self):
         self.stations_distance_input_queue_reader.consume(callback=self.consume_messages)
-        print("Responding RPCs")
         self.rpc_queue_reader.consume(callback=self.respond_rpc, auto_ack=False)
 
     def consume_messages(self, _channel, _method, _properties, body):

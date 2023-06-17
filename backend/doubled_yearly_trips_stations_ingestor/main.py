@@ -6,6 +6,8 @@ from common.processing_node.processing_node import ProcessingNode
 from common.processing_node.identity_process_input import identity_process_input
 from common.processing_node.forwarding_output_processor import ForwardingOutputProcessor
 
+import common.network.constants
+
 
 def main():
     config = common.env_utils.read_config()
@@ -38,7 +40,6 @@ def main():
     )
 
     processing_node.run()
-
 
 
 if __name__ == "__main__":
