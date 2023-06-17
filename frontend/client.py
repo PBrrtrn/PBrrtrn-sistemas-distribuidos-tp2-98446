@@ -1,3 +1,4 @@
+import logging
 import pickle
 import socket
 import common.network.serialize
@@ -118,23 +119,36 @@ def send_trips_end_all(wrapped_socket):
 
 def send_queries_request(wrapped_socket):
     wrapped_socket.send(common.network.serialize.serialize_queries_request())
-
+    to_print_vec = [""]
     for _ in range(N_QUERIES):
         message_type = wrapped_socket.recv(common.network.constants.HEADER_TYPE_LEN)
         if message_type == common.network.constants.MONTREAL_STATIONS_OVER_6KM_AVG_TRIP_DISTANCE_RESULT:
             message_length = common.network.utils.receive_int(wrapped_socket)
             raw_stations = wrapped_socket.recv(message_length)
             stations = ', '.join(pickle.loads(raw_stations))
-            print(f"INFO - Montreal stations with average trip distance over 6km: {stations}")
+            to_print_vec.append(f"Montreal stations with average trip distance over 6km: {stations}")
         elif message_type == common.network.constants.WITH_PRECIPITATIONS_AVG_TRIP_DURATION_RESULT:
             message_length = common.network.utils.receive_int(wrapped_socket)
             raw_avg_duration_with_precipitations = wrapped_socket.recv(message_length)
             avg_duration_precip = round(pickle.loads(raw_avg_duration_with_precipitations), 2)
-            print(f"INFO - Average duration for trips with >30mm precipitations: {avg_duration_precip} sec.")
+            to_print_vec.append(f"Average duration for trips with >30mm precipitations: {avg_duration_precip} sec.")
         elif message_type == common.network.constants.DOUBLED_YEARLY_TRIPS_STATION_NAMES_RESULT:
             message_length = common.network.utils.receive_int(wrapped_socket)
             raw_stations = wrapped_socket.recv(message_length)
-            stations = ', '.join(pickle.loads(raw_stations))
-            print(f"INFO - Stations with doubled yearly trips over 2017 and 2016: {stations}")
-
+            stations = pickle.loads(raw_stations)
+            stations_to_append = []
+            if len(stations) < 10:
+                stations_to_append = stations
+            else:
+                to_append = ["..."]
+                for i in range(5):
+                    station1 = stations[i]
+                    stations_to_append.append(f"{station1}")
+                    station2 = stations[len(stations) - 1 - 5 + i]
+                    to_append.append(f"{station2}")
+                stations_to_append.extend(to_append)
+            to_print_vec.append(f"Stations with doubled yearly trips over 2017 and 2016: {stations_to_append}")
+            to_print_vec.append(f"{len(stations)} rows")
+    to_print = "\n".join(to_print_vec)
+    logging.info(to_print)
     wrapped_socket.close()
