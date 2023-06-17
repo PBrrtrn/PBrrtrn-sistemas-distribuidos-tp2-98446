@@ -9,7 +9,8 @@ class ForwardingOutputProcessor:
         self.output_eof = output_eof
 
     def process_output(self, message: bytes):
-        self.output_exchange_writer.write(message)
+        if message is not None:
+            self.output_exchange_writer.write(message)
 
     def finish_processing(self):
         for _ in range(self.n_output_peers):
