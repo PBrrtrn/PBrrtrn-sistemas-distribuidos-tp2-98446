@@ -20,6 +20,8 @@ class ProcessingNode:
         self.received_eof_signals = 0
         self.running = False
 
+        self.supervisor_process = SupervisorProcess()
+
     def run(self):
         for message in self.input_queue.read():
             message_type = message[:common.network.constants.HEADER_TYPE_LEN]
