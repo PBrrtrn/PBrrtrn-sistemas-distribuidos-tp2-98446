@@ -3,16 +3,8 @@ from common.rabbitmq.queue import Queue
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.processing_node.forwarding_output_processor import ForwardingOutputProcessor
 from common.processing_node.processing_node import ProcessingNode
-from common.processing_node.filter_process_input import FilterProcessInput
-
-
-def filter_function(trips_batch):
-    print("pepeee")
-    filtered_trips = []
-    for trip in trips_batch:
-        if trip.start_date[:4] == "2017" or trip.start_date[:4] == "2016":
-            filtered_trips.append(trip)
-    return filtered_trips
+from by_year_trips_filter_process_input import by_year_trips_filter_process_input
+import common.network.constants
 
 
 def main():
@@ -30,19 +22,18 @@ def main():
         exchange_name=config['BY_STATION_AND_YEAR_TRIP_INPUT_EXCHANGE_NAME']
     )
 
-    output_processor = ForwardingOutputProcessor(
+    forwarding_output_processor = ForwardingOutputProcessor(
         n_output_peers=1,
         output_exchange_writer=filtered_trips_exchange_writer,
         output_eof=common.network.constants.TRIPS_END_ALL
     )
 
-    filter_process_input = FilterProcessInput(filter_function)
     processing_node = ProcessingNode(
-        process_input=filter_process_input.filter_process_input,
+        process_input=by_year_trips_filter_process_input,
         input_eof=common.network.constants.TRIPS_END_ALL,
         n_input_peers=1,
         input_queue=trips_input_queue,
-        output_processor=output_processor
+        output_processor=forwarding_output_processor
     )
 
     processing_node.run()
