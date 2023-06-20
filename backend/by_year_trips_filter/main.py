@@ -1,16 +1,20 @@
 import common.env_utils
-from common.rabbitmq.queue_reader import QueueReader
+from common.rabbitmq.queue import Queue
 from common.rabbitmq.exchange_writer import ExchangeWriter
-from by_year_trips_filter import ByYearTripsFilter
+from common.processing_node.forwarding_output_processor import ForwardingOutputProcessor
+from common.processing_node.processing_node import ProcessingNode
+from by_year_trips_filter_process_input import by_year_trips_filter_process_input
+import common.network.constants
 
 
 def main():
     config = common.env_utils.read_config()
 
     trips_input_queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
-    trips_input_queue_reader = QueueReader(
-        queue_name=config['TRIPS_INPUT_QUEUE_NAME'],
-        queue_bindings=trips_input_queue_bindings
+    trips_input_queue = Queue(
+        hostname='rabbitmq',
+        name=config['TRIPS_INPUT_QUEUE_NAME'],
+        bindings=trips_input_queue_bindings
     )
 
     filtered_trips_exchange_writer = ExchangeWriter(
@@ -18,8 +22,21 @@ def main():
         exchange_name=config['BY_STATION_AND_YEAR_TRIP_INPUT_EXCHANGE_NAME']
     )
 
-    by_year_trips_filter = ByYearTripsFilter(trips_input_queue_reader, filtered_trips_exchange_writer)
-    by_year_trips_filter.run()
+    forwarding_output_processor = ForwardingOutputProcessor(
+        n_output_peers=1,
+        output_exchange_writer=filtered_trips_exchange_writer,
+        output_eof=common.network.constants.TRIPS_END_ALL
+    )
+
+    processing_node = ProcessingNode(
+        process_input=by_year_trips_filter_process_input,
+        input_eof=common.network.constants.TRIPS_END_ALL,
+        n_input_peers=1,
+        input_queue=trips_input_queue,
+        output_processor=forwarding_output_processor
+    )
+
+    processing_node.run()
 
 
 if __name__ == "__main__":

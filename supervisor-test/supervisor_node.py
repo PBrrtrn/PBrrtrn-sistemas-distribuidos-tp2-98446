@@ -2,11 +2,12 @@ import random
 from time import sleep
 from timeit import default_timer as timer
 
+from supervisor_queue import SupervisorQueue
+
 import docker
 import docker.errors
 
 from common.rabbitmq.exchange_writer import ExchangeWriter
-from common.rabbitmq.queue import Queue
 
 import messages
 
@@ -16,7 +17,7 @@ class SupervisorNode:
     FOLLOWER_SLEEP_TIME = 0.1
     FOLLOWER_SLEEP_DELTA = 0.1
 
-    def __init__(self, exchange_writer: ExchangeWriter, queue: Queue, node_id: int, network_size: int):
+    def __init__(self, exchange_writer: ExchangeWriter, queue: SupervisorQueue, node_id: int, network_size: int):
         self.exchange_writer = exchange_writer
         self.queue = queue
         self.node_id = node_id

@@ -273,13 +273,15 @@ services:
       - local_net
     volumes:
       - ./.data:/data
+      - results:/results
 
 networks:
   local_net:
     ipam:
       driver: default
       config:
-        - subnet: 172.25.125.0/24
+        - subnet: 172.25.127.0/24
 
 volumes:
   client:
+  results:

@@ -2,7 +2,7 @@ import signal
 
 from supervisor_node import SupervisorNode
 from common.rabbitmq.exchange_writer import ExchangeWriter
-from common.rabbitmq.queue import Queue
+from supervisor_queue import SupervisorQueue
 import common.env_utils
 
 
@@ -17,7 +17,7 @@ def main():
         exchange_name=config['EXCHANGE_NAME'])
 
     queue_name = config['NODE_ID']
-    queue = Queue(
+    supervisor_queue = SupervisorQueue(
         hostname=config['RABBITMQ_HOSTNAME'],
         name=queue_name,
         bindings={config['EXCHANGE_NAME']: [queue_name]}
@@ -25,7 +25,7 @@ def main():
 
     supervisor_node = SupervisorNode(
         exchange_writer=exchange_writer,
-        queue=queue,
+        queue=supervisor_queue,
         node_id=int(config['NODE_ID']),
         network_size=NETWORK_SIZE
     )
