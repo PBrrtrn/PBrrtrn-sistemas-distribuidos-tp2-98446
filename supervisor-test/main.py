@@ -1,4 +1,6 @@
-from bully_node import BullyNode
+import signal
+
+from supervisor_node import SupervisorNode
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.queue import Queue
 import common.env_utils
@@ -21,13 +23,16 @@ def main():
         bindings={config['EXCHANGE_NAME']: [queue_name]}
     )
 
-    bully_node = BullyNode(
+    supervisor_node = SupervisorNode(
         exchange_writer=exchange_writer,
         queue=queue,
         node_id=int(config['NODE_ID']),
         network_size=NETWORK_SIZE
     )
-    bully_node.start()
+
+    signal.signal(signal.SIGINT, supervisor_node.exit_gracefully)
+    signal.signal(signal.SIGTERM, supervisor_node.exit_gracefully)
+    supervisor_node.start()
 
 
 if __name__ == '__main__':

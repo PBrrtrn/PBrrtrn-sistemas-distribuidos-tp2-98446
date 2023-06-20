@@ -1,7 +1,7 @@
 version: '3'
 services:
-  rabbitmq-bully:
-    container_name: rabbitmq-bully
+  rabbitmq-supervisor:
+    container_name: rabbitmq-supervisor
     build:
       context: .
       dockerfile: ./rabbitmq/rabbitmq.dockerfile
@@ -16,70 +16,82 @@ services:
     volumes:
       - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
     networks:
-      - bully_test_net
+      - supervisor_test_net
 
-  bully-node-1:
-    container_name: bully-node-1
+  supervisor-node-1:
+    container_name: supervisor-node-1
     build:
       context: .
-      dockerfile: ./bully-test/bully_node.dockerfile
+      dockerfile: supervisor-test/supervisor_node.dockerfile
     entrypoint: python3 /main.py
     restart: on-failure
     depends_on:
-      - rabbitmq-bully
+      - rabbitmq-supervisor
     environment:
       - PYTHONUNBUFFERED=1
       - NODE_ID=1
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - bully_test_net
+      - supervisor_test_net
 
-  bully-node-2:
-    container_name: bully-node-2
+  supervisor-node-2:
+    container_name: supervisor-node-2
     build:
       context: .
-      dockerfile: ./bully-test/bully_node.dockerfile
+      dockerfile: supervisor-test/supervisor_node.dockerfile
     entrypoint: python3 /main.py
     restart: on-failure
     depends_on:
-      - rabbitmq-bully
+      - rabbitmq-supervisor
     environment:
       - PYTHONUNBUFFERED=1
       - NODE_ID=2
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - bully_test_net
+      - supervisor_test_net
 
-  bully-node-3:
-    container_name: bully-node-3
+  supervisor-node-3:
+    container_name: supervisor-node-3
     build:
       context: .
-      dockerfile: ./bully-test/bully_node.dockerfile
+      dockerfile: supervisor-test/supervisor_node.dockerfile
     entrypoint: python3 /main.py
     restart: on-failure
     depends_on:
-      - rabbitmq-bully
+      - rabbitmq-supervisor
     environment:
       - PYTHONUNBUFFERED=1
       - NODE_ID=3
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - bully_test_net
+      - supervisor_test_net
 
-  bully-node-4:
-    container_name: bully-node-4
+  supervisor-node-4:
+    container_name: supervisor-node-4
     build:
       context: .
-      dockerfile: ./bully-test/bully_node.dockerfile
+      dockerfile: supervisor-test/supervisor_node.dockerfile
     entrypoint: python3 /main.py
     restart: on-failure
     depends_on:
-      - rabbitmq-bully
+      - rabbitmq-supervisor
     environment:
       - PYTHONUNBUFFERED=1
       - NODE_ID=4
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - bully_test_net
+      - supervisor_test_net
 
 networks:
-  bully_test_net:
+  supervisor_test_net:
     ipam:
       driver: default
       config:
