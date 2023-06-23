@@ -34,8 +34,9 @@ def main():
 
     trips_queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
     trips_input_queue = Queue(
-        queue_name=config['TRIPS_INPUT_QUEUE_NAME'],
-        queue_bindings=trips_queue_bindings,
+        hostname='rabbitmq',
+        name=config['TRIPS_INPUT_QUEUE_NAME'],
+        bindings=trips_queue_bindings,
         exchange_type='fanout'
     )
 
