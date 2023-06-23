@@ -17,7 +17,7 @@ class TripDurationStorageOutputProcessor:
             self.n_trips += 1
 
     def finish_processing(self):
-        for message in self.rpc_queue.read():
+        for (method, properties, message) in self.rpc_queue.read_with_props():
             response = self.total_duration / self.n_trips
 
             serialized_response = pickle.dumps(response)
@@ -28,4 +28,4 @@ class TripDurationStorageOutputProcessor:
                 delivery_tag=method.delivery_tag
             )
 
-            self.rpc_queue.shutdown()
+            self.rpc_queue.close()
