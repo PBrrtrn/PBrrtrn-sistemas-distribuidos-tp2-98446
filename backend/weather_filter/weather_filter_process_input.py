@@ -2,6 +2,7 @@ import common.network.constants
 import common.network.deserialize
 import pickle
 
+
 def weather_filter_process_input(message_type: bytes, message_body: bytes):
     if message_type == common.network.constants.WEATHER_BATCH:
         raw_batch, city = pickle.loads(message_body)
