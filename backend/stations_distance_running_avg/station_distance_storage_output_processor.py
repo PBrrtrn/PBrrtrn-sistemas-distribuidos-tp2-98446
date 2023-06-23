@@ -20,7 +20,7 @@ class StationDistanceStorageOutputProcessor:
                 self.storage[end_station_name] = {"total_distance": distance, "n_trips": 1}
 
     def finish_processing(self):
-        for message in self.rpc_queue.read():
+        for (method, properties, message) in self.rpc_queue.read_with_props():
             response = []
             for station_name, attributes in self.storage.items():
                 avg_distance = attributes["total_distance"] / attributes["n_trips"]
@@ -35,4 +35,4 @@ class StationDistanceStorageOutputProcessor:
                 delivery_tag=method.delivery_tag
             )
 
-            self.rpc_queue.shutdown()
+            self.rpc_queue.close()

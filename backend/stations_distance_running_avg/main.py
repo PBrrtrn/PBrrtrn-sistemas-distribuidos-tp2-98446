@@ -28,12 +28,16 @@ def main():
 
     queue_bindings = common.env_utils.parse_queue_bindings(config['STATIONS_TRIP_DISTANCE_INPUT_QUEUE_BINDINGS'])
     stations_trip_distance_input_queue_reader = Queue(
-        queue_name=config['STATIONS_TRIP_DISTANCE_INPUT_QUEUE_NAME'],
-        queue_bindings=queue_bindings)
+        hostname='rabbitmq',
+        name=config['STATIONS_TRIP_DISTANCE_INPUT_QUEUE_NAME'],
+        bindings=queue_bindings
+    )
 
-    rpc_queue_reader = Queue(queue_name=config['QUERY_RPC_QUEUE_NAME'])
+    rpc_queue_reader = Queue(
+        hostname='rabbitmq',
+        name=config['QUERY_RPC_QUEUE_NAME']
+    )
     storage_output_processor = StationDistanceStorageOutputProcessor(rpc_queue_reader)
-
 
     processing_node = ProcessingNode(
         process_input=identity_process_input_without_header,
