@@ -132,13 +132,18 @@ class SupervisorNode:
                 print(f"ERROR - Unknown message type (Got {type_header})")
 
         if self.timers[self.current_leader] <= 0:
-            print("INFO - Leader is dead, must start new election!")
-            self._run_election()
+            print("INFO - Leader missed a heartbeat!")
+            self.missed_heartbeats[self.current_leader] += 1
+            if self.missed_heartbeats[self.current_leader] > self.MAX_MISSED_HEARTBEATS:
+                print("INFO - Leader is dead, must start new election!")
+                self.missed_heartbeats[self.current_leader] = 0
+                self._run_election()
 
         sleep(self.FOLLOWER_SLEEP_TIME + random.uniform(0, self.FOLLOWER_SLEEP_DELTA))
 
     def _handle_heartbeat_ack(self):
         self.timers[self.current_leader] = self.TIMEOUT
+        self.missed_heartbeats[self.current_leader] = 0
 
     def _is_leader(self):
         return self.node_id == self.current_leader
