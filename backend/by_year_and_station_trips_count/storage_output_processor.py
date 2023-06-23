@@ -23,7 +23,7 @@ class StorageOutputProcessor:
             self.storage[city][trip.start_station_code][trip_year] += 1
 
     def finish_processing(self):
-        for message in self.rpc_queue.read():
+        for (method, properties, message) in self.rpc_queue.read_with_props():
             message_type = message[:common.network.constants.HEADER_TYPE_LEN]
             if message_type == common.network.constants.EXECUTE_QUERIES:
                 response = []
@@ -46,4 +46,4 @@ class StorageOutputProcessor:
                     delivery_tag=method.delivery_tag
                 )
 
-                self.rpc_queue.shutdown()
+                self.rpc_queue.close()

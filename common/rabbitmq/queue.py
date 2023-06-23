@@ -14,7 +14,7 @@ class Queue:
             self,
             hostname: str,
             name: str,
-            bindings: Dict[str, List[str]],
+            bindings: Dict[str, List[str]] = {},
             exchange_type: str = 'direct',
             timeout: int = DEFAULT_TIMEOUT):
         self.name = name
@@ -45,6 +45,19 @@ class Queue:
     def read(self):
         for (_method, _properties, body) in self.channel.consume(queue=self.name, inactivity_timeout=self.timeout):
             yield body
+
+    def read_with_props(self):
+        for (method, properties, body) in self.channel.consume(queue=self.name,
+                                                                 inactivity_timeout=self.timeout):
+            yield (method, properties, body)
+
+    def respond(self, message: bytes, to: str, correlation_id, delivery_tag):
+        self.channel.basic_publish(exchange='',
+                                   routing_key=to,
+                                   properties=pika.BasicProperties(correlation_id=correlation_id),
+                                   body=message)
+
+        self.channel.basic_ack(delivery_tag=delivery_tag)
 
     def close(self):
         self.channel.cancel()
