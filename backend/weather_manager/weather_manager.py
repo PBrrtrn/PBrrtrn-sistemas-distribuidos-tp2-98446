@@ -7,7 +7,6 @@ import common.network.deserialize
 
 
 class WeatherManager:
-    # TODO: Clase Manager que se le inyecte el parseo de mensajes
     TRIP_DATE_LEN = 10
 
     def __init__(self, weather_input_queue: QueueReader, n_weather_filters: int, rpc_queue_reader: QueueReader):

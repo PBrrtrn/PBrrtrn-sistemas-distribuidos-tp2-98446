@@ -2,6 +2,7 @@ import os
 from configparser import ConfigParser
 
 import common.env_utils
+import common.network.constants
 
 from common.rabbitmq.queue import Queue
 from common.rabbitmq.exchange_writer import ExchangeWriter
@@ -9,6 +10,7 @@ from common.processing_node.forwarding_output_processor import ForwardingOutputP
 from common.processing_node.processing_node import ProcessingNode
 
 from weather_filter_process_input import weather_filter_process_input
+
 
 def read_config():
     config = ConfigParser(os.environ)
@@ -44,8 +46,8 @@ def main():
     )
 
     output_exchange_writer = ExchangeWriter(
-        queue_name=config['FILTERED_WEATHER_EXCHANGE_NAME'],
-        exchange_name=config['FILTERED_WEATHER_QUEUE_NAME']
+        exchange_name=config['FILTERED_WEATHER_EXCHANGE_NAME'],
+        queue_name=config['FILTERED_WEATHER_QUEUE_NAME']
     )
 
     forwarding_output_processor = ForwardingOutputProcessor(
