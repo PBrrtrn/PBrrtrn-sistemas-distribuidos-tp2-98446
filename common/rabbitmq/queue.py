@@ -42,8 +42,11 @@ class Queue:
                                         queue=self.name,
                                         routing_key=routing_key)
 
-    def read(self):
-        for (_method, _properties, body) in self.channel.consume(queue=self.name, inactivity_timeout=self.timeout):
+    def read(self, timeout: float = None):
+        if timeout is None:
+            timeout = self.timeout
+
+        for (_method, _properties, body) in self.channel.consume(queue=self.name, inactivity_timeout=timeout):
             yield body
 
     def close(self):
