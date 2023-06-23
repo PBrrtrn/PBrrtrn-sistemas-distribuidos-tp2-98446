@@ -11,7 +11,7 @@ class WeatherManagerOutputProcessor:
         self.rpc_queue = rpc_queue
         self.storage = {}
 
-    def process_output(self, message: bytes):
+    def process_output(self, message: bytes, _method, _properties):
         message_type = message[:common.network.constants.HEADER_TYPE_LEN]
         if message_type == common.network.constants.WEATHER_BATCH:
             raw_batch = message[common.network.constants.HEADER_TYPE_LEN:]

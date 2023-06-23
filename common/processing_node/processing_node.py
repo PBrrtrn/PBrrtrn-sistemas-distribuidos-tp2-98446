@@ -21,14 +21,14 @@ class ProcessingNode:
         self.running = False
 
     def run(self):
-        for message in self.input_queue.read():
+        for (method, properties, message) in self.input_queue.read_with_props():
             message_type = message[:common.network.constants.HEADER_TYPE_LEN]
             message_body = message[common.network.constants.HEADER_TYPE_LEN:]
             result = self.process_input(message_type, message_body)
             if message_type == self.input_eof:
                 self.register_eof()
             else:
-                self.output_processor.process_output(result)
+                self.output_processor.process_output(result, method, properties)
 
     def register_eof(self):
         self.received_eof_signals += 1

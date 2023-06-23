@@ -10,7 +10,7 @@ class StorageOutputProcessor:
         self.rpc_queue = rpc_queue
         self.rpc_client = rpc_client
 
-    def process_output(self, message: bytes):
+    def process_output(self, message: bytes, _method, _properties):
         trips, city = pickle.loads(message)
         for trip in trips:
             if city not in self.storage:

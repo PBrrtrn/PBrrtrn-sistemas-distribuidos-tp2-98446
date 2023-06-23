@@ -49,7 +49,7 @@ class Queue:
     def read_with_props(self):
         for (method, properties, body) in self.channel.consume(queue=self.name,
                                                                  inactivity_timeout=self.timeout):
-            yield (method, properties, body)
+            yield method, properties, body
 
     def respond(self, message: bytes, to: str, correlation_id, delivery_tag):
         self.channel.basic_publish(exchange='',

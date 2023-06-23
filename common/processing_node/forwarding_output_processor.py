@@ -8,7 +8,7 @@ class ForwardingOutputProcessor:
         self.output_exchange_writer = output_exchange_writer
         self.output_eof = output_eof
 
-    def process_output(self, message: bytes):
+    def process_output(self, message: bytes, _method, _properties):
         if message is not None:
             self.output_exchange_writer.write(message)
 

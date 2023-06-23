@@ -10,7 +10,7 @@ class TripDurationStorageOutputProcessor:
         self.n_trips = 0
         self.rpc_queue = rpc_queue
 
-    def process_output(self, message: bytes):
+    def process_output(self, message: bytes, _method, _properties):
         trips = pickle.loads(message)
         for trip in trips:
             self.total_duration += trip.duration_sec

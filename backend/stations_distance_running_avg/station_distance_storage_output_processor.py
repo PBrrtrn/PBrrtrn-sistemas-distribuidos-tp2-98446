@@ -9,7 +9,7 @@ class StationDistanceStorageOutputProcessor:
         self.storage = {}
         self.rpc_queue = rpc_queue
 
-    def process_output(self, message: bytes):
+    def process_output(self, message: bytes, _method, _properties):
         joined_trips_with_distance = pickle.loads(message)
 
         for end_station_name, distance in joined_trips_with_distance:
