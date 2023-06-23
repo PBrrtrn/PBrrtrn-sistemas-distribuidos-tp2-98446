@@ -1,5 +1,4 @@
 import common.env_utils
-from with_precipitations_avg_duration_trip_ingestor import WithPrecipitationsAvgDurationTripIngestor
 from common.rabbitmq.rpc_client import RPCClient
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.queue import Queue

@@ -24,11 +24,10 @@ class ProcessingNode:
         for message in self.input_queue.read():
             message_type = message[:common.network.constants.HEADER_TYPE_LEN]
             message_body = message[common.network.constants.HEADER_TYPE_LEN:]
-
+            result = self.process_input(message_type, message_body)
             if message_type == self.input_eof:
                 self.register_eof()
             else:
-                result = self.process_input(message_type, message_body)
                 self.output_processor.process_output(result)
 
     def register_eof(self):

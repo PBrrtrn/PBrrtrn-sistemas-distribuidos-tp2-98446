@@ -11,3 +11,5 @@ class PrecipitationAvgDurationTripIngestorProcessor:
         if message_type == common.network.constants.TRIPS_BATCH:
             raw_filtered_trips = self.weather_rpc_client.call(message_type + message_body)
             return common.network.constants.TRIPS_BATCH + raw_filtered_trips
+        elif message_type == common.network.constants.TRIPS_END_ALL:
+            self.weather_rpc_client.call(message_type)
