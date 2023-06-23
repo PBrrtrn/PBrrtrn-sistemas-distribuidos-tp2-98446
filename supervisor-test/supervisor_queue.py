@@ -2,8 +2,6 @@ import pika
 import pika.exceptions
 from typing import Dict, List
 
-DEFAULT_TIMEOUT = 2
-
 
 class SupervisorQueue:
     def __init__(
@@ -11,10 +9,8 @@ class SupervisorQueue:
             hostname: str,
             name: str,
             bindings: Dict[str, List[str]],
-            exchange_type: str = 'direct',
-            timeout: int = DEFAULT_TIMEOUT):
+            exchange_type: str = 'direct'):
         self.name = name
-        self.timeout = timeout
 
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostname))
         self.channel = self.connection.channel()
@@ -38,9 +34,9 @@ class SupervisorQueue:
     def on_read_callback(self, _ch, _method, _props, body):
         self.message = body
 
-    def read(self, timeout: float = None):
-        if not timeout:
-            timeout = self.timeout
+    def read(self, timeout: float):
+        if timeout < 0:
+            return None
 
         self.message = None
         self.connection.process_data_events(time_limit=timeout)

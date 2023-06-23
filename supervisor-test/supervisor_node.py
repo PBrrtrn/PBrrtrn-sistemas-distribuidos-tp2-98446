@@ -13,7 +13,8 @@ import messages
 
 
 class SupervisorNode:
-    TIMEOUT = 4
+    TIMEOUT = 1
+    MAX_MISSED_HEARTBEATS = 3
     FOLLOWER_SLEEP_TIME = 0.1
     FOLLOWER_SLEEP_DELTA = 0.1
 
@@ -26,6 +27,7 @@ class SupervisorNode:
         self.docker_client = docker.from_env()
         self.current_leader = None
         self.timers = {}
+        self.missed_heartbeats = {}
         self.running = False
 
     def start(self):
@@ -33,6 +35,7 @@ class SupervisorNode:
 
         for peer_id in range(1, self.network_size + 1):
             self.timers[peer_id] = self.TIMEOUT
+            self.missed_heartbeats[peer_id] = 0
 
         self._run_election()
 
@@ -65,7 +68,7 @@ class SupervisorNode:
             else:
                 print(f"ERROR - Received unknown message type ({type_header}) from node {peer_id}")
 
-        self._restart_dead_followers()
+        self._supervise_followers()
 
     def _decrease_all_timers(self, elapsed_time: float):
         for peer_id in self.timers.keys():
@@ -74,6 +77,7 @@ class SupervisorNode:
     def _reset_timer(self, peer_id: int):
         print(f"INFO - Node {peer_id} is still alive... for now")
         self.timers[peer_id] = self.TIMEOUT
+        self.missed_heartbeats[peer_id] = 0
 
     def _process_heartbeat(self, peer_id):
         self.exchange_writer.write(
@@ -81,11 +85,19 @@ class SupervisorNode:
             routing_key=str(peer_id)
         )
 
-    def _restart_dead_followers(self):
+    def _supervise_followers(self):
         for follower_id, remaining_time in self.timers.items():
             if remaining_time <= 0 and follower_id is not self.node_id:
-                print(f"INFO - Get back to work, node {follower_id}!")
-                self._restart_follower(follower_id)
+                print(f"INFO - Node {follower_id} missed a heartbeat!")
+                self.missed_heartbeats[follower_id] += 1
+                self.timers[follower_id] = self.TIMEOUT
+                self.exchange_writer.write(
+                    message=messages.heartbeat_ack_message(self.node_id),
+                    routing_key=str(follower_id)
+                )
+                if self.missed_heartbeats[follower_id] >= self.MAX_MISSED_HEARTBEATS:
+                    print(f"INFO - Get back to work, node {follower_id}!")
+                    self._restart_follower(follower_id)
 
     def _restart_follower(self, follower_id):
         container_name = f"supervisor-node-{follower_id}"
@@ -187,12 +199,14 @@ class SupervisorNode:
         for peer_id in range(1, self.node_id):
             self.exchange_writer.write(message=message, routing_key=str(peer_id))
             self.timers[peer_id] = self.TIMEOUT
+            self.missed_heartbeats[peer_id] = 0
 
     def _handle_coordinator_message(self, peer_id: int):
         print(f"INFO - Got coordinator message from peer #{peer_id}")
         if peer_id > self.node_id:
             print(f"INFO - Peer #{peer_id} is the new leader, ALL HAIL PEER #{peer_id}!")
             self.timers[peer_id] = self.TIMEOUT
+            self.missed_heartbeats[peer_id] = 0
             self.current_leader = peer_id
 
     def _handle_election_message(self, peer_id: int):
