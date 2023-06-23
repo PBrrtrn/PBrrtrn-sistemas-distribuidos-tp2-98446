@@ -1,16 +1,22 @@
 import signal
 
+import docker
+
 from supervisor_node import SupervisorNode
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from supervisor_queue import SupervisorQueue
+from common.supervisor.node_restarter import NodeRestarter
 import common.env_utils
-
-
-NETWORK_SIZE = 4  # TODO: Parametro
 
 
 def main():
     config = common.env_utils.read_config()
+
+    docker_client = docker.from_env()
+    node_id_to_container_name_mapping = common.env_utils.parse_node_id_to_container_name_mapping(
+        config['SUPERVISOR_ID_TO_CONTAINER_MAPPING']  # TODO: Mover a .env
+    )
+    node_restarter = NodeRestarter(docker_client, node_id_to_container_name_mapping)
 
     exchange_writer = ExchangeWriter(
         hostname=config['RABBITMQ_HOSTNAME'],
@@ -26,8 +32,9 @@ def main():
     supervisor_node = SupervisorNode(
         exchange_writer=exchange_writer,
         queue=supervisor_queue,
+        node_restarter=node_restarter,
         node_id=int(config['NODE_ID']),
-        network_size=NETWORK_SIZE
+        network_size=int(config['SUPERVISOR_NETWORK_SIZE']),  # TODO: Mover a .env
     )
 
     signal.signal(signal.SIGINT, supervisor_node.exit_gracefully)

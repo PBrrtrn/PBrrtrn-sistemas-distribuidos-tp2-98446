@@ -2,6 +2,7 @@ import random
 from time import sleep
 from timeit import default_timer as timer
 
+from common.supervisor.node_restarter import NodeRestarter
 from supervisor_queue import SupervisorQueue
 
 import docker
@@ -18,13 +19,18 @@ class SupervisorNode:
     FOLLOWER_SLEEP_TIME = 0.1
     FOLLOWER_SLEEP_DELTA = 0.1
 
-    def __init__(self, exchange_writer: ExchangeWriter, queue: SupervisorQueue, node_id: int, network_size: int):
+    def __init__(self,
+                 exchange_writer: ExchangeWriter,
+                 node_restarter: NodeRestarter,
+                 queue: SupervisorQueue,
+                 node_id: int,
+                 network_size: int):
         self.exchange_writer = exchange_writer
         self.queue = queue
         self.node_id = node_id
         self.network_size = network_size
 
-        self.docker_client = docker.from_env()
+        self.node_restarter = node_restarter
         self.current_leader = None
         self.timers = {}
         self.missed_heartbeats = {}
@@ -100,12 +106,7 @@ class SupervisorNode:
                     self._restart_follower(follower_id)
 
     def _restart_follower(self, follower_id):
-        container_name = f"supervisor-node-{follower_id}"
-        try:
-            container = self.docker_client.containers.get(container_name)
-            container.restart()
-        except docker.errors.NotFound:
-            print(f"ERROR - Container {container_name} not found")
+        self.node_restarter.restart_node(follower_id)
 
     def _follower(self):
         self.exchange_writer.write(
