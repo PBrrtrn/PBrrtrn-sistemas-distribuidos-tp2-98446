@@ -9,6 +9,5 @@ class PrecipitationAvgDurationTripIngestorProcessor:
 
     def process_input(self, message_type: bytes, message_body: bytes):
         if message_type == common.network.constants.TRIPS_BATCH:
-            raw_filtered_trips = self.weather_rpc_client.call(message_body)
-            message = common.network.constants.TRIPS_BATCH + raw_filtered_trips
-            return message
+            raw_filtered_trips = self.weather_rpc_client.call(message_type + message_body)
+            return common.network.constants.TRIPS_BATCH + raw_filtered_trips
