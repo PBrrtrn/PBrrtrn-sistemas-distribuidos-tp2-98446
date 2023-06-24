@@ -22,17 +22,14 @@ class StationCounterStorageHandler(StorageHandler):
                 to_log[city] = {}
             trip_year = trip.start_date[:4]
             if trip.start_station_code not in to_log[city]:
-                old_value_2016 = \
-                    self.__obtain_old_value_of_station_counter_in_year(
-                        '2016',
+                old_value_2016, old_value_2017 = \
+                    self.__obtain_old_value_of_station_counter_in_years(
                         city,
                         trip.start_station_code)
-                old_value_2017 = \
-                    self.__obtain_old_value_of_station_counter_in_year(
-                        '2017',
-                        city,
-                        trip.start_station_code)
-                to_log[city][trip.start_station_code] = {'2016': old_value_2016, '2017': old_value_2017}
+                to_log[city][trip.start_station_code] = {
+                    '2016': old_value_2016,
+                    '2017': old_value_2017
+                }
             to_log[city][trip.start_station_code][trip_year] += 1
 
         # update memory map
@@ -52,13 +49,15 @@ class StationCounterStorageHandler(StorageHandler):
             self.storage[city][trip.start_station_code][trip_year] += 1
 """
 
-    def __obtain_old_value_of_station_counter_in_year(self, year, city, start_station_code):
+    def __obtain_old_value_of_station_counter_in_years(self, city, start_station_code):
         if city not in self.storage:
-            return 0
+            return (0, 0)
         elif start_station_code not in self.storage[city]:
-            return 0
+            return (0, 0)
         else:
-            return self.storage[city][start_station_code][year]
+            old_value_2016 = self.storage[city][start_station_code]['2016']
+            old_value_2017 = self.storage[city][start_station_code]['2017']
+            return (old_value_2016, old_value_2017)
 
     def __write_log_line(self, to_log):
         pass
