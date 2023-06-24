@@ -19,7 +19,7 @@ class StationDistanceStorageOutputProcessor:
             else:
                 self.storage[end_station_name] = {"total_distance": distance, "n_trips": 1}
 
-    def finish_processing(self):
+    def finish_processing(self, _result, _method, _properties):
         for (method, properties, message) in self.rpc_queue.read_with_props():
             response = []
             for station_name, attributes in self.storage.items():

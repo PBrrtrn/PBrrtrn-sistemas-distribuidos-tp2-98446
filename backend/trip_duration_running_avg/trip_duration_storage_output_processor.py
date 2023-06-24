@@ -16,7 +16,7 @@ class TripDurationStorageOutputProcessor:
             self.total_duration += trip.duration_sec
             self.n_trips += 1
 
-    def finish_processing(self):
+    def finish_processing(self, _result, _method, _properties):
         for (method, properties, message) in self.rpc_queue.read_with_props():
             response = self.total_duration / self.n_trips
 

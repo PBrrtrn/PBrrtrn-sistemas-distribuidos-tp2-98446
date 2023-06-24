@@ -25,7 +25,7 @@ class WeatherManagerOutputProcessor:
         for weather in weather_batch:
             self.storage[city][weather.date] = weather
 
-    def finish_processing(self):
+    def finish_processing(self, _result, _method, _properties):
         for (method, properties, message) in self.rpc_queue.read_with_props():
             message_type = message[:common.network.constants.HEADER_TYPE_LEN]
             raw_message = message[common.network.constants.HEADER_TYPE_LEN:]
