@@ -11,7 +11,7 @@ class RPCStationInputProcessor:
     def set_storage(self, storage):
         self.storage = storage
 
-    def process_input(self, message_type: bytes, message_body: bytes):
+    def process_input(self, message_type: bytes, _message_body: bytes):
         if message_type == common.network.constants.EXECUTE_QUERIES:
             response = []
             for city in self.storage.keys():
@@ -26,9 +26,3 @@ class RPCStationInputProcessor:
             self.rpc_client.call(common.network.constants.STATIONS_END)
             return pickle.dumps(response)
 
-"""            self.rpc_queue.respond(
-                message=serialized_response,
-                to=properties.reply_to,
-                correlation_id=properties.correlation_id,
-                delivery_tag=method.delivery_tag
-            )"""

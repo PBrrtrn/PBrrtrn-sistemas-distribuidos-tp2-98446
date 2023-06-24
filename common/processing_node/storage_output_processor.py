@@ -2,7 +2,6 @@ from common.rabbitmq.queue import Queue
 from common.processing_node.processing_node import ProcessingNode
 from common.processing_node.rpc_responder_output_processor import RPCResponderOutputProcessor
 from common.processing_node.storage_handler import StorageHandler
-import common.network.constants
 
 
 
