@@ -42,3 +42,8 @@ class SupervisorQueue:
         self.connection.process_data_events(time_limit=timeout)
 
         return self.message
+
+    def close(self):
+        self.channel.cancel()
+        self.channel.close()
+        self.connection.close()

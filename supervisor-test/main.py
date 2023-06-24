@@ -2,9 +2,9 @@ import signal
 
 import docker
 
-from supervisor_node import SupervisorNode
+from common.supervisor.supervisor_process import SupervisorProcess
 from common.rabbitmq.exchange_writer import ExchangeWriter
-from supervisor_queue import SupervisorQueue
+from common.supervisor.supervisor_queue import SupervisorQueue
 from common.supervisor.node_restarter import NodeRestarter
 import common.env_utils
 
@@ -29,7 +29,7 @@ def main():
         bindings={config['EXCHANGE_NAME']: [queue_name]}
     )
 
-    supervisor_node = SupervisorNode(
+    supervisor_process = SupervisorProcess(
         exchange_writer=exchange_writer,
         queue=supervisor_queue,
         node_restarter=node_restarter,
@@ -37,9 +37,9 @@ def main():
         network_size=int(config['SUPERVISOR_NETWORK_SIZE']),  # TODO: Mover a .env
     )
 
-    signal.signal(signal.SIGINT, supervisor_node.exit_gracefully)
-    signal.signal(signal.SIGTERM, supervisor_node.exit_gracefully)
-    supervisor_node.start()
+    signal.signal(signal.SIGINT, supervisor_process.exit_gracefully)
+    signal.signal(signal.SIGTERM, supervisor_process.exit_gracefully)
+    supervisor_process.run()
 
 
 if __name__ == '__main__':
