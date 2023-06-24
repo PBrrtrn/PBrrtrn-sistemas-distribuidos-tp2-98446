@@ -12,6 +12,6 @@ class ForwardingOutputProcessor:
         if message is not None:
             self.output_exchange_writer.write(message)
 
-    def finish_processing(self):
+    def finish_processing(self, _result, _method, _properties):
         for _ in range(self.n_output_peers):
             self.output_exchange_writer.write(self.output_eof)

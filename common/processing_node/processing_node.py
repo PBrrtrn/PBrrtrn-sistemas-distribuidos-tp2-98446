@@ -26,12 +26,14 @@ class ProcessingNode:
             message_body = message[common.network.constants.HEADER_TYPE_LEN:]
             result = self.process_input(message_type, message_body)
             if message_type == self.input_eof:
-                self.register_eof()
+                self.register_eof(result, method, properties)
             else:
                 self.output_processor.process_output(result, method, properties)
 
-    def register_eof(self):
+    def register_eof(self, result, method, properties):
         self.received_eof_signals += 1
+        #Cuando el processingNode esté andando bien, debe haber un cuidado entre hacer el commit de
+        #el EOF, hacer el ACK del EOF y enviar el EOF a los siguientes nodos.
         if self.received_eof_signals == self.n_input_peers:
-            self.output_processor.finish_processing()
+            self.output_processor.finish_processing(result, method, properties)
             self.input_queue.close()
