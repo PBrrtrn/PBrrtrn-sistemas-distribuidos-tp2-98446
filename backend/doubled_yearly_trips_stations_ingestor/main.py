@@ -1,4 +1,5 @@
 import common.env_utils
+import common.supervisor.utils
 
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.queue import Queue
@@ -37,7 +38,8 @@ def main():
         input_eof=common.network.constants.TRIPS_END_ALL,
         n_input_peers=1,
         input_queue=trips_input_queue,
-        output_processor=output_processor
+        output_processor=output_processor,
+        supervisor_process=common.supervisor.utils.create_from_config(config)
     )
 
     processing_node.run()

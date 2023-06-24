@@ -6,6 +6,7 @@ from common.processing_node.forwarding_output_processor import ForwardingOutputP
 from montreal_joiner_input_processor import MontrealJoinerInputProcessor
 
 import common.network.constants
+import common.supervisor.utils
 
 from common.env_utils import read_config
 from common.env_utils import parse_queue_bindings
@@ -41,10 +42,12 @@ def main():
         input_eof=common.network.constants.TRIPS_END_ALL,
         n_input_peers=1,
         input_queue=trips_input_queue,
-        output_processor=output_processor
+        output_processor=output_processor,
+        supervisor_process=common.supervisor.utils.create_from_config(config)
     )
 
     processing_node.run()
+
 
 if __name__ == "__main__":
     main()

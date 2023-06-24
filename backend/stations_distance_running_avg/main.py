@@ -1,5 +1,7 @@
 import common.env_utils
 import common.network.constants
+import common.supervisor.utils
+
 from common.rabbitmq.queue import Queue
 from common.processing_node.identity_process_input import identity_process_input_without_header
 from common.processing_node.processing_node import ProcessingNode
@@ -45,7 +47,8 @@ def main():
         input_eof=common.network.constants.TRIPS_END_ALL,
         n_input_peers=int(config['N_DISTANCE_CALCULATORS']),
         input_queue=stations_trip_distance_input_queue_reader,
-        output_processor=storage_output_processor
+        output_processor=storage_output_processor,
+        supervisor_process=common.supervisor.utils.create_from_config(config)
     )
 
     processing_node.run()

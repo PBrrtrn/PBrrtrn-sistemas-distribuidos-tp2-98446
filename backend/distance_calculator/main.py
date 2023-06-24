@@ -1,4 +1,5 @@
 import common.env_utils
+import common.supervisor.utils
 from distance_calculator_process_input import distance_calculator_process_input
 from common.processing_node.forwarding_output_processor import ForwardingOutputProcessor
 from common.processing_node.processing_node import ProcessingNode
@@ -36,7 +37,8 @@ def main():
         input_eof=common.network.constants.TRIPS_END_ALL,
         n_input_peers=int(config['N_MONTREAL_STATIONS_JOINERS']),
         input_queue=trips_input_queue,
-        output_processor=output_processor
+        output_processor=output_processor,
+        supervisor_process=common.supervisor.utils.create_from_config(config)
     )
 
     processing_node.run()

@@ -1,4 +1,5 @@
 import common.env_utils
+import common.supervisor.utils
 import common.network.constants
 from common.rabbitmq.queue import Queue
 from common.processing_node.identity_process_input import identity_process_input_without_header
@@ -29,7 +30,8 @@ def main():
         input_eof=common.network.constants.TRIPS_END_ALL,
         n_input_peers=1,
         input_queue=trips_input_queue_reader,
-        output_processor=storage_output_processor
+        output_processor=storage_output_processor,
+        supervisor_process=common.supervisor.utils.create_from_config(config)
     )
 
     processing_node.run()

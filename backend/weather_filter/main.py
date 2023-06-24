@@ -3,6 +3,7 @@ from configparser import ConfigParser
 
 import common.env_utils
 import common.network.constants
+import common.supervisor.utils
 
 from common.rabbitmq.queue import Queue
 from common.rabbitmq.exchange_writer import ExchangeWriter
@@ -46,7 +47,8 @@ def main():
         input_eof=common.network.constants.WEATHER_END_ALL,
         n_input_peers=1,
         input_queue=input_queue_reader,
-        output_processor=forwarding_output_processor
+        output_processor=forwarding_output_processor,
+        supervisor_process=common.supervisor.utils.create_from_config(config)
     )
 
     processing_node.run()

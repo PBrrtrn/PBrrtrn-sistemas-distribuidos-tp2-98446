@@ -12,7 +12,7 @@ class ProcessingNode:
                  n_input_peers: int,
                  input_queue: Queue,
                  output_processor,
-                 supervisor_process: SupervisorProcess = None):
+                 supervisor_process: SupervisorProcess):
         self.process_input = process_input
         self.input_eof = input_eof
         self.n_input_peers = n_input_peers
@@ -25,6 +25,7 @@ class ProcessingNode:
         self.supervisor_process = supervisor_process
 
     def run(self):
+        # self.supervisor_process.run()
         for message in self.input_queue.read():
             message_type = message[:common.network.constants.HEADER_TYPE_LEN]
             message_body = message[common.network.constants.HEADER_TYPE_LEN:]
@@ -39,3 +40,4 @@ class ProcessingNode:
         if self.received_eof_signals == self.n_input_peers:
             self.output_processor.finish_processing()
             self.input_queue.close()
+            # self.supervisor_process.exit_gracefully()

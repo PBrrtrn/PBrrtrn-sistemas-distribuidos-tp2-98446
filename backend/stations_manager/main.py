@@ -1,4 +1,6 @@
 import common.env_utils
+import common.supervisor.utils
+
 from stations_manager_output_processor import StationsManagerOutputProcessor
 from common.processing_node.identity_process_input import identity_process_input
 from common.processing_node.processing_node import ProcessingNode
@@ -34,7 +36,8 @@ def main():
         input_eof=common.network.constants.STATIONS_END,
         n_input_peers=3,
         input_queue=stations_queue,
-        output_processor=stations_manager_output_processor
+        output_processor=stations_manager_output_processor,
+        supervisor_process=common.supervisor.utils.create_from_config(config)
     )
 
     processing_node.run()

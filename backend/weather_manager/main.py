@@ -3,6 +3,8 @@ from configparser import ConfigParser
 
 import common.env_utils
 import common.network.constants
+import common.supervisor.utils
+
 from common.rabbitmq.queue import Queue
 from weather_manager_output_processor import WeatherManagerOutputProcessor
 from common.processing_node.identity_process_input import identity_process_input
@@ -37,7 +39,8 @@ def main():
         input_eof=common.network.constants.WEATHER_END_ALL,
         n_input_peers=int(config['N_WEATHER_FILTERS']),
         input_queue=weather_queue,
-        output_processor=weather_manager_output_processor
+        output_processor=weather_manager_output_processor,
+        supervisor_process=common.supervisor.utils.create_from_config(config)
     )
     processing_node.run()
 

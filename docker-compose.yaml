@@ -35,6 +35,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -54,6 +57,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -73,6 +79,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -94,6 +103,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -114,6 +126,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -134,6 +149,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -154,6 +172,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -175,6 +196,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -196,6 +220,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -218,6 +245,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -240,6 +270,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -263,6 +296,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -284,6 +320,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -304,6 +343,9 @@ services:
       - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
       - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
       - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
