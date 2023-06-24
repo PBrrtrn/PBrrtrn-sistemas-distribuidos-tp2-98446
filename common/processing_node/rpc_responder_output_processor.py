@@ -1,4 +1,5 @@
 from common.rabbitmq.queue import Queue
+from common.processing_node.storage_handler import StorageHandler
 
 
 class RPCResponderOutputProcessor:
