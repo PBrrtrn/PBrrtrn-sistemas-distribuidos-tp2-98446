@@ -2,7 +2,10 @@ import common.env_utils
 from common.rabbitmq.queue import Queue
 from common.processing_node.identity_process_input import identity_process_input_without_header
 from common.processing_node.processing_node import ProcessingNode
-from trip_duration_storage_output_processor import TripDurationStorageOutputProcessor
+from common.processing_node.storage_output_processor import StorageOutputProcessor
+from rpc_duration_input_processor import RPCDurationInputProcessor
+from trip_duration_storage_handler import TripDurationStorageHandler
+
 
 def main():
     config = common.env_utils.read_config()
@@ -19,8 +22,17 @@ def main():
         hostname='rabbitmq',
         name=config["RPC_QUEUE_NAME"]
     )
-
-    storage_output_processor = TripDurationStorageOutputProcessor(rpc_queue_reader)
+    rpc_input_processor = RPCDurationInputProcessor()
+    storage_handler = TripDurationStorageHandler()
+    storage_output_processor = StorageOutputProcessor(
+        rpc_queue=rpc_queue_reader,
+        storage_handler=storage_handler,
+        finish_processing_node_args={
+            'input_eof': common.network.constants.EXECUTE_QUERIES,
+            'n_input_peers': 1,
+            'rpc_input_processor': rpc_input_processor
+        }
+    )
 
     processing_node = ProcessingNode(
         process_input=identity_process_input_without_header,
