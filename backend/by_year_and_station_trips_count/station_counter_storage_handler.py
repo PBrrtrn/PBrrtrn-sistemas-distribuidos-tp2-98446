@@ -36,28 +36,16 @@ class StationCounterStorageHandler(StorageHandler):
         # flush log to file (operations can be interchangeably done, does not matter the order)
         self.__update_memory_map_with_logs(to_log)
         self.__write_log_line(to_log)
-        """
-        trips, city = pickle.loads(message)
-        for trip in trips:
-            if city not in self.storage:
-                self.storage[city] = {}
-
-            if trip.start_station_code not in self.storage[city]:
-                self.storage[city][trip.start_station_code] = {'2016': 0, '2017': 0}
-
-            trip_year = trip.start_date[:4]
-            self.storage[city][trip.start_station_code][trip_year] += 1
-"""
 
     def __obtain_old_value_of_station_counter_in_years(self, city, start_station_code):
         if city not in self.storage:
-            return (0, 0)
+            return 0, 0
         elif start_station_code not in self.storage[city]:
-            return (0, 0)
+            return 0, 0
         else:
             old_value_2016 = self.storage[city][start_station_code]['2016']
             old_value_2017 = self.storage[city][start_station_code]['2017']
-            return (old_value_2016, old_value_2017)
+            return old_value_2016, old_value_2017
 
     def __write_log_line(self, to_log):
         pass

@@ -7,9 +7,10 @@ import common.network.constants
 
 
 class StorageOutputProcessor:
-    def __init__(self, rpc_queue: Queue, storage_handler: StorageHandler, rpc_input_processor):
+    def __init__(self, rpc_queue: Queue, storage_handler: StorageHandler,
+                 finish_processing_node_args):
         self.storage_handler = storage_handler
-        self.rpc_input_processor = rpc_input_processor
+        self.finish_processing_node_args = finish_processing_node_args
         self.rpc_queue = rpc_queue
 
     def process_output(self, message: bytes, _method, _properties):
@@ -19,15 +20,16 @@ class StorageOutputProcessor:
         self.storage_handler.update_changes_in_disk()
 
     def finish_processing(self, _result, _method, _properties):
-        self.rpc_input_processor.set_storage(self.storage_handler.get_storage())
+        rpc_input_processor = self.finish_processing_node_args['rpc_input_processor']
+        rpc_input_processor.set_storage(self.storage_handler.get_storage())
         rpc_responder_output_processor = RPCResponderOutputProcessor(
             rpc_queue=self.rpc_queue,
             storage_handler=self.storage_handler
         )
         processing_node = ProcessingNode(
-            process_input=self.rpc_input_processor.process_input,
-            input_eof=common.network.constants.EXECUTE_QUERIES,
-            n_input_peers=1,
+            process_input=rpc_input_processor.process_input,
+            input_eof=self.finish_processing_node_args['input_eof'],
+            n_input_peers=self.finish_processing_node_args['n_input_peers'],
             input_queue=self.rpc_queue,
             output_processor=rpc_responder_output_processor
         )

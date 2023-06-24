@@ -30,7 +30,12 @@ def main():
     storage_output_processor = StorageOutputProcessor(
         rpc_queue=requests_queue_reader,
         storage_handler=storage_handler,
-        rpc_input_processor=rpc_input_processor)
+        finish_processing_node_args={
+            'input_eof': common.network.constants.EXECUTE_QUERIES,
+            'n_input_peers': 1,
+            'rpc_input_processor': rpc_input_processor
+        }
+    )
 
     processing_node = ProcessingNode(
         process_input=identity_process_input_without_header,
