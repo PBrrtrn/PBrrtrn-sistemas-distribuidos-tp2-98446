@@ -15,23 +15,31 @@ class StationCounterStorageHandler(StorageHandler):
         self.storage = {}
 
     def prepare(self, message: bytes):
-        """trips, city = pickle.loads(message)
+        trips, city = pickle.loads(message)
         to_log = {}
         for trip in trips:
             if city not in to_log:
                 to_log[city] = {}
             trip_year = trip.start_date[:4]
             if trip.start_station_code not in to_log[city]:
-                old_value_2016 = self.storage[city][trip.start_station_code].get('2016', 0)
-                old_value_2017 = self.storage[city][trip.start_station_code].get('2017', 0)
-                old_values = {'2016': old_value_2016, '2017': old_value_2017}
-                to_log[city][trip.start_station_code] = {trip_year: old_values[trip_year]}
+                old_value_2016 = \
+                    self.__obtain_old_value_of_station_counter_in_year(
+                        '2016',
+                        city,
+                        trip.start_station_code)
+                old_value_2017 = \
+                    self.__obtain_old_value_of_station_counter_in_year(
+                        '2017',
+                        city,
+                        trip.start_station_code)
+                to_log[city][trip.start_station_code] = {'2016': old_value_2016, '2017': old_value_2017}
             to_log[city][trip.start_station_code][trip_year] += 1
 
         # update memory map
         # flush log to file (operations can be interchangeably done, does not matter the order)
         self.__update_memory_map_with_logs(to_log)
-        self.__write_log_line(to_log)"""
+        self.__write_log_line(to_log)
+        """
         trips, city = pickle.loads(message)
         for trip in trips:
             if city not in self.storage:
@@ -42,7 +50,15 @@ class StationCounterStorageHandler(StorageHandler):
 
             trip_year = trip.start_date[:4]
             self.storage[city][trip.start_station_code][trip_year] += 1
+"""
 
+    def __obtain_old_value_of_station_counter_in_year(self, year, city, start_station_code):
+        if city not in self.storage:
+            return 0
+        elif start_station_code not in self.storage[city]:
+            return 0
+        else:
+            return self.storage[city][start_station_code][year]
 
     def __write_log_line(self, to_log):
         pass
