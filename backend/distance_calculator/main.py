@@ -14,12 +14,13 @@ def main():
 
     trips_input_queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
     trips_input_queue = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=config['TRIPS_INPUT_QUEUE_NAME'],
         bindings=trips_input_queue_bindings
     )
 
     trips_output_exchange_writer = ExchangeWriter(
+        hostname=config['RABBITMQ_HOSTNAME'],
         exchange_name=config['TRIPS_OUTPUT_EXCHANGE_NAME'],
         queue_name=config['TRIPS_OUTPUT_QUEUE_NAME']
     )

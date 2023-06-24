@@ -24,12 +24,13 @@ def main():
 
     queue_bindings = common.env_utils.parse_queue_bindings(config['UNFILTERED_WEATHER_QUEUE_BINDINGS'])
     input_queue_reader = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=config['UNFILTERED_WEATHER_QUEUE_NAME'],
         bindings=queue_bindings
     )
 
     output_exchange_writer = ExchangeWriter(
+        hostname=config['RABBITMQ_HOSTNAME'],
         exchange_name=config['FILTERED_WEATHER_EXCHANGE_NAME'],
         queue_name=config['FILTERED_WEATHER_QUEUE_NAME']
     )

@@ -16,7 +16,7 @@ def main():
 
     trips_input_queue_bindings = parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
     trips_input_queue = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         bindings=trips_input_queue_bindings,
         name=config['TRIPS_INPUT_QUEUE_NAME']
     )
@@ -26,6 +26,7 @@ def main():
     input_processor = MontrealJoinerInputProcessor(stations_join_rpc_client)
 
     trips_output_exchange_writer = ExchangeWriter(
+        hostname=config['RABBITMQ_HOSTNAME'],
         exchange_name=config['JOINED_TRIPS_OUTPUT_EXCHANGE_NAME'],
         queue_name=config['JOINED_TRIPS_OUTPUT_QUEUE_NAME']
     )

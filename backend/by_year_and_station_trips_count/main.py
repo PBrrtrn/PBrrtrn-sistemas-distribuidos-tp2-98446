@@ -7,19 +7,18 @@ from storage_output_processor import StorageOutputProcessor
 import common.network.constants
 
 
-
 def main():
     config = common.env_utils.read_config()
 
     filtered_trips_input_queue_bindings = common.env_utils.parse_queue_bindings(config['FILTERED_TRIPS_QUEUE_BINDINGS'])
     filtered_trips_input_queue_reader = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=config['FILTERED_TRIPS_QUEUE_NAME'],
         bindings=filtered_trips_input_queue_bindings
     )
 
     requests_queue_reader = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=config['DOUBLED_YEARLY_TRIPS_STATIONS_RPC_QUEUE_NAME']
     )
     stations_rpc_client = RPCClient(rpc_queue_name=config['STATIONS_RPC_QUEUE_NAME'])
@@ -34,7 +33,6 @@ def main():
     )
 
     processing_node.run()
-
 
 
 if __name__ == "__main__":

@@ -11,13 +11,13 @@ def main():
 
     queue_bindings = common.env_utils.parse_queue_bindings(config['STATIONS_INPUT_QUEUE_BINDINGS'])
     stations_queue = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=config['STATIONS_INPUT_QUEUE_NAME'],
         bindings=queue_bindings
     )
 
     rpc_queue = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=config['STATIONS_RPC_QUEUE_NAME']
     )
 

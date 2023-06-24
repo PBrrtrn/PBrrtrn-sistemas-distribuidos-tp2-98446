@@ -29,7 +29,7 @@ services:
       - rabbitmq-supervisor
     environment:
       - PYTHONUNBUFFERED=1
-      - NODE_ID=1
+      - SUPERVISOR_NODE_ID=1
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -47,7 +47,7 @@ services:
       - rabbitmq-supervisor
     environment:
       - PYTHONUNBUFFERED=1
-      - NODE_ID=2
+      - SUPERVISOR_NODE_ID=2
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -65,7 +65,7 @@ services:
       - rabbitmq-supervisor
     environment:
       - PYTHONUNBUFFERED=1
-      - NODE_ID=3
+      - SUPERVISOR_NODE_ID=3
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
@@ -83,7 +83,7 @@ services:
       - rabbitmq-supervisor
     environment:
       - PYTHONUNBUFFERED=1
-      - NODE_ID=4
+      - SUPERVISOR_NODE_ID=4
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock

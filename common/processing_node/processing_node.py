@@ -2,6 +2,7 @@ from typing import Callable
 
 from common.rabbitmq.queue import Queue
 import common.network.constants
+from common.supervisor.supervisor_process import SupervisorProcess
 
 
 class ProcessingNode:
@@ -10,7 +11,8 @@ class ProcessingNode:
                  input_eof: bytes,
                  n_input_peers: int,
                  input_queue: Queue,
-                 output_processor):
+                 output_processor,
+                 supervisor_process: SupervisorProcess = None):
         self.process_input = process_input
         self.input_eof = input_eof
         self.n_input_peers = n_input_peers
@@ -20,7 +22,7 @@ class ProcessingNode:
         self.received_eof_signals = 0
         self.running = False
 
-        self.supervisor_process = SupervisorProcess()
+        self.supervisor_process = supervisor_process
 
     def run(self):
         for message in self.input_queue.read():

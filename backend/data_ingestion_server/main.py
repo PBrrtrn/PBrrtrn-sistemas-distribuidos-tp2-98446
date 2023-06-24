@@ -17,14 +17,17 @@ def main():
     config = read_config()
 
     stations_exchange_writer = ExchangeWriter(
+        hostname=config["RABBITMQ_HOSTNAME"],
         exchange_name=config["STATIONS_EXCHANGE_NAME"],
         queue_name=config['STATIONS_QUEUE_NAME']
     )
     weather_exchange_writer = ExchangeWriter(
+        hostname=config["RABBITMQ_HOSTNAME"],
         exchange_name=config['UNFILTERED_WEATHER_EXCHANGE_NAME'],
         queue_name=config['UNFILTERED_WEATHER_QUEUE_NAME']
     )
     trips_exchange_writer = ExchangeWriter(
+        hostname=config["RABBITMQ_HOSTNAME"],
         exchange_name=config['TRIPS_EXCHANGE_NAME'],
         queue_name=config['TRIPS_QUEUE_NAME'],
         exchange_type='fanout')

@@ -1,4 +1,5 @@
 import common.env_utils
+import common.network.constants
 
 from common.rabbitmq.queue import Queue
 from common.processing_node.processing_node import ProcessingNode
@@ -12,13 +13,14 @@ def main():
 
     queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
     trips_input_queue = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=config['TRIPS_INPUT_QUEUE_NAME'],
         bindings=queue_bindings,
         exchange_type='fanout'
     )
 
     trips_exchange_writer = ExchangeWriter(
+        hostname=config['RABBITMQ_HOSTNAME'],
         exchange_name=config['TRIPS_OUTPUT_EXCHANGE_NAME'],
         queue_name=config['TRIPS_OUTPUT_QUEUE_NAME']
     )

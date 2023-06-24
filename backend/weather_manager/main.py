@@ -2,10 +2,12 @@ import os
 from configparser import ConfigParser
 
 import common.env_utils
+import common.network.constants
 from common.rabbitmq.queue import Queue
 from weather_manager_output_processor import WeatherManagerOutputProcessor
 from common.processing_node.identity_process_input import identity_process_input
 from common.processing_node.processing_node import ProcessingNode
+
 
 def read_config():
     config = ConfigParser(os.environ)
@@ -19,13 +21,13 @@ def main():
 
     input_queue_bindings = common.env_utils.parse_queue_bindings(config['FILTERED_WEATHER_QUEUE_BINDINGS'])
     weather_queue = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=config['FILTERED_WEATHER_QUEUE_NAME'],
         bindings=input_queue_bindings
     )
 
     rpc_queue = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=config['WEATHER_RPC_QUEUE_NAME']
     )
 

@@ -1,8 +1,10 @@
 import common.env_utils
+import common.network.constants
 from common.rabbitmq.queue import Queue
 from common.processing_node.identity_process_input import identity_process_input_without_header
 from common.processing_node.processing_node import ProcessingNode
 from trip_duration_storage_output_processor import TripDurationStorageOutputProcessor
+
 
 def main():
     config = common.env_utils.read_config()
@@ -10,13 +12,13 @@ def main():
     trips_input_queue_bindings = common.env_utils.parse_queue_bindings(config["TRIPS_INPUT_QUEUE_BINDINGS"])
     trips_input_queue_name = config["TRIPS_INPUT_QUEUE_NAME"]
     trips_input_queue_reader = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=trips_input_queue_name,
         bindings=trips_input_queue_bindings
     )
 
     rpc_queue_reader = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=config["RPC_QUEUE_NAME"]
     )
 
@@ -31,6 +33,7 @@ def main():
     )
 
     processing_node.run()
+
 
 if __name__ == "__main__":
     main()

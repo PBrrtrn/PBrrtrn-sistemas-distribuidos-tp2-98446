@@ -1,4 +1,5 @@
 import common.env_utils
+import common.network.constants
 from common.rabbitmq.rpc_client import RPCClient
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.queue import Queue
@@ -6,12 +7,13 @@ from common.processing_node.processing_node import ProcessingNode
 from common.processing_node.forwarding_output_processor import ForwardingOutputProcessor
 from with_precipitation_input_processor import PrecipitationAvgDurationTripIngestorProcessor
 
+
 def main():
     config = common.env_utils.read_config()
 
     trips_queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
     trips_input_queue = Queue(
-        hostname='rabbitmq',
+        hostname=config['RABBITMQ_HOSTNAME'],
         name=config['TRIPS_INPUT_QUEUE_NAME'],
         bindings=trips_queue_bindings,
         exchange_type='fanout'
@@ -21,6 +23,7 @@ def main():
     input_processor = PrecipitationAvgDurationTripIngestorProcessor(weather_rpc_client=weather_rpc_client)
 
     running_avg_duration_exchange_writer = ExchangeWriter(
+        hostname=config['RABBITMQ_HOSTNAME'],
         exchange_name=config['RUNNING_AVG_DURATION_EXCHANGE_NAME'],
         queue_name=config['RUNNING_AVG_DURATION_QUEUE_NAME']
     )
