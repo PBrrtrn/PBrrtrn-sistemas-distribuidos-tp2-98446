@@ -3,7 +3,7 @@ import pickle
 from common.rabbitmq.rpc_client import RPCClient
 import common.network.constants
 
-class RPCStationInputProcessor:
+class RPCStationCounterInputProcessor:
     def __init__(self, rpc_client: RPCClient):
         self.rpc_client = rpc_client
         self.storage = None
