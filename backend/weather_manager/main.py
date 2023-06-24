@@ -3,9 +3,12 @@ from configparser import ConfigParser
 
 import common.env_utils
 from common.rabbitmq.queue import Queue
-from weather_manager_output_processor import WeatherManagerOutputProcessor
-from common.processing_node.identity_process_input import identity_process_input
+from common.processing_node.identity_process_input import identity_process_input_without_header
 from common.processing_node.processing_node import ProcessingNode
+from common.processing_node.storage_output_processor import StorageOutputProcessor
+from rpc_weather_input_processor import RPCWeatherInputProcessor
+from weather_storage_handler import WeatherStorageHandler
+
 
 def read_config():
     config = ConfigParser(os.environ)
@@ -28,14 +31,24 @@ def main():
         hostname='rabbitmq',
         name=config['WEATHER_RPC_QUEUE_NAME']
     )
+    rpc_input_processor = RPCWeatherInputProcessor()
+    storage_handler = WeatherStorageHandler()
+    storage_output_processor = StorageOutputProcessor(
+        rpc_queue=rpc_queue,
+        storage_handler=storage_handler,
+        finish_processing_node_args={
+            'input_eof': common.network.constants.EXECUTE_QUERIES,
+            'n_input_peers': 1,
+            'rpc_input_processor': rpc_input_processor
+        }
+    )
 
-    weather_manager_output_processor = WeatherManagerOutputProcessor(rpc_queue=rpc_queue)
     processing_node = ProcessingNode(
-        process_input=identity_process_input,
+        process_input=identity_process_input_without_header,
         input_eof=common.network.constants.WEATHER_END_ALL,
         n_input_peers=int(config['N_WEATHER_FILTERS']),
         input_queue=weather_queue,
-        output_processor=weather_manager_output_processor
+        output_processor=storage_output_processor
     )
     processing_node.run()
 
