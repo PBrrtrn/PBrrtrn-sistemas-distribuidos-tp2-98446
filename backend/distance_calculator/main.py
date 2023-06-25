@@ -1,7 +1,8 @@
 import common.env_utils
 import common.supervisor.utils
+from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from distance_calculator_process_input import distance_calculator_process_input
-from common.processing_node.forwarding_output_processor import ForwardingOutputProcessor
+from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
 from common.processing_node.processing_node import ProcessingNode
 from common.rabbitmq.queue import Queue
 import common.network.constants
@@ -32,12 +33,16 @@ def main():
         output_eof=common.network.constants.TRIPS_END_ALL
     )
 
-    processing_node = ProcessingNode(
+    queue_consumer = QueueConsumer(
         process_input=distance_calculator_process_input,
         input_eof=common.network.constants.TRIPS_END_ALL,
         n_input_peers=int(config['N_MONTREAL_STATIONS_JOINERS']),
         input_queue=trips_input_queue,
         output_processor=output_processor,
+    )
+
+    processing_node = ProcessingNode(
+        queue_consumer=queue_consumer,
         supervisor_process=common.supervisor.utils.create_from_config(config)
     )
 

@@ -1,6 +1,6 @@
+from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.queue import Queue
-from common.processing_node.processing_node import ProcessingNode
-from common.processing_node.rpc_responder_output_processor import RPCResponderOutputProcessor
+from common.processing_node.queue_consumer.output_processor.rpc_responder_output_processor import RPCResponderOutputProcessor
 from common.processing_node.storage_handler import StorageHandler
 
 
@@ -24,12 +24,12 @@ class StorageOutputProcessor:
             rpc_queue=self.rpc_queue,
             storage_handler=self.storage_handler
         )
-        processing_node = ProcessingNode(
+
+        queue_consumer = QueueConsumer(
             process_input=rpc_input_processor.process_input,
             input_eof=self.finish_processing_node_args['input_eof'],
             n_input_peers=self.finish_processing_node_args['n_input_peers'],
             input_queue=self.rpc_queue,
-            output_processor=rpc_responder_output_processor,
-            supervisor_process=None
+            output_processor=rpc_responder_output_processor
         )
-        processing_node.run()
+        queue_consumer.run()

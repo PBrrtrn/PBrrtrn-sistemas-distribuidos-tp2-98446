@@ -1,10 +1,11 @@
 import common.env_utils
 import common.supervisor.utils
+from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.queue import Queue
 from common.processing_node.processing_node import ProcessingNode
-from common.processing_node.identity_process_input import identity_process_input_without_header
+from common.processing_node.queue_consumer.process_input.identity_process_input import identity_process_input_without_header
 from common.rabbitmq.rpc_client import RPCClient
-from common.processing_node.storage_output_processor import StorageOutputProcessor
+from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from station_counter_storage_handler import StationCounterStorageHandler
 from rpc_station_counter_input_processor import RPCStationCounterInputProcessor
 import common.network.constants
@@ -37,12 +38,16 @@ def main():
         }
     )
 
-    processing_node = ProcessingNode(
+    queue_consumer = QueueConsumer(
         process_input=identity_process_input_without_header,
         input_eof=common.network.constants.TRIPS_END_ALL,
         n_input_peers=int(config['N_BY_YEAR_TRIPS_FILTERS']),
         input_queue=filtered_trips_input_queue_reader,
-        output_processor=storage_output_processor,
+        output_processor=storage_output_processor
+    )
+
+    processing_node = ProcessingNode(
+        queue_consumer=queue_consumer,
         supervisor_process=common.supervisor.utils.create_from_config(config)
     )
 
