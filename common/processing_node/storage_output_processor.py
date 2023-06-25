@@ -16,7 +16,7 @@ class StorageOutputProcessor:
         self.storage_handler.prepare(message)
         #ACK
         self.storage_handler.commit()
-        self.storage_handler.update_changes_in_disk()
+        #self.storage_handler.update_changes_in_disk()
 
     def finish_processing(self, _result, _method, _properties):
         rpc_input_processor = self.finish_processing_node_args['rpc_input_processor']
