@@ -12,7 +12,7 @@ class StationsManagerOutputProcessor:
         self.storage = {}
         self.eofs_received = 0
 
-    def process_output(self, message: bytes):
+    def process_output(self, message: bytes, _method, _properties):
         _output_header = message[:common.network.constants.HEADER_TYPE_LEN]
         output_body = message[common.network.constants.HEADER_TYPE_LEN:]
         deserialized_message = pickle.loads(output_body)
@@ -26,7 +26,7 @@ class StationsManagerOutputProcessor:
         for station in stations_batch:
             self.storage[city][station.code] = station
 
-    def finish_processing(self):
+    def finish_processing(self, _result, _method, _properties):
         for (method, properties, message) in self.rpc_queue.read_with_props():
             message_type = message[:common.network.constants.HEADER_TYPE_LEN]
             raw_message = message[common.network.constants.HEADER_TYPE_LEN:]
