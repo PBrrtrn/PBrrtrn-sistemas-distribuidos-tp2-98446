@@ -29,7 +29,15 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
       - N_MONTREAL_STATIONS_JOINERS=${N_MONTREAL_STATIONS_JOINERS}
+      - SUPERVISOR_NODE_ID=1
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -44,6 +52,14 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
+      - SUPERVISOR_NODE_ID=2
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -58,6 +74,14 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
+      - SUPERVISOR_NODE_ID=3
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -73,7 +97,15 @@ services:
       - stations-manager
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
       - N_BY_YEAR_TRIPS_FILTERS=${N_BY_YEAR_TRIPS_FILTERS}
+      - SUPERVISOR_NODE_ID=4
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -89,6 +121,14 @@ services:
       - by-station-yearly-trips-count
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
+      - SUPERVISOR_NODE_ID=5
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -104,6 +144,14 @@ services:
       - weather-manager
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
+      - SUPERVISOR_NODE_ID=6
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -118,7 +166,15 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
       - N_DISTANCE_CALCULATORS=${N_DISTANCE_CALCULATORS}
+      - SUPERVISOR_NODE_ID=7
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -134,7 +190,15 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
       - N_MONTREAL_STATIONS_JOINERS=${N_MONTREAL_STATIONS_JOINERS}
+      - SUPERVISOR_NODE_ID=8
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -150,7 +214,15 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
       - N_MONTREAL_STATIONS_JOINERS=${N_MONTREAL_STATIONS_JOINERS}
+      - SUPERVISOR_NODE_ID=9
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -167,7 +239,15 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
       - N_DISTANCE_CALCULATORS=${N_DISTANCE_CALCULATORS}
+      - SUPERVISOR_NODE_ID=10
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -184,7 +264,15 @@ services:
       - rabbitmq
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
       - N_DISTANCE_CALCULATORS=${N_DISTANCE_CALCULATORS}
+      - SUPERVISOR_NODE_ID=11
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -202,7 +290,15 @@ services:
       - montreal-stations-joiner-2
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
       - N_STATIONS_JOINERS=${N_MONTREAL_STATIONS_JOINERS}
+      - SUPERVISOR_NODE_ID=12
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -218,7 +314,15 @@ services:
       - by-year-trips-filter-1
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
       - N_BY_YEAR_TRIPS_FILTERS=${N_BY_YEAR_TRIPS_FILTERS}
+      - SUPERVISOR_NODE_ID=13
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -234,6 +338,14 @@ services:
       - weather-manager
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
+      - SUPERVISOR_NODE_ID=14
+      - SUPERVISOR_EXCHANGE_NAME=${SUPERVISOR_EXCHANGE_NAME}
+      - SUPERVISOR_NETWORK_SIZE=${SUPERVISOR_NETWORK_SIZE}
+      - SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING=${SUPERVISOR_NODE_ID_TO_CONTAINER_NAME_MAPPING}
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - local_net
 
@@ -254,6 +366,7 @@ services:
       - doubled-yearly-trips-stations-ingestor
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
       - STATIONS_EXCHANGE_NAME=stations_exchange
     networks:
       - local_net
@@ -268,18 +381,21 @@ services:
     entrypoint: python3 /main.py
     environment:
       - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
       - DATA_PATH=data
     networks:
       - local_net
     volumes:
       - ./.data:/data
+      - results:/results
 
 networks:
   local_net:
     ipam:
       driver: default
       config:
-        - subnet: 172.25.125.0/24
+        - subnet: 172.25.127.0/24
 
 volumes:
   client:
+  results:

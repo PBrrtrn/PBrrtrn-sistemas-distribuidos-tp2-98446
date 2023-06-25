@@ -7,11 +7,11 @@ import pika.exceptions
 class ExchangeWriter:
     MAX_RETRIES = 10
 
-    def __init__(self, exchange_name: str, exchange_type: str = 'direct', queue_name: str = ''):
+    def __init__(self, hostname: str, exchange_name: str, exchange_type: str = 'direct', queue_name: str = ''):
         retries = 0
         while retries < self.MAX_RETRIES:
             try:
-                self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='rabbitmq'))
+                self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostname))
                 break
             except pika.exceptions.AMQPConnectionError:
                 retries += 1
