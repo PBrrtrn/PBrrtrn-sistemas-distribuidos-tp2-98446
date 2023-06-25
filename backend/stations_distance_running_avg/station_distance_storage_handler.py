@@ -5,8 +5,6 @@ from common.processing_node.storage_handler import StorageHandler
 
 
 class StationDistanceStorageHandler(StorageHandler):
-    def __init__(self):
-        super().__init__()
 
     def _generate_log_map(self, message: bytes):
         joined_trips_with_distance = pickle.loads(message)
