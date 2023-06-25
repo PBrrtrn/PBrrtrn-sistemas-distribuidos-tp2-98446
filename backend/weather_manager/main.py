@@ -4,11 +4,12 @@ from configparser import ConfigParser
 import common.env_utils
 import common.network.constants
 import common.supervisor.utils
+from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 
 from common.rabbitmq.queue import Queue
-from common.processing_node.identity_process_input import identity_process_input_without_header
+from common.processing_node.queue_consumer.process_input.identity_process_input import identity_process_input_without_header
 from common.processing_node.processing_node import ProcessingNode
-from common.processing_node.storage_output_processor import StorageOutputProcessor
+from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from rpc_weather_input_processor import RPCWeatherInputProcessor
 from weather_storage_handler import WeatherStorageHandler
 
@@ -46,13 +47,17 @@ def main():
         }
     )
 
-    processing_node = ProcessingNode(
+    queue_consumer = QueueConsumer(
         process_input=identity_process_input_without_header,
         input_eof=common.network.constants.WEATHER_END_ALL,
         n_input_peers=int(config['N_WEATHER_FILTERS']),
         input_queue=weather_queue,
-        supervisor_process=common.supervisor.utils.create_from_config(config),
         output_processor=storage_output_processor
+    )
+
+    processing_node = ProcessingNode(
+        queue_consumer=queue_consumer,
+        supervisor_process=common.supervisor.utils.create_from_config(config)
     )
     processing_node.run()
 

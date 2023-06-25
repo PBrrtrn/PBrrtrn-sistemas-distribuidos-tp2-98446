@@ -4,10 +4,11 @@ from configparser import ConfigParser
 import common.env_utils
 import common.network.constants
 import common.supervisor.utils
+from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 
 from common.rabbitmq.queue import Queue
 from common.rabbitmq.exchange_writer import ExchangeWriter
-from common.processing_node.forwarding_output_processor import ForwardingOutputProcessor
+from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
 from common.processing_node.processing_node import ProcessingNode
 
 from weather_filter_process_input import weather_filter_process_input
@@ -42,12 +43,16 @@ def main():
         output_eof=common.network.constants.WEATHER_END_ALL
     )
 
-    processing_node = ProcessingNode(
+    queue_consumer = QueueConsumer(
         process_input=weather_filter_process_input,
         input_eof=common.network.constants.WEATHER_END_ALL,
         n_input_peers=1,
         input_queue=input_queue_reader,
-        output_processor=forwarding_output_processor,
+        output_processor=forwarding_output_processor
+    )
+
+    processing_node = ProcessingNode(
+        queue_consumer=queue_consumer,
         supervisor_process=common.supervisor.utils.create_from_config(config)
     )
 

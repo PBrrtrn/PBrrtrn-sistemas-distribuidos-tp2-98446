@@ -1,12 +1,13 @@
 import common.env_utils
 import common.network.constants
 import common.supervisor.utils
+from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 
 from common.rabbitmq.rpc_client import RPCClient
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.queue import Queue
 from common.processing_node.processing_node import ProcessingNode
-from common.processing_node.forwarding_output_processor import ForwardingOutputProcessor
+from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
 from with_precipitation_input_processor import PrecipitationAvgDurationTripIngestorProcessor
 
 
@@ -36,12 +37,16 @@ def main():
         output_eof=common.network.constants.TRIPS_END_ALL
     )
 
-    processing_node = ProcessingNode(
+    queue_consumer = QueueConsumer(
         process_input=input_processor.process_input,
         input_eof=common.network.constants.TRIPS_END_ALL,
         n_input_peers=1,
         input_queue=trips_input_queue,
-        output_processor=output_processor,
+        output_processor=output_processor
+    )
+
+    processing_node = ProcessingNode(
+        queue_consumer=queue_consumer,
         supervisor_process=common.supervisor.utils.create_from_config(config)
     )
 
