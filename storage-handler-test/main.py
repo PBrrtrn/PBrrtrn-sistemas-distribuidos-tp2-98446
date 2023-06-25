@@ -7,12 +7,15 @@ from trip import Trip
 N_BATCHES = 4
 N_TRIPS_PER_BATCH = 2
 
+LOGS_DIR = "./logs"
+LOG_FILENAME = "log"
+
 
 def main():
     if os.path.exists("./storage-handler-test/logs/log"):
         os.remove("./storage-handler-test/logs/log")
 
-    storage_handler = StationCounterStorageHandler()
+    storage_handler = StationCounterStorageHandler(file_path=f"{LOGS_DIR}/{LOG_FILENAME}")
     cities = ['Vermont', 'Chicago', 'New York']
     for city in cities:
         for i in range(N_BATCHES):
