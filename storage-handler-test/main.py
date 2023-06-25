@@ -1,0 +1,48 @@
+import os
+import pickle
+from station_counter_storage_handler import StationCounterStorageHandler
+from trip import Trip
+
+
+N_BATCHES = 4
+N_TRIPS_PER_BATCH = 2
+
+
+def main():
+    if os.path.exists("./storage-handler-test/logs/log"):
+        os.remove("./storage-handler-test/logs/log")
+
+    storage_handler = StationCounterStorageHandler()
+    cities = ['Vermont', 'Chicago', 'New York']
+    for city in cities:
+        for i in range(N_BATCHES):
+            trips_batch = []
+            for j in range(N_TRIPS_PER_BATCH):
+                trips_batch.append(Trip(
+                    start_date='2016-04-03',
+                    start_station_code=2,
+                    end_date='2016-04-03',
+                    end_station_code=3,
+                    duration_sec=1,
+                    is_member=False,
+                    year_id=2016
+                ))
+            trips_message = pickle.dumps((trips_batch, city))
+            storage_handler.prepare(trips_message)
+            storage_handler.commit()
+
+    uncommited_trips_batch = [Trip(
+        start_date='2017-04-03',
+        start_station_code=3,
+        end_date='2017-04-03',
+        end_station_code=4,
+        duration_sec=1,
+        is_member=False,
+        year_id=2017
+    )]
+    uncommited_trips_message = pickle.dumps((uncommited_trips_batch, 'Vermont'))
+    storage_handler.prepare(uncommited_trips_message)
+
+
+if __name__ == '__main__':
+    main()
