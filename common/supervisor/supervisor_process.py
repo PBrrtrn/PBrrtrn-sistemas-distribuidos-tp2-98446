@@ -83,7 +83,6 @@ class SupervisorProcess:
             self.timers[peer_id] -= elapsed_time
 
     def _process_heartbeat(self, peer_id):
-        print(f"Node {peer_id} is still alive")
         self.exchange_writer.write(
             message=common.supervisor.messages.heartbeat_ack_message(self.node_id),
             routing_key=str(peer_id)
@@ -92,7 +91,6 @@ class SupervisorProcess:
     def _supervise_followers(self):
         for follower_id, remaining_time in self.timers.items():
             if remaining_time <= 0 and follower_id is not self.node_id:
-                print(f"INFO - Node {follower_id} missed a heartbeat!")
                 self.missed_heartbeats[follower_id] += 1
                 self.timers[follower_id] = self.TIMEOUT
                 self.exchange_writer.write(
@@ -100,7 +98,6 @@ class SupervisorProcess:
                     routing_key=str(follower_id)
                 )
                 if self.missed_heartbeats[follower_id] >= self.MAX_MISSED_HEARTBEATS:
-                    print(f"INFO - Get back to work, node {follower_id}!")
                     self.node_restarter.restart_node(follower_id)
 
     def _refresh_all_peers(self):
@@ -136,19 +133,15 @@ class SupervisorProcess:
                 print(f"ERROR - Unknown message type (Got {type_header})")
 
         if self.timers[self.current_leader] <= 0:
-            print("INFO - Leader missed a heartbeat!")
             self.missed_heartbeats[self.current_leader] += 1
             if self.missed_heartbeats[self.current_leader] > self.MAX_MISSED_HEARTBEATS:
-                print("INFO - Leader is dead, must start new election!")
                 self.missed_heartbeats[self.current_leader] = 0
                 self._run_election()
 
         sleep(self.FOLLOWER_SLEEP_TIME + random.uniform(0, self.FOLLOWER_SLEEP_DELTA))
 
     def _handle_coordinator_message(self, peer_id: int):
-        print(f"INFO - Got coordinator message from peer #{peer_id}")
         if peer_id > self.node_id:
-            print(f"INFO - Peer #{peer_id} is the new leader, ALL HAIL PEER #{peer_id}!")
             self._refresh_peer(peer_id)
             self.current_leader = peer_id
 
@@ -157,9 +150,7 @@ class SupervisorProcess:
         self.missed_heartbeats[self.current_leader] = 0
 
     def _handle_election_message(self, peer_id: int):
-        print(f"INFO - Got election message from peer #{peer_id}")
         if peer_id < self.node_id:
-            print(f"INFO - Peer #{peer_id} is not the new leader, SIT DOWN, #{peer_id}!")
             self.exchange_writer.write(
                 message=common.supervisor.messages.answer_message(self.node_id),
                 routing_key=str(peer_id)
@@ -194,14 +185,10 @@ class SupervisorProcess:
                     received_answer = True
                 elif response_type == common.supervisor.messages.COORDINATOR:
                     # Si llega un COORDINATOR, se termina la elección - los nodos mayores ya la resolvieron entre si
-                    print(f"INFO - Got coordinator message from peer #{response_node_id}")
-                    print(f"INFO - Peer #{response_node_id} is the new leader, ALL HAIL PEER #{response_node_id}!")
                     self.current_leader = response_node_id
                     break
                 elif response_type == common.supervisor.messages.ELECTION:
                     # Si llega un ELECTION (nodos menores iniciaron eleccion), se responde y se reduce el timer
-                    print(f"INFO - Got election message from peer #{response_node_id}")
-                    print(f"INFO - Peer #{response_node_id} is not the new leader, SIT DOWN, #{response_node_id}!")
                     self.exchange_writer.write(
                         message=common.supervisor.messages.answer_message(self.node_id),
                         routing_key=str(response_node_id)
@@ -217,7 +204,6 @@ class SupervisorProcess:
         return self.node_id == self.network_size
 
     def _announce_as_coordinator(self):
-        print(f"INFO - Looks like node #{self.node_id} the captain of this ship now")
         self.current_leader = self.node_id
         coordinator_message = common.supervisor.messages.coordinator_message(self.node_id)
         self._refresh_all_peers()

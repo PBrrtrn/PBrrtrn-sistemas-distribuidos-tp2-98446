@@ -11,6 +11,7 @@ class NodeRestarter:
 
     def restart_node(self, node_id: int):
         container_name = self.node_id_to_container_name_mapping[node_id]
+        print(f"INFO - Restarting container {container_name} (Node #{node_id})")
 
         try:
             container = self.docker_client.containers.get(container_name)
