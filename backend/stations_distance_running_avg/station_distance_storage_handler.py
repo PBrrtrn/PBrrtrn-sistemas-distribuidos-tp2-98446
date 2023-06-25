@@ -1,4 +1,3 @@
-import json
 import pickle
 
 from common.processing_node.storage_handler import StorageHandler

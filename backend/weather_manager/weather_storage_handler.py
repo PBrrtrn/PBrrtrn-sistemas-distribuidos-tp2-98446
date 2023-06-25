@@ -1,4 +1,3 @@
-import json
 import pickle
 
 from common.processing_node.storage_handler import StorageHandler
@@ -11,15 +10,14 @@ class WeatherStorageHandler(StorageHandler):
 
     def _generate_log_map(self, message: bytes):
         weather_batch, city = pickle.loads(message)
-        if city not in self.storage:
-            self.storage[city] = {}
-
+        to_log = {city: {}}
         for weather in weather_batch:
-            self.storage[city][weather.date] = weather
+            to_log[city][weather.date] = weather
+        return to_log
 
     def _update_memory_map_with_logs(self, log_map):
-        pass
-
-    def __update_changes_in_disk(self):
-        pass
-
+        for city in log_map:
+            if city not in self.storage:
+                self.storage[city] = {}
+            for date in log_map[city]:
+                self.storage[city][date] = log_map[city][date]

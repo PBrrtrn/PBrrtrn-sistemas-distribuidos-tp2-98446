@@ -1,4 +1,3 @@
-import json
 import pickle
 
 from common.processing_node.storage_handler import StorageHandler
@@ -11,19 +10,16 @@ class StationStorageHandler(StorageHandler):
 
     def _generate_log_map(self, message: bytes):
         deserialized_message = pickle.loads(message)
-
         raw_stations_batch, city = deserialized_message[0], deserialized_message[1]
         stations_batch = common.network.deserialize.deserialize_stations_batch(raw_stations_batch)
-
-        if city not in self.storage:
-            self.storage[city] = {}
-
+        to_log = {city: {}}
         for station in stations_batch:
-            self.storage[city][station.code] = station
+            to_log[city][station.code] = station
+        return to_log
 
     def _update_memory_map_with_logs(self, log_map):
-        pass
-
-    def __update_changes_in_disk(self):
-        pass
-
+        for city in log_map:
+            if city not in self.storage:
+                self.storage[city] = {}
+            for station_code in log_map[city]:
+                self.storage[city][station_code] = log_map[city][station_code]
