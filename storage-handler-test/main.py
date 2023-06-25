@@ -12,10 +12,11 @@ LOG_FILENAME = "log"
 
 
 def main():
-    if os.path.exists("./storage-handler-test/logs/log"):
-        os.remove("./storage-handler-test/logs/log")
+    file_path = f"{LOGS_DIR}/{LOG_FILENAME}"
+    if os.path.exists(file_path):
+        os.remove(file_path)
 
-    storage_handler = StationCounterStorageHandler(file_path=f"{LOGS_DIR}/{LOG_FILENAME}")
+    storage_handler = StationCounterStorageHandler(file_path=file_path)
     cities = ['Vermont', 'Chicago', 'New York']
     for city in cities:
         for i in range(N_BATCHES):
@@ -45,6 +46,16 @@ def main():
     )]
     uncommited_trips_message = pickle.dumps((uncommited_trips_batch, 'Vermont'))
     storage_handler.prepare(uncommited_trips_message)
+
+    expected_recovered_storage = {
+        'Vermont': {'2': {'2016': 8, '2017': 0}},
+        'Chicago': {'2': {'2016': 8, '2017': 0}},
+        'New York': {'2': {'2016': 8, '2017': 0}}
+    }
+
+    recovered_storage_handler = StationCounterStorageHandler(file_path=f"{LOGS_DIR}/{LOG_FILENAME}")
+    assert(recovered_storage_handler.get_storage() == expected_recovered_storage)
+    print("SUCCESS")
 
 
 if __name__ == '__main__':

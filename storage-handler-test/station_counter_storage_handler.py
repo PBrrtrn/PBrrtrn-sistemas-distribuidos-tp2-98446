@@ -34,15 +34,15 @@ class StationCounterStorageHandler(StorageHandler):
             # self.storage.fetch(city, {}).fetch(start_station_code, {'2016': 0, '2017': 0})
             # return self.storage[city][start_station_code]
 
-    def _update_memory_map_with_logs(self, log_map):
-        for city in log_map:
-            if city not in self.storage:
-                self.storage[city] = {}
-            for start_station_code in log_map[city]:
-                if start_station_code not in self.storage[city]:
-                    self.storage[city][start_station_code] = {'2016': 0, '2017': 0}
-                for year in log_map[city][start_station_code]:
-                    new_value = log_map[city][start_station_code][year]
-                    self.storage[city][start_station_code][year] = new_value
-
-        print(f"DEBUG - State in memory: {self.storage}")
+    # def _update_memory_map_with_logs(self, log_map):
+    #     for city in log_map:
+    #         if city not in self.storage:
+    #             self.storage[city] = {}
+    #         for start_station_code in log_map[city]:
+    #             if start_station_code not in self.storage[city]:
+    #                 self.storage[city][start_station_code] = {'2016': 0, '2017': 0}
+    #             for year in log_map[city][start_station_code]:
+    #                 new_value = log_map[city][start_station_code][year]
+    #                 self.storage[city][start_station_code][year] = new_value
+    #
+    #     print(f"DEBUG - State in memory: {self.storage}")
