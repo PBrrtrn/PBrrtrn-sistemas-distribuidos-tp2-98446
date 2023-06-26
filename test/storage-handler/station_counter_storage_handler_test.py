@@ -1,22 +1,22 @@
 import os
 import pickle
-from station_counter_storage_handler import StationCounterStorageHandler
-from trip import Trip
 
+from backend.by_year_and_station_trips_count.station_counter_storage_handler import StationCounterStorageHandler
+from common.model.trip import Trip
 
 N_BATCHES = 4
 N_TRIPS_PER_BATCH = 2
 
-LOGS_DIR = "./logs"
+LOGS_DIR = "logs"
 LOG_FILENAME = "log"
 
 
-def main():
+def station_counter_storage_handler_test():
     file_path = f"{LOGS_DIR}/{LOG_FILENAME}"
     if os.path.exists(file_path):
         os.remove(file_path)
 
-    storage_handler = StationCounterStorageHandler(file_path=file_path)
+    storage_handler = StationCounterStorageHandler(storage_directory=file_path)
     cities = ['Vermont', 'Chicago', 'New York']
     for city in cities:
         for i in range(N_BATCHES):
@@ -53,10 +53,10 @@ def main():
         'New York': {'2': {'2016': 8, '2017': 0}}
     }
 
-    recovered_storage_handler = StationCounterStorageHandler(file_path=f"{LOGS_DIR}/{LOG_FILENAME}")
+    recovered_storage_handler = StationCounterStorageHandler(storage_directory=f"{LOGS_DIR}/{LOG_FILENAME}")
     assert(recovered_storage_handler.get_storage() == expected_recovered_storage)
     print("SUCCESS")
 
 
 if __name__ == '__main__':
-    main()
+    station_counter_storage_handler_test()

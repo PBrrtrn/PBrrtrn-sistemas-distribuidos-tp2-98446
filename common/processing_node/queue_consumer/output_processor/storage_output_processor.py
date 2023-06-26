@@ -32,4 +32,5 @@ class StorageOutputProcessor:
             input_queue=self.rpc_queue,
             output_processor=rpc_responder_output_processor
         )
+
         queue_consumer.run()
