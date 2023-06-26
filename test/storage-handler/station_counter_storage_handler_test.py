@@ -16,7 +16,7 @@ def station_counter_storage_handler_test():
     if os.path.exists(file_path):
         os.remove(file_path)
 
-    storage_handler = StationCounterStorageHandler(storage_directory=file_path)
+    storage_handler = StationCounterStorageHandler(storage_directory=LOGS_DIR)
     cities = ['Vermont', 'Chicago', 'New York']
     for city in cities:
         for i in range(N_BATCHES):
