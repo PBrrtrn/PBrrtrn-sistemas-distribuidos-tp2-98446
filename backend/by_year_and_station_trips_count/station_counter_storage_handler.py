@@ -1,11 +1,9 @@
-import json
 import pickle
 
 from common.processing_node.storage_handler import StorageHandler
 
 
 class StationCounterStorageHandler(StorageHandler):
-
     def _generate_log_map(self, message: bytes):
         trips, city = pickle.loads(message)
         to_log = {}
@@ -34,8 +32,8 @@ class StationCounterStorageHandler(StorageHandler):
             last_value_2016 = self.storage[city][start_station_code]['2016']
             last_value_2017 = self.storage[city][start_station_code]['2017']
             return last_value_2016, last_value_2017
-            #self.storage.fetch(city, {}).fetch(start_station_code, {'2016': 0, '2017': 0})
-            #return self.storage[city][start_station_code]
+            # self.storage.fetch(city, {}).fetch(start_station_code, {'2016': 0, '2017': 0})
+            # return self.storage[city][start_station_code]
 
     def __update_changes_in_disk(self):
         pass
@@ -50,4 +48,3 @@ class StationCounterStorageHandler(StorageHandler):
                 for year in log_map[city][start_station_code]:
                     new_value = log_map[city][start_station_code][year]
                     self.storage[city][start_station_code][year] = new_value
-
