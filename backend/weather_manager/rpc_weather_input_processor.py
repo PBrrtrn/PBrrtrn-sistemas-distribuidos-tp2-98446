@@ -1,5 +1,6 @@
 import pickle
 import common.network.constants
+import common.network.deserialize
 
 
 class RPCWeatherInputProcessor:

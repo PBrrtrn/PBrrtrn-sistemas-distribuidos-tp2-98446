@@ -16,8 +16,8 @@ class RPCResponderOutputProcessor:
         )
 
     def finish_processing(self, message: bytes, method, properties):
-        #Eventualmente tmb recibe el id del cliente
-        self.storage_handler.prepare_delete() #
+        # Eventualmente tmb recibe el id del cliente
+        self.storage_handler.prepare_delete()
         self.rpc_queue.respond(
             message=message,
             to=properties.reply_to,
