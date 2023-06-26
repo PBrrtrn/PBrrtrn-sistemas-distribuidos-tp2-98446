@@ -10,6 +10,9 @@ class PrecipitationAvgDurationTripIngestorProcessor:
     def process_input(self, message_type: bytes, message_body: bytes):
         if message_type == common.network.constants.TRIPS_BATCH:
             raw_filtered_trips = self.weather_rpc_client.call(message_type + message_body)
+            #if len(raw_filtered_trips) == 5:
+            #    return None                     Esto haría que no se manden trips vacíos al TripDurationRunningAvg
+            #else:
             return common.network.constants.TRIPS_BATCH + raw_filtered_trips
         #elif message_type == common.network.constants.TRIPS_END_ALL:
         #    self.weather_rpc_client.call(message_type) No debería ser necesario (creo q se

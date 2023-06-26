@@ -17,10 +17,11 @@ class RPCWeatherInputProcessor:
             raw_batch, city = pickle.loads(message_body)
             trips_batch = common.network.deserialize.deserialize_trips_batch(raw_batch)
             response = []
-            for trip in trips_batch:
-                trip_date = trip.start_date[:self.TRIP_DATE_LEN]
-                if trip_date in self.storage[city]:
-                    response.append(trip)
+            if city in self.storage:
+                for trip in trips_batch:
+                    trip_date = trip.start_date[:self.TRIP_DATE_LEN]
+                    if trip_date in self.storage[city]:
+                        response.append(trip)
 
             return pickle.dumps(response)
         elif message_type == common.network.constants.TRIPS_END_ALL:

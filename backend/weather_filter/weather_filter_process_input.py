@@ -12,5 +12,7 @@ def weather_filter_process_input(message_type: bytes, message_body: bytes):
         for weather in weather_batch:
             if weather.precipitations >= 30.0:
                 filtered_weathers.append(weather)
-
-        return common.network.constants.WEATHER_BATCH + pickle.dumps((filtered_weathers, city))
+        if len(filtered_weathers) == 0:
+            return None
+        else:
+            return common.network.constants.WEATHER_BATCH + pickle.dumps((filtered_weathers, city))
