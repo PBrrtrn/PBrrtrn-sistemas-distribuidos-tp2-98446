@@ -11,9 +11,9 @@ class StorageOutputProcessor:
         self.finish_processing_node_args = finish_processing_node_args
         self.rpc_queue = rpc_queue
 
-    def process_output(self, message: bytes, _method, _properties):
+    def process_output(self, channel, message: bytes, method, _properties):
         self.storage_handler.prepare(message)
-        # ACK
+        channel.basic_ack(delivery_tag=method.delivery_tag)
         self.storage_handler.commit()
         # self.storage_handler.update_changes_in_disk()
 

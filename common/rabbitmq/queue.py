@@ -50,8 +50,10 @@ class Queue:
             yield body
 
     def read_with_props(self):
-        for (method, properties, body) in self.channel.consume(queue=self.name, inactivity_timeout=self.timeout):
-            yield method, properties, body
+        for (method, properties, body) in self.channel.consume(queue=self.name,
+                                                               inactivity_timeout=self.timeout,
+                                                               auto_ack=False):
+            yield self.channel, method, properties, body
 
     def respond(self, message: bytes, to: str, correlation_id, delivery_tag):
         self.channel.basic_publish(exchange='',
@@ -59,7 +61,7 @@ class Queue:
                                    properties=pika.BasicProperties(correlation_id=correlation_id),
                                    body=message)
 
-        self.channel.basic_ack(delivery_tag=delivery_tag)
+        #self.channel.basic_ack(delivery_tag=delivery_tag)
 
     def close(self):
         self.channel.cancel()

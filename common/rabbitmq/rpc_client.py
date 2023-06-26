@@ -13,7 +13,7 @@ class RPCClient:
         self.channel.basic_consume(
             queue=self.response_queue_name,
             on_message_callback=self.on_response,
-            auto_ack=True
+            auto_ack=False
         )
 
         self.rpc_queue_name = rpc_queue_name
