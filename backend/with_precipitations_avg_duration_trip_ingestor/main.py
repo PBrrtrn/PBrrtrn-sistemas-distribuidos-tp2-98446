@@ -44,7 +44,7 @@ def main():
         n_input_peers=1,
         input_queue=trips_input_queue,
         output_processor=output_processor,
-        eof_handler=EOFHandler('.storage')
+        eof_handler=EOFHandler(".eof")
     )
 
     processing_node = ProcessingNode(

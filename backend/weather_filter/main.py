@@ -50,7 +50,7 @@ def main():
         n_input_peers=1,
         input_queue=input_queue_reader,
         output_processor=forwarding_output_processor,
-        eof_handler=EOFHandler('.storage')
+        eof_handler=EOFHandler(".eof")
     )
 
     processing_node = ProcessingNode(

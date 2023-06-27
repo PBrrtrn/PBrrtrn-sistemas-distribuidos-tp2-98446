@@ -3,7 +3,7 @@ import os
 import pickle
 from os.path import exists
 
-FILENAME = 'eof'
+FILENAME = 'eof_received'
 COMMIT_CHAR = "C\n"
 
 

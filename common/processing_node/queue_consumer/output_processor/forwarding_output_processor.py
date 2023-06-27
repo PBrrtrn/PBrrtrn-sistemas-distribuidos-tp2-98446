@@ -1,9 +1,7 @@
 import json
 import os
 
-import common.network.constants
 from common.rabbitmq.exchange_writer import ExchangeWriter
-from common.processing_node.queue_consumer.eof_handler import EOFHandler
 
 
 FILENAME = 'eof_sent'

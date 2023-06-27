@@ -36,7 +36,7 @@ def main():
             'input_eof': common.network.constants.EXECUTE_QUERIES,
             'n_input_peers': int(config['N_MONTREAL_STATIONS_JOINERS']),
             'rpc_input_processor': rpc_input_processor,
-            'eof_handler': EOFHandler(f"{config['STORAGE_PATH']}", append="last")
+            'eof_handler': EOFHandler(".eof", append="last")
         }
     )
 
@@ -49,7 +49,7 @@ def main():
         n_input_peers=3,
         input_queue=stations_queue,
         output_processor=storage_output_processor,
-        eof_handler=EOFHandler(config['STORAGE_PATH'])
+        eof_handler=EOFHandler(".eof")
     )
 
     processing_node = ProcessingNode(
