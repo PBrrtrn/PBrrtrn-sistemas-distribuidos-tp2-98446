@@ -5,6 +5,7 @@ from common.processing_node.queue_consumer.process_input.identity_process_input 
 from common.processing_node.processing_node import ProcessingNode
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
+from common.processing_node.queue_consumer.eof_handler import EOFHandler
 from rpc_station_input_processor import RPCStationInputProcessor
 from station_storage_handler import StationStorageHandler
 import common.network.constants
@@ -34,7 +35,8 @@ def main():
         finish_processing_node_args={
             'input_eof': common.network.constants.EXECUTE_QUERIES,
             'n_input_peers': int(config['N_MONTREAL_STATIONS_JOINERS']),
-            'rpc_input_processor': rpc_input_processor
+            'rpc_input_processor': rpc_input_processor,
+            'eof_handler': EOFHandler(f"{config['STORAGE_PATH']}", append="last")
         }
     )
 
@@ -46,7 +48,8 @@ def main():
         input_eof=common.network.constants.STATIONS_END,
         n_input_peers=3,
         input_queue=stations_queue,
-        output_processor=storage_output_processor
+        output_processor=storage_output_processor,
+        eof_handler=EOFHandler(config['STORAGE_PATH'])
     )
 
     processing_node = ProcessingNode(

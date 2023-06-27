@@ -8,6 +8,7 @@ from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.queue import Queue
 from common.processing_node.processing_node import ProcessingNode
 from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
+from common.processing_node.queue_consumer.eof_handler import EOFHandler
 from with_precipitation_input_processor import PrecipitationAvgDurationTripIngestorProcessor
 
 
@@ -42,7 +43,8 @@ def main():
         input_eof=common.network.constants.TRIPS_END_ALL,
         n_input_peers=1,
         input_queue=trips_input_queue,
-        output_processor=output_processor
+        output_processor=output_processor,
+        eof_handler=EOFHandler('.storage')
     )
 
     processing_node = ProcessingNode(

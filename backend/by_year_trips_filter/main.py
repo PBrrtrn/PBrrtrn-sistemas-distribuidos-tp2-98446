@@ -5,6 +5,7 @@ from common.rabbitmq.queue import Queue
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
 from common.processing_node.processing_node import ProcessingNode
+from common.processing_node.queue_consumer.eof_handler import EOFHandler
 from by_year_trips_filter_process_input import by_year_trips_filter_process_input
 import common.network.constants
 
@@ -37,6 +38,7 @@ def main():
         n_input_peers=1,
         input_queue=trips_input_queue,
         output_processor=forwarding_output_processor,
+        eof_handler=EOFHandler('.storage')
     )
 
     processing_node = ProcessingNode(

@@ -5,6 +5,7 @@ from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.queue import Queue
 from common.processing_node.queue_consumer.process_input.identity_process_input import identity_process_input_without_header
 from common.processing_node.processing_node import ProcessingNode
+from common.processing_node.queue_consumer.eof_handler import EOFHandler
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from rpc_duration_input_processor import RPCDurationInputProcessor
 from trip_duration_storage_handler import TripDurationStorageHandler
@@ -33,7 +34,8 @@ def main():
         finish_processing_node_args={
             'input_eof': common.network.constants.EXECUTE_QUERIES,
             'n_input_peers': 1,
-            'rpc_input_processor': rpc_input_processor
+            'rpc_input_processor': rpc_input_processor,
+            'eof_handler': EOFHandler(f"{config['STORAGE_PATH']}", append="last")
         }
     )
 
@@ -43,6 +45,7 @@ def main():
         n_input_peers=1,
         input_queue=trips_input_queue_reader,
         output_processor=storage_output_processor,
+        eof_handler=EOFHandler(config['STORAGE_PATH'])
     )
 
     processing_node = ProcessingNode(

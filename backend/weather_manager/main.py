@@ -9,6 +9,7 @@ from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.queue import Queue
 from common.processing_node.queue_consumer.process_input.identity_process_input import identity_process_input_without_header
 from common.processing_node.processing_node import ProcessingNode
+from common.processing_node.queue_consumer.eof_handler import EOFHandler
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from rpc_weather_input_processor import RPCWeatherInputProcessor
 from weather_storage_handler import WeatherStorageHandler
@@ -43,7 +44,8 @@ def main():
         finish_processing_node_args={
             'input_eof': common.network.constants.EXECUTE_QUERIES,
             'n_input_peers': 1,
-            'rpc_input_processor': rpc_input_processor
+            'rpc_input_processor': rpc_input_processor,
+            'eof_handler': EOFHandler(f"{config['STORAGE_PATH']}", append="last")
         }
     )
 
@@ -52,7 +54,8 @@ def main():
         input_eof=common.network.constants.WEATHER_END_ALL,
         n_input_peers=int(config['N_WEATHER_FILTERS']),
         input_queue=weather_queue,
-        output_processor=storage_output_processor
+        output_processor=storage_output_processor,
+        eof_handler=EOFHandler(config['STORAGE_PATH'])
     )
 
     processing_node = ProcessingNode(

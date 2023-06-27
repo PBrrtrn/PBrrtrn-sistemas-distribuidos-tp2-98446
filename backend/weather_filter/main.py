@@ -10,6 +10,7 @@ from common.rabbitmq.queue import Queue
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
 from common.processing_node.processing_node import ProcessingNode
+from common.processing_node.queue_consumer.eof_handler import EOFHandler
 
 from weather_filter_process_input import weather_filter_process_input
 
@@ -48,7 +49,8 @@ def main():
         input_eof=common.network.constants.WEATHER_END_ALL,
         n_input_peers=1,
         input_queue=input_queue_reader,
-        output_processor=forwarding_output_processor
+        output_processor=forwarding_output_processor,
+        eof_handler=EOFHandler('.storage')
     )
 
     processing_node = ProcessingNode(

@@ -8,6 +8,7 @@ from common.rabbitmq.rpc_client import RPCClient
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from station_counter_storage_handler import StationCounterStorageHandler
 from rpc_station_counter_input_processor import RPCStationCounterInputProcessor
+from common.processing_node.queue_consumer.eof_handler import EOFHandler
 import common.network.constants
 
 
@@ -34,7 +35,8 @@ def main():
         finish_processing_node_args={
             'input_eof': common.network.constants.EXECUTE_QUERIES,
             'n_input_peers': 1,
-            'rpc_input_processor': rpc_input_processor
+            'rpc_input_processor': rpc_input_processor,
+            'eof_handler': EOFHandler(f"{config['STORAGE_PATH']}", append="last")
         }
     )
 
@@ -43,7 +45,8 @@ def main():
         input_eof=common.network.constants.TRIPS_END_ALL,
         n_input_peers=int(config['N_BY_YEAR_TRIPS_FILTERS']),
         input_queue=filtered_trips_input_queue_reader,
-        output_processor=storage_output_processor
+        output_processor=storage_output_processor,
+        eof_handler=EOFHandler(config['STORAGE_PATH'])
     )
 
     processing_node = ProcessingNode(

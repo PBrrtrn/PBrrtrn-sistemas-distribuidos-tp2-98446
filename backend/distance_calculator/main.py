@@ -5,6 +5,7 @@ from distance_calculator_process_input import distance_calculator_process_input
 from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
 from common.processing_node.processing_node import ProcessingNode
 from common.rabbitmq.queue import Queue
+from common.processing_node.queue_consumer.eof_handler import EOFHandler
 import common.network.constants
 from common.rabbitmq.exchange_writer import ExchangeWriter
 
@@ -39,6 +40,7 @@ def main():
         n_input_peers=int(config['N_MONTREAL_STATIONS_JOINERS']),
         input_queue=trips_input_queue,
         output_processor=output_processor,
+        eof_handler=EOFHandler('.storage')
     )
 
     processing_node = ProcessingNode(

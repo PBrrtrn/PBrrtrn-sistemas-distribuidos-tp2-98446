@@ -11,13 +11,14 @@ class QueueConsumer:
                  input_eof: bytes,
                  n_input_peers: int,
                  input_queue: Queue,
-                 output_processor):
+                 output_processor,
+                 eof_handler: EOFHandler):
         self.process_input = process_input
         self.input_eof = input_eof
         self.n_input_peers = n_input_peers
         self.input_queue = input_queue
         self.output_processor = output_processor
-        self.eof_handler = EOFHandler(eof_directory=".storage")
+        self.eof_handler = eof_handler
 
     def run(self):
         if self.eof_handler.number_of_received_eof_signals() == self.n_input_peers:

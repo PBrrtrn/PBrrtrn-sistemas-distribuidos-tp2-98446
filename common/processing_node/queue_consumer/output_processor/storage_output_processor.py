@@ -30,7 +30,8 @@ class StorageOutputProcessor:
             input_eof=self.finish_processing_node_args['input_eof'],
             n_input_peers=self.finish_processing_node_args['n_input_peers'],
             input_queue=self.rpc_queue,
-            output_processor=rpc_responder_output_processor
+            output_processor=rpc_responder_output_processor,
+            eof_handler=self.finish_processing_node_args['eof_handler']
         )
 
         queue_consumer.run()

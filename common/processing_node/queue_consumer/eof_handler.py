@@ -8,8 +8,8 @@ COMMIT_CHAR = "C\n"
 
 
 class EOFHandler:
-    def __init__(self, eof_directory):
-        filepath = f"{eof_directory}/{FILENAME}"
+    def __init__(self, eof_directory, append=''):
+        filepath = f"{eof_directory}/{FILENAME}{append}"
         self.__load_storage_from_disk(file_path=filepath)
         self.file = None
         if os.path.isdir(eof_directory):
