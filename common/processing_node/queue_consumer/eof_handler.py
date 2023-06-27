@@ -53,10 +53,10 @@ class EOFHandler:
         self.storage = to_log
 
     def get_last_result(self):
-        #last_result = self.storage["last_result"]
-        #if last_result is not None:
-        #    last_result = pickle.dumps(self.storage["last_result"])
-        return None, self.storage["last_delivery_tag"], \
+        last_result = self.storage["last_result"]
+        if last_result is not None:
+            last_result = pickle.dumps(self.storage["last_result"])
+        return last_result, self.storage["last_delivery_tag"], \
                self.storage["last_correlation_id"], self.storage["last_reply_to"]
 
     def __write_log_line(self, to_log):
@@ -67,12 +67,13 @@ class EOFHandler:
         self.file.flush()
 
     def _generate_log_map(self, result, method, properties):
-        #if result is not None:
-        #    result = pickle.loads(result)
-        #print(result)
+        try:
+            result_to_save = pickle.loads(result)
+        except Exception as _e:
+            result_to_save = None
         return {
             "received_eof_signals": self.storage["received_eof_signals"] + 1,
-            "last_result": None,
+            "last_result": result_to_save,
             "delivery_tag": method.delivery_tag,
             "correlation_id": properties.correlation_id,
             "reply_to": properties.reply_to
