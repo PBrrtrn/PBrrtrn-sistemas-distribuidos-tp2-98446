@@ -16,7 +16,7 @@ def station_counter_storage_handler_test():
     if os.path.exists(file_path):
         os.remove(file_path)
 
-    storage_handler = StationCounterStorageHandler(storage_directory=LOGS_DIR)
+    storage_handler = StationCounterStorageHandler(storage_directory='')
     cities = ['Vermont', 'Chicago', 'New York']
     for city in cities:
         for i in range(N_BATCHES):
@@ -53,7 +53,7 @@ def station_counter_storage_handler_test():
         'New York': {'2': {'2016': 8, '2017': 0}}
     }
 
-    recovered_storage_handler = StationCounterStorageHandler(storage_directory=f"{LOGS_DIR}/{LOG_FILENAME}")
+    recovered_storage_handler = StationCounterStorageHandler(storage_directory='')
     assert(recovered_storage_handler.get_storage() == expected_recovered_storage)
     print("SUCCESS")
 
