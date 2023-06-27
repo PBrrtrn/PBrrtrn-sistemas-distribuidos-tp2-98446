@@ -62,7 +62,6 @@ class EOFHandler:
     def __write_log_line(self, to_log):
         if self.file is None:
             return
-        print(to_log)
         json.dump(to_log, self.file, indent=None)
         self.file.flush()
 
