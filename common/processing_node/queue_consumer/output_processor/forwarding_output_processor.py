@@ -12,17 +12,18 @@ class ForwardingOutputProcessor:
         self.n_output_peers = n_output_peers
         self.output_exchange_writer = output_exchange_writer
         self.output_eof = output_eof
-        self.storage = {"eofs_sent": 0}
+        self.storage = {"id_last_message_sent": 0, "eofs_sent": 0}
         filepath = f".eof/{FILENAME}"
         self.file = open(filepath, 'a+')
 
     def process_output(self, channel, message: bytes, method, _properties):
-        if message is not None:
-            self.output_exchange_writer.write(message)
-        #Commit de que se escribió el mensaje
-        #ACK
+        if message is None:
+            channel.basic_ack(delivery_tag=method.delivery_tag)
+            return
+        self.prepare_send_message()
+        self.output_exchange_writer.write(message)
         channel.basic_ack(delivery_tag=method.delivery_tag)
-
+        self.commit()
 
     def finish_processing(self, _result, _delivery_tag, _correlation_id, _reply_to):
         remaining_eofs = self.n_output_peers - self.storage["eofs_sent"]
@@ -38,6 +39,7 @@ class ForwardingOutputProcessor:
 
     def _generate_log_map(self):
         return {
+            "id_last_message_sent": self.storage["id_last_message_sent"],
             "eofs_sent": self.storage["eofs_sent"] + 1
         }
 
@@ -56,3 +58,13 @@ class ForwardingOutputProcessor:
         self.file.write(COMMIT_CHAR)
         self.file.flush()
 
+    def prepare_send_message(self):
+        to_log = self._generate_log_map_send_message()
+        self._update_memory_map_with_logs(to_log)
+        self.__write_log_line(to_log)
+
+    def _generate_log_map_send_message(self):
+        return {
+            "id_last_message_sent": self.storage["id_last_message_sent"] + 1,
+            "eofs_sent": self.storage["eofs_sent"]
+        }
