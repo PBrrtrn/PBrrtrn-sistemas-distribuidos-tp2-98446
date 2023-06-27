@@ -30,7 +30,6 @@ class ForwardingOutputProcessor:
             self.prepare()
             self.output_exchange_writer.write(self.output_eof)
             self.commit()
-        # channel.basic_ack(delivery_tag=method.delivery_tag) No se debería hacer un ACK acá, no?
 
     def prepare(self):
         to_log = self._generate_log_map()
@@ -43,7 +42,7 @@ class ForwardingOutputProcessor:
         }
 
     def _update_memory_map_with_logs(self, to_log):
-        self.eofs_sent = to_log
+        self.storage = to_log
 
     def __write_log_line(self, to_log):
         if self.file is None:
