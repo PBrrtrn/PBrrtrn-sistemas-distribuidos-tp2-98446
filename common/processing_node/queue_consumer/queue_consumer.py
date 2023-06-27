@@ -17,12 +17,14 @@ class QueueConsumer:
         self.n_input_peers = n_input_peers
         self.input_queue = input_queue
         self.output_processor = output_processor
-        self.eof_handler = EOFHandler()
+        self.eof_handler = EOFHandler(eof_directory=".storage")
 
     def run(self):
-        if self.eof_handler.received_eof_signals == self.n_input_peers:
-            (result, method, properties) = self.eof_handler.get_last_result()
-            self.__finish_processing_and_close(result, method, properties)
+        if self.eof_handler.number_of_received_eof_signals() == self.n_input_peers:
+            (last_result, last_delivery_tag, last_correlation_id, last_reply_to) =\
+                self.eof_handler.get_last_result()
+            self.__finish_processing_and_close(last_result, last_delivery_tag,
+                                               last_correlation_id, last_reply_to)
         else:
             for (channel, method, properties, message) in self.input_queue.read_with_props():
                 message_type = message[:common.network.constants.HEADER_TYPE_LEN]
@@ -37,9 +39,10 @@ class QueueConsumer:
         self.eof_handler.two_phase_commit(channel, result, method, properties)
         # Cuando el processingNode esté andando bien, debe haber un cuidado entre hacer el commit del EOF,
         # hacer el ACK del EOF y enviar el EOF a los siguientes nodos.
-        if self.eof_handler.received_eof_signals == self.n_input_peers:
-            self.__finish_processing_and_close(result, method, properties)
+        if self.eof_handler.number_of_received_eof_signals() == self.n_input_peers:
+            self.__finish_processing_and_close(result, method.delivery_tag,
+                                               properties.correlation_id, properties.reply_to)
 
-    def __finish_processing_and_close(self, result, method, properties):
-        self.output_processor.finish_processing(result, method, properties)
+    def __finish_processing_and_close(self, result, delivery_tag, correlation_id, reply_to):
+        self.output_processor.finish_processing(result, delivery_tag, correlation_id, reply_to)
         self.input_queue.close()

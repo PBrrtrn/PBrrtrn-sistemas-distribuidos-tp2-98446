@@ -16,7 +16,7 @@ class ForwardingOutputProcessor:
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
 
-    def finish_processing(self, _result, _method, _properties):
+    def finish_processing(self, _result, _delivery_tag, _correlation_id, _reply_to):
         for _ in range(self.n_output_peers):
             self.output_exchange_writer.write(self.output_eof)
         # channel.basic_ack(delivery_tag=method.delivery_tag) No se debería hacer un ACK acá, no?
