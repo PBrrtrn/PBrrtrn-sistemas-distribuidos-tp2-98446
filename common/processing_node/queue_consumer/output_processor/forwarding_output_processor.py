@@ -20,10 +20,12 @@ class ForwardingOutputProcessor:
         if message is None:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             return
+        #if self.storage["id_last_message_sent"] == message.id: #Message id hay q cargarlo
+        #    channel.basic_ack(delivery_tag=method.delivery_tag)
         self.prepare_send_message()
         self.output_exchange_writer.write(message)
-        channel.basic_ack(delivery_tag=method.delivery_tag)
         self.commit()
+        channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def finish_processing(self, _result, _delivery_tag, _correlation_id, _reply_to):
         remaining_eofs = self.n_output_peers - self.storage["eofs_sent"]
