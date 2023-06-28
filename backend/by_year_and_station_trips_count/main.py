@@ -27,7 +27,9 @@ def main():
     )
     stations_rpc_client = RPCClient(rpc_queue_name=config['STATIONS_RPC_QUEUE_NAME'])
     rpc_input_processor = RPCStationCounterInputProcessor(rpc_client=stations_rpc_client)
-    storage_handler = StationCounterStorageHandler(storage_directory=config['STORAGE_PATH'])
+    storage_handler = StationCounterStorageHandler(
+        storage_directory=config['STORAGE_PATH'],
+        checkpoint_frequency=int(config['CHECKPOINT_FREQUENCY']))
     storage_output_processor = StorageOutputProcessor(
         rpc_queue=requests_queue_reader,
         storage_handler=storage_handler,

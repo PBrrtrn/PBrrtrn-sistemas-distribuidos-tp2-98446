@@ -60,10 +60,14 @@ class StorageHandler(ABC):
 
     def __write_checkpoint(self):
         self.file.write(CHECKPOINT_BEGIN)
-        json.dump(self.storage, self.file, indent=None)
+        checkpoint = self._create_checkpoint_from_storage()
+        json.dump(checkpoint, self.file, indent=None)
         self.file.write(CHECKPOINT_END)
         self.file.flush()
         self.commits = 0
+
+    def _create_checkpoint_from_storage(self):
+        return self.storage
 
     def prepare_delete(self):
         pass
