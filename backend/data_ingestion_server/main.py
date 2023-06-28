@@ -32,18 +32,6 @@ def main():
         queue_name=config['TRIPS_QUEUE_NAME'],
         exchange_type='fanout')
 
-    montreal_stations_over_6km_avg_trip_distance_rpc = RPCClient(
-        config['MONTREAL_STATIONS_OVER_6KM_AVG_TRIP_DISTANCE_RPC_QUEUE_NAME']
-    )
-
-    with_precipitations_avg_trip_duration_rpc = RPCClient(
-        config['WITH_PRECIPITATIONS_AVG_TRIP_DURATION_RPC_QUEUE_NAME']
-    )
-
-    doubled_yearly_trips_stations_rpc = RPCClient(
-        config['DOUBLED_YEARLY_TRIPS_STATIONS_RPC_QUEUE_NAME']
-    )
-
     server = DataIngestionServer(
         int(config["PORT"]),
         int(config["LISTEN_BACKLOG"]),
@@ -51,9 +39,9 @@ def main():
         weather_exchange_writer,
         int(config['N_WEATHER_FILTERS']),
         trips_exchange_writer,
-        montreal_stations_over_6km_avg_trip_distance_rpc,
-        with_precipitations_avg_trip_duration_rpc,
-        doubled_yearly_trips_stations_rpc
+        config['MONTREAL_STATIONS_OVER_6KM_AVG_TRIP_DISTANCE_RPC_QUEUE_NAME'],
+        config['WITH_PRECIPITATIONS_AVG_TRIP_DURATION_RPC_QUEUE_NAME'],
+        config['DOUBLED_YEARLY_TRIPS_STATIONS_RPC_QUEUE_NAME']
     )
     server.run()
 

@@ -15,7 +15,7 @@ class ExchangeWriter:
                 break
             except pika.exceptions.AMQPConnectionError:
                 retries += 1
-                sleep(0.5)
+                sleep(3)
 
         if retries == self.MAX_RETRIES:
             print(f"ERROR - Failed to connect to RabbitMQ")
