@@ -1,1 +1,1 @@
-python3 station_counter_storage_handler_test.py
+python3 logs_reader_test.py

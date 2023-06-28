@@ -7,7 +7,7 @@ from common.model.trip import Trip
 N_BATCHES = 4
 N_TRIPS_PER_BATCH = 2
 
-LOGS_DIR = "logs"
+LOGS_DIR = "storage_handler_logs"
 LOG_FILENAME = "log"
 
 
@@ -16,7 +16,7 @@ def station_counter_storage_handler_test():
     if os.path.exists(file_path):
         os.remove(file_path)
 
-    storage_handler = StationCounterStorageHandler(storage_directory='')
+    storage_handler = StationCounterStorageHandler(storage_directory=LOGS_DIR)
     cities = ['Vermont', 'Chicago', 'New York']
     for city in cities:
         for i in range(N_BATCHES):
@@ -53,7 +53,7 @@ def station_counter_storage_handler_test():
         'New York': {'2': {'2016': 8, '2017': 0}}
     }
 
-    recovered_storage_handler = StationCounterStorageHandler(storage_directory='')
+    recovered_storage_handler = StationCounterStorageHandler(storage_directory=LOGS_DIR)
     assert(recovered_storage_handler.get_storage() == expected_recovered_storage)
     print("SUCCESS")
 
