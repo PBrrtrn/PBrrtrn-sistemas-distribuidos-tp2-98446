@@ -1,1 +1,1 @@
-python3 logs_reader_test.py
+python3 -m unittest discover --pattern="*_test.py"

@@ -8,19 +8,21 @@ FILENAME = 'log'
 COMMIT_CHAR = "C\n"
 CHECKPOINT_BEGIN = "CHECKPOINT_START"
 CHECKPOINT_END = "CHECKPOINT_END\n"
-CHECKPOINT_FREQUENCY = 100
 LOGS_READER_BUFFER_SIZE = 1024 * 8
 
 
 class StorageHandler(ABC):
-    def __init__(self, storage_directory):
-        filepath = f"{storage_directory}/{FILENAME}"
+    def __init__(self, storage_directory, checkpoint_frequency):
+        self.checkpoint_frequency = checkpoint_frequency
         self.storage = {}
         self.commits = 0
+        filepath = f"{storage_directory}/{FILENAME}"
         self.__load_storage_from_disk(filepath)
         self.file = open(filepath, 'a+')
 
     def prepare(self, message: bytes):
+        if self.commits == self.checkpoint_frequency:
+            self.__write_checkpoint()
         to_log = self._generate_log_map(message)
         self._update_memory_map_with_logs(self.storage, to_log)
         self.__write_log_line(to_log)
@@ -29,9 +31,6 @@ class StorageHandler(ABC):
         self.file.write(COMMIT_CHAR)
         self.file.flush()
         self.commits += 1
-
-        if self.commits > CHECKPOINT_FREQUENCY:
-            self.__write_checkpoint()
 
     def get_storage(self):
         return self.storage
@@ -64,6 +63,7 @@ class StorageHandler(ABC):
         json.dump(self.storage, self.file, indent=None)
         self.file.write(CHECKPOINT_END)
         self.file.flush()
+        self.commits = 0
 
     def prepare_delete(self):
         pass
