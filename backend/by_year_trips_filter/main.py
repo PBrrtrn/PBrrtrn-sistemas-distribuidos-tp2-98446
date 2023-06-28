@@ -34,7 +34,7 @@ def main():
 
     queue_consumer = QueueConsumer(
         process_input=by_year_trips_filter_process_input,
-        input_eof=common.network.constants.TRIPS_END_ALL,
+        input_eofs=[common.network.constants.TRIPS_END_ALL],
         n_input_peers=1,
         input_queue=trips_input_queue,
         output_processor=forwarding_output_processor,

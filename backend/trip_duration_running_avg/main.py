@@ -32,7 +32,7 @@ def main():
         rpc_queue=rpc_queue_reader,
         storage_handler=storage_handler,
         finish_processing_node_args={
-            'input_eof': common.network.constants.EXECUTE_QUERIES,
+            'input_eofs': [common.network.constants.EXECUTE_QUERIES],
             'n_input_peers': 1,
             'rpc_input_processor': rpc_input_processor,
             'eof_handler': EOFHandler(".eof", append="_rpc")
@@ -41,7 +41,7 @@ def main():
 
     queue_consumer = QueueConsumer(
         process_input=identity_process_input_without_header,
-        input_eof=common.network.constants.TRIPS_END_ALL,
+        input_eofs=[common.network.constants.TRIPS_END_ALL],
         n_input_peers=1,
         input_queue=trips_input_queue_reader,
         output_processor=storage_output_processor,

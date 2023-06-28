@@ -46,7 +46,7 @@ def main():
 
     queue_consumer = QueueConsumer(
         process_input=weather_filter_process_input,
-        input_eof=common.network.constants.WEATHER_END_ALL,
+        input_eofs=[common.network.constants.WEATHER_END_ALL],
         n_input_peers=1,
         input_queue=input_queue_reader,
         output_processor=forwarding_output_processor,

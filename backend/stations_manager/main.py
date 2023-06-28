@@ -33,7 +33,7 @@ def main():
         rpc_queue=requests_queue_reader,
         storage_handler=storage_handler,
         finish_processing_node_args={
-            'input_eof': common.network.constants.EXECUTE_QUERIES,
+            'input_eofs': [common.network.constants.EXECUTE_QUERIES],
             'n_input_peers': int(config['N_MONTREAL_STATIONS_JOINERS']),
             'rpc_input_processor': rpc_input_processor,
             'eof_handler': EOFHandler(".eof", append="_rpc")
@@ -45,7 +45,7 @@ def main():
     # arreglarlo, pero está acoplado al protocolo (aunque no debería ser un cambio tan grande)
     queue_consumer = QueueConsumer(
         process_input=identity_process_input_without_header,
-        input_eof=common.network.constants.STATIONS_END,
+        input_eofs=[common.network.constants.STATIONS_END],
         n_input_peers=3,
         input_queue=stations_queue,
         output_processor=storage_output_processor,

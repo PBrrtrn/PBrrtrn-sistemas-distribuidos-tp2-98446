@@ -36,7 +36,7 @@ def main():
 
     queue_consumer = QueueConsumer(
         process_input=distance_calculator_process_input,
-        input_eof=common.network.constants.TRIPS_END_ALL,
+        input_eofs=[common.network.constants.TRIPS_END_ALL],
         n_input_peers=int(config['N_MONTREAL_STATIONS_JOINERS']),
         input_queue=trips_input_queue,
         output_processor=output_processor,

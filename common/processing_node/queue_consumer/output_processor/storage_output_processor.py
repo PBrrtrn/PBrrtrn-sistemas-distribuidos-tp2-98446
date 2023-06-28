@@ -27,7 +27,7 @@ class StorageOutputProcessor:
 
         queue_consumer = QueueConsumer(
             process_input=rpc_input_processor.process_input,
-            input_eof=self.finish_processing_node_args['input_eof'],
+            input_eofs=self.finish_processing_node_args['input_eofs'],
             n_input_peers=self.finish_processing_node_args['n_input_peers'],
             input_queue=self.rpc_queue,
             output_processor=rpc_responder_output_processor,

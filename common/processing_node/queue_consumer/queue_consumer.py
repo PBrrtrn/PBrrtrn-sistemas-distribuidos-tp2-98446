@@ -1,4 +1,4 @@
-from typing import Callable
+from typing import Callable, List
 
 from common.rabbitmq.queue import Queue
 import common.network.constants
@@ -8,13 +8,13 @@ from common.processing_node.queue_consumer.eof_handler import EOFHandler
 class QueueConsumer:
     def __init__(self,
                  process_input: Callable,
-                 input_eof: bytes,
+                 input_eofs: List[bytes],
                  n_input_peers: int,
                  input_queue: Queue,
                  output_processor,
                  eof_handler: EOFHandler):
         self.process_input = process_input
-        self.input_eof = input_eof
+        self.input_eofs = input_eofs
         self.n_input_peers = n_input_peers
         self.input_queue = input_queue
         self.output_processor = output_processor
@@ -31,7 +31,7 @@ class QueueConsumer:
                 message_type = message[:common.network.constants.HEADER_TYPE_LEN]
                 message_body = message[common.network.constants.HEADER_TYPE_LEN:]
                 result = self.process_input(message_type, message_body)
-                if message_type == self.input_eof:
+                if message_type in self.input_eofs:
                     self.register_eof(channel, result, method, properties)
                 else:
                     self.output_processor.process_output(channel, result, method, properties)
