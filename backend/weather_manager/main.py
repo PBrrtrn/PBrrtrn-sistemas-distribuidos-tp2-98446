@@ -42,7 +42,7 @@ def main():
         rpc_queue=rpc_queue,
         storage_handler=storage_handler,
         finish_processing_node_args={
-            'input_eofs': [common.network.constants.EXECUTE_QUERIES],
+            'input_eofs': [common.network.constants.TRIPS_END_ALL],
             'n_input_peers': 1,
             'rpc_input_processor': rpc_input_processor,
             'eof_handler': EOFHandler(".eof", append="_rpc")

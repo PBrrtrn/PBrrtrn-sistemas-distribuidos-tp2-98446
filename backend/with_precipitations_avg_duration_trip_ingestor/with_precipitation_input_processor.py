@@ -14,6 +14,6 @@ class PrecipitationAvgDurationTripIngestorProcessor:
             #    return None                     Esto haría que no se manden trips vacíos al TripDurationRunningAvg
             #else:
             return common.network.constants.TRIPS_BATCH + raw_filtered_trips
-        #elif message_type == common.network.constants.TRIPS_END_ALL:
-        #    self.weather_rpc_client.call(message_type) No debería ser necesario (creo q se
+        elif message_type == common.network.constants.TRIPS_END_ALL:
+            self.weather_rpc_client.call(message_type) #No debería ser necesario (creo q se
         #creaba un nuevo tipo de forwardingOutputProcessor q tmb llama EOF al weather_rcp_client)
