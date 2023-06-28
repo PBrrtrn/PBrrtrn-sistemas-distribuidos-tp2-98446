@@ -39,6 +39,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/stations_manager/.storage:/.storage
+      - ./backend/stations_manager/.eof:/.eof
     networks:
       - local_net
 

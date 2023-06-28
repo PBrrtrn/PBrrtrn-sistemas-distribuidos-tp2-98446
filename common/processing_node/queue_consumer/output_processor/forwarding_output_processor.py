@@ -12,7 +12,7 @@ class ForwardingOutputProcessor:
         self.n_output_peers = n_output_peers
         self.output_exchange_writer = output_exchange_writer
         self.output_eof = output_eof
-        self.storage = {"id_last_message_sent": 0, "eofs_sent": 0}
+        self.storage = {"id_last_message_forwarded": 0, "eofs_sent": 0}
         filepath = f".eof/{FILENAME}"
         self.file = open(filepath, 'a+')
 
@@ -20,7 +20,7 @@ class ForwardingOutputProcessor:
         if message is None:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             return
-        #if self.storage["id_last_message_sent"] == message.id: #Message id hay q cargarlo
+        #if self.storage["id_last_message_forwarded"] == message.id: #Message id hay q cargarlo
         #    channel.basic_ack(delivery_tag=method.delivery_tag)
         self.prepare_send_message()
         self.output_exchange_writer.write(message)
@@ -41,7 +41,7 @@ class ForwardingOutputProcessor:
 
     def _generate_log_map(self):
         return {
-            "id_last_message_sent": self.storage["id_last_message_sent"],
+            "id_last_message_forwarded": self.storage["id_last_message_forwarded"],
             "eofs_sent": self.storage["eofs_sent"] + 1
         }
 
@@ -67,6 +67,6 @@ class ForwardingOutputProcessor:
 
     def _generate_log_map_send_message(self):
         return {
-            "id_last_message_sent": self.storage["id_last_message_sent"] + 1,
+            "id_last_message_forwarded": self.storage["id_last_message_forwarded"] + 1,
             "eofs_sent": self.storage["eofs_sent"]
         }

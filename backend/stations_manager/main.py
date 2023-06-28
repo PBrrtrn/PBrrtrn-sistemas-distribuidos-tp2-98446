@@ -36,7 +36,7 @@ def main():
             'input_eof': common.network.constants.EXECUTE_QUERIES,
             'n_input_peers': int(config['N_MONTREAL_STATIONS_JOINERS']),
             'rpc_input_processor': rpc_input_processor,
-            'eof_handler': EOFHandler(".eof", append="last")
+            'eof_handler': EOFHandler(".eof", append="_rpc")
         }
     )
 

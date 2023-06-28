@@ -35,7 +35,7 @@ def main():
             'input_eof': common.network.constants.EXECUTE_QUERIES,
             'n_input_peers': 1,
             'rpc_input_processor': rpc_input_processor,
-            'eof_handler': EOFHandler(".eof", append="last")
+            'eof_handler': EOFHandler(".eof", append="_rpc")
         }
     )
 

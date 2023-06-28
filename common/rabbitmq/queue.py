@@ -55,13 +55,11 @@ class Queue:
                                                                auto_ack=False):
             yield self.channel, method, properties, body
 
-    def respond(self, message: bytes, to: str, correlation_id, delivery_tag):
+    def respond(self, message: bytes, to: str, correlation_id):
         self.channel.basic_publish(exchange='',
                                    routing_key=to,
                                    properties=pika.BasicProperties(correlation_id=correlation_id),
                                    body=message)
-
-        #self.channel.basic_ack(delivery_tag=delivery_tag)
 
     def close(self):
         self.channel.cancel()
