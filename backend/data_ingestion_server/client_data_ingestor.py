@@ -121,19 +121,10 @@ class ClientDataIngestor:
         self.trips_exchange_writer.write(common.network.constants.TRIPS_END_ALL + self.client_id_in_bytes)
 
     def execute_queries(self, wrapped_socket):
-        raw_doubled_station_names_response = self.doubled_yearly_trips_stations_rpc.call(
-            common.network.constants.EXECUTE_QUERIES + self.client_id_in_bytes
-        )
-        #rint(f"RESPUESTA DOUBLED: {raw_doubled_station_names_response}")
-
-        wrapped_socket.send(common.network.constants.DOUBLED_YEARLY_TRIPS_STATION_NAMES_RESULT +
-                            self.client_id_in_bytes + len(raw_doubled_station_names_response[4:]).to_bytes(4, 'big') +
-                            raw_doubled_station_names_response[4:])
 
         response = self.montreal_stations_over_6km_avg_trip_distance_rpc.call(
             common.network.constants.EXECUTE_QUERIES + self.client_id_in_bytes
         )
-        #print(f"RESPUESTA STATIONS: {response}")
 
         wrapped_socket.send(common.network.constants.MONTREAL_STATIONS_OVER_6KM_AVG_TRIP_DISTANCE_RESULT +
                             self.client_id_in_bytes + len(response[4:]).to_bytes(4, 'big') +
@@ -143,11 +134,17 @@ class ClientDataIngestor:
             common.network.constants.EXECUTE_QUERIES + self.client_id_in_bytes
         )
 
-        #print(f"RESPUESTA DURATION: {raw_avg_duration_response}")
-
         wrapped_socket.send(common.network.constants.WITH_PRECIPITATIONS_AVG_TRIP_DURATION_RESULT +
                             self.client_id_in_bytes + len(raw_avg_duration_response[4:]).to_bytes(4, 'big') +
                             raw_avg_duration_response[4:])
+
+        raw_doubled_station_names_response = self.doubled_yearly_trips_stations_rpc.call(
+            common.network.constants.EXECUTE_QUERIES + self.client_id_in_bytes
+        )
+
+        wrapped_socket.send(common.network.constants.DOUBLED_YEARLY_TRIPS_STATION_NAMES_RESULT +
+                            self.client_id_in_bytes + len(raw_doubled_station_names_response[4:]).to_bytes(4, 'big') +
+                            raw_doubled_station_names_response[4:])
 
         self.montreal_stations_over_6km_avg_trip_distance_rpc.write_eof(common.network.constants.END_QUERY + self.client_id_in_bytes)
         self.with_precipitations_avg_trip_duration_rpc.write_eof(common.network.constants.END_QUERY + self.client_id_in_bytes)

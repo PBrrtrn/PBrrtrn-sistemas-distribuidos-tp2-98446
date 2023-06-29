@@ -2,6 +2,7 @@ from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.queue import Queue
 from common.processing_node.queue_consumer.output_processor.rpc_responder_output_processor import RPCResponderOutputProcessor
 from common.processing_node.queue_consumer.output_processor.storage_handler import StorageHandler
+import common.network.constants
 
 
 class StorageOutputProcessor:
@@ -12,7 +13,7 @@ class StorageOutputProcessor:
         self.rpc_queue = rpc_queue
 
     def process_output(self, channel, message: bytes, method, _properties, _client_id):
-        message_body = message[4:]
+        message_body = message[common.network.constants.MESSAGE_HEADER_LEN:]
         self.storage_handler.prepare(message_body)
         channel.basic_ack(delivery_tag=method.delivery_tag)
         self.storage_handler.commit()

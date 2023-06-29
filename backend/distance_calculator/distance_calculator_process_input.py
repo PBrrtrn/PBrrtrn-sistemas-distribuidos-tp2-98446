@@ -6,9 +6,6 @@ from haversine import haversine
 
 def distance_calculator_process_input(message_type: bytes, message_body: bytes, client_id):
     if message_type == common.network.constants.TRIPS_BATCH:
-        print(f"MESSAGE TYPE: {message_type}")
-        print(f"MESSAGE BODY: {message_body[:10]}")
-        print(f"CLIENT ID: {client_id}")
         return _calculate_distances(message_body, client_id)
     else:
         print(f"ERROR - Received unknown message type ({message_type})")

@@ -21,17 +21,16 @@ class QueueConsumer:
         self.eof_handler = eof_handler
 
     def run(self):
+        HEADER_TYPE_LEN = common.network.constants.HEADER_TYPE_LEN
+        CLIENT_ID_LEN = common.network.constants.CLIENT_ID_LEN
         if self.eof_handler.number_of_received_eof_signals() == self.n_input_peers:
             #self.__finish_processing_and_close()
             pass #Habdría q preguntar por el último
         else:
             for (channel, method, properties, message) in self.input_queue.read_with_props():
-                header_type_len = common.network.constants.HEADER_TYPE_LEN
-                client_id_len = common.network.constants.CLIENT_ID_LEN
-                message_type = message[:header_type_len]
-                #print(f"ID_IN_BYTES: {message[:header_type_len + client_id_len]}")
-                client_id = message[header_type_len:header_type_len + client_id_len].decode('utf-8')
-                message_body = message[header_type_len + client_id_len:]
+                message_type = message[:HEADER_TYPE_LEN]
+                client_id = message[HEADER_TYPE_LEN:HEADER_TYPE_LEN + CLIENT_ID_LEN].decode('utf-8')
+                message_body = message[HEADER_TYPE_LEN + CLIENT_ID_LEN:]
                 if message_type in self.input_eofs:
                     self.register_eof(channel, method, client_id)
                 else:
