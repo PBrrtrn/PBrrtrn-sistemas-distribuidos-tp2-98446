@@ -27,23 +27,24 @@ class ForwardingOutputProcessor:
         if client_id not in self.clients_storage_handler_dict:
             self.clients_storage_handler_dict[client_id] = \
                 ForwardingStateStorageHandler(storage_directory=DIR, filename=FILENAME, client_id=client_id)
-        self.clients_storage_handler_dict[client_id].prepare_last_message_id_increment()
+        client_storage_handler = self.clients_storage_handler_dict[client_id]
+        client_storage_handler.prepare_last_message_id_increment()
         self._forward(self.output_exchange_writer, message, client_id)
-        self.clients_storage_handler_dict[client_id].commit()
+        client_storage_handler.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def finish_processing(self, client_id):
-        storage = self.clients_storage_handler_dict[client_id].get_storage()
+        client_storage_handler = self.clients_storage_handler_dict[client_id]
+        storage = client_storage_handler.get_storage()
         if not storage.get("rpc_eof_sent", False) and self.optional_rpc_eof is not None:
-            self.clients_storage_handler_dict[client_id].prepare_set_rpc_eof_as_sent()
+            client_storage_handler.prepare_set_rpc_eof_as_sent()
             self.optional_rpc_eof.write_eof(self.output_eof, routing_key_suffix=client_id)
-            self.clients_storage_handler_dict[client_id].commit()
+            client_storage_handler.commit()
         remaining_eofs = self.n_output_peers - storage.get("eofs_sent", 0)
         for i in range(remaining_eofs):
-            self.clients_storage_handler_dict[client_id].prepare_eofs_sent_increment()
+            client_storage_handler.prepare_eofs_sent_increment()
             self._forward_eof(self.output_exchange_writer, self.output_eof, client_id)
-            # self.output_exchange_writer.write(self.output_eof, routing_key_suffix='1')
-            self.clients_storage_handler_dict[client_id].commit()
+            client_storage_handler.commit()
 
     def _forward(self, exchange_writer, message, client_id):
         if self.forward_with_routing_key:
