@@ -41,10 +41,14 @@ class RPCClient:
         self.connection.process_data_events(time_limit=None)
         return self.response
 
-    def write_eof(self, eof: bytes):
+    def write_eof(self, eof: bytes, routing_key_suffix: str = None):
+        routing_key = self.rpc_queue_name
+        if routing_key_suffix is not None:
+            routing_key += routing_key_suffix
+        print(f"Writing EOF to RPC {routing_key}")
         self.channel.basic_publish(
             exchange='',
-            routing_key=self.rpc_queue_name,
+            routing_key=routing_key,
             properties=pika.BasicProperties(
                 delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
             ),

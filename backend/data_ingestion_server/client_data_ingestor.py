@@ -9,7 +9,7 @@ import pickle
 
 class ClientDataIngestor:
     def __init__(self, wrapped_socket: SocketWrapper,
-                 client_id: int,
+                 client_id: str,
                  stations_exchange_writer: ExchangeWriter,
                  weather_exchange_writer: ExchangeWriter,
                  n_weather_filters: int,
@@ -62,7 +62,8 @@ class ClientDataIngestor:
         while True:
             message_type = wrapped_socket.recv(common.network.constants.HEADER_TYPE_LEN)
             if message_type == common.network.constants.STATIONS_END:
-                self.stations_exchange_writer.write(common.network.constants.STATIONS_END + city.encode('utf-8'))
+                self.stations_exchange_writer.write(common.network.constants.STATIONS_END + city.encode('utf-8'),
+                                                    routing_key_suffix=self.client_id)
                 break
             elif message_type != common.network.constants.STATIONS_BATCH:
                 print(
@@ -73,7 +74,7 @@ class ClientDataIngestor:
             raw_batch = wrapped_socket.recv(batch_size)
 
             message = common.network.constants.STATIONS_BATCH + pickle.dumps((raw_batch, city))
-            self.stations_exchange_writer.write(message)
+            self.stations_exchange_writer.write(message, routing_key_suffix=self.client_id)
 
     def receive_and_handle_weather_batch(self, wrapped_socket):
         city = common.network.utils.receive_string(wrapped_socket)
@@ -145,4 +146,4 @@ class ClientDataIngestor:
                             raw_doubled_station_names)
 
     def set_up(self):
-        self.new_clients_exchange_writer.write(pickle.dumps(str(self.client_id)))
+        self.new_clients_exchange_writer.write(pickle.dumps(self.client_id))

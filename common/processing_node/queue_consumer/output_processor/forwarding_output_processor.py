@@ -26,19 +26,19 @@ class ForwardingOutputProcessor:
         # if self.storage["id_last_message_forwarded"] == message.id: #Message id hay q cargarlo
         #    channel.basic_ack(delivery_tag=method.delivery_tag)
         self.prepare_send_message()
-        self.output_exchange_writer.write(message)
+        self.output_exchange_writer.write(message, routing_key_suffix="1")
         self.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def finish_processing(self):
         if not self.storage["rpc_eof_sent"] and self.optional_rpc_eof is not None:
             self.prepare_send_rcp_eof()
-            self.optional_rpc_eof.write_eof(self.output_eof)
+            self.optional_rpc_eof.write_eof(self.output_eof, routing_key_suffix="1")
             self.commit()
         remaining_eofs = self.n_output_peers - self.storage["eofs_sent"]
         for i in range(remaining_eofs):
             self.prepare()
-            self.output_exchange_writer.write(self.output_eof)
+            self.output_exchange_writer.write(self.output_eof, routing_key_suffix="1")
             self.commit()
 
     def prepare(self):

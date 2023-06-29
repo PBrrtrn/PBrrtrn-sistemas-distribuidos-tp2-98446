@@ -26,10 +26,12 @@ class ExchangeWriter:
         self.queue_name = queue_name
         self.channel.exchange_declare(exchange=self.exchange_name, exchange_type=exchange_type)
 
-    def write(self, message: bytes, routing_key: str = None):
-        if not routing_key:
+    def write(self, message: bytes, routing_key: str = None, routing_key_suffix: str = None):
+        if routing_key is None:
             routing_key = self.queue_name
-
+            if routing_key_suffix is not None:
+                routing_key += routing_key_suffix
+        print(f"Writing to {routing_key}")
         self.channel.basic_publish(exchange=self.exchange_name,
                                    routing_key=routing_key,
                                    body=message,
