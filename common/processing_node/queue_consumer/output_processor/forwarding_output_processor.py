@@ -21,8 +21,6 @@ class ForwardingOutputProcessor:
         for client_id in current_client_list:
             self.clients_storage_handler_dict[client_id] = \
                 ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
-        #Cargar de un archivo en donde estén los ids de los clientes
-        # {"id_cliente": ForwardingStateStorageHandler}
 
     def process_output(self, channel, message: bytes, method, _properties, client_id):
         if message is None:
