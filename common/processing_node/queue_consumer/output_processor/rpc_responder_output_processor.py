@@ -30,23 +30,12 @@ class RPCResponderOutputProcessor:
         self.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
-    def finish_processing(self, message: bytes, delivery_tag, correlation_id, reply_to):
-        # Eventualmente tmb recibe el id del cliente
-        #self.storage_handler.prepare_delete()
-        print("Finish processing!!")
+    def finish_processing(self, _message: bytes, _delivery_tag, _correlation_id, _reply_to):
         if not self.storage["rpc_call_sent"] and self.optional_rpc_eof is not None:
             print(f"Sending {self.optional_rpc_eof_byte}")
             self.prepare_send_rcp_eof()
             self.optional_rpc_eof.write_eof(self.optional_rpc_eof_byte)
             self.commit()
-        """self.prepare()
-        self.rpc_queue.respond(
-            message=message,
-            to=reply_to,
-            correlation_id=correlation_id,
-        )"""
-        #self.commit()
-        #self.storage_handler.commit_delete()
 
     def prepare(self):
         to_log = self._generate_log_map()
