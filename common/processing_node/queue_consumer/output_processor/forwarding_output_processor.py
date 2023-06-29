@@ -1,11 +1,11 @@
 from common.processing_node.queue_consumer.forwarding_state_storage_handler import ForwardingStateStorageHandler
+from common.processing_node.queue_consumer.client_list_storage_handler import ClientListStorageHandler
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.rpc_client import RPCClient
 
 DIR = '.eof'
-FILENAME = 'eof_sent'
-COMMIT_CHAR = "C\n"
-
+CLIENT_LOG_FILENAME = 'eof_sent'
+CLIENTS_LIST_FILENAME = 'clients_list'
 
 class ForwardingOutputProcessor:
     def __init__(self, n_output_peers: int, output_exchange_writer: ExchangeWriter, output_eof: bytes,
@@ -15,10 +15,12 @@ class ForwardingOutputProcessor:
         self.output_eof = output_eof
         self.optional_rpc_eof = optional_rpc_eof
         self.forward_with_routing_key = forward_with_routing_key
-        self.forwarding_state_storage_handler = ForwardingStateStorageHandler(
-            storage_directory=DIR,
-            filename=FILENAME
-        )
+        self.clients_list_handler = ClientListStorageHandler(storage_directory=DIR, filename=CLIENTS_LIST_FILENAME)
+        current_client_list = self.clients_list_handler.get_clients_list()
+        self.clients_storage_handler_dict = {}
+        for client_id in current_client_list:
+            self.clients_storage_handler_dict[client_id] = \
+                ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
 
     def process_output(self, channel, message: bytes, method, _properties, client_id):
         if message is None:
@@ -27,24 +29,29 @@ class ForwardingOutputProcessor:
 
         # if self.storage["id_last_message_forwarded"] == message.id: # Message id hay q cargarlo
         #    channel.basic_ack(delivery_tag=method.delivery_tag)
-
-        self.forwarding_state_storage_handler.prepare_last_message_id_increment()
+        if client_id not in self.clients_storage_handler_dict:
+            self.clients_list_handler.prepare(client_id)
+            self.clients_list_handler.commit()
+            self.clients_storage_handler_dict[client_id] = \
+                ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
+        client_storage_handler = self.clients_storage_handler_dict[client_id]
+        client_storage_handler.prepare_last_message_id_increment()
         self._forward(self.output_exchange_writer, message, client_id)
-        self.forwarding_state_storage_handler.commit()
+        client_storage_handler.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def finish_processing(self, client_id):
-        storage = self.forwarding_state_storage_handler.get_storage()
+        client_storage_handler = self.clients_storage_handler_dict[client_id]
+        storage = client_storage_handler.get_storage()
         if not storage.get("rpc_eof_sent", False) and self.optional_rpc_eof is not None:
-            self.forwarding_state_storage_handler.prepare_set_rpc_eof_as_sent()
+            client_storage_handler.prepare_set_rpc_eof_as_sent()
             self.optional_rpc_eof.write_eof(self.output_eof, routing_key_suffix=client_id)
-            self.forwarding_state_storage_handler.commit()
+            client_storage_handler.commit()
         remaining_eofs = self.n_output_peers - storage.get("eofs_sent", 0)
         for i in range(remaining_eofs):
-            self.forwarding_state_storage_handler.prepare_eofs_sent_increment()
+            client_storage_handler.prepare_eofs_sent_increment()
             self._forward_eof(self.output_exchange_writer, self.output_eof, client_id)
-            # self.output_exchange_writer.write(self.output_eof, routing_key_suffix='1')
-            self.forwarding_state_storage_handler.commit()
+            client_storage_handler.commit()
 
     def _forward(self, exchange_writer, message, client_id):
         if self.forward_with_routing_key:

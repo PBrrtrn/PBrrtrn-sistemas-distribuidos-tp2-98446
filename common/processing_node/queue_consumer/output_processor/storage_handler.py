@@ -11,11 +11,11 @@ LOGS_READER_BUFFER_SIZE = 1024 * 8
 
 
 class StorageHandler(ABC):
-    def __init__(self, storage_directory, filename=FILENAME, checkpoint_frequency=-1):
+    def __init__(self, storage_directory, client_id='', filename=FILENAME, checkpoint_frequency=-1):
         self.checkpoint_frequency = checkpoint_frequency
         self.storage = {}
         self.commits = 0
-        filepath = f"{storage_directory}/{filename}"
+        filepath = f"{storage_directory}/{filename}_{client_id}"
         self.__load_storage_from_disk(filepath)
         self.file = open(filepath, 'a+')
 

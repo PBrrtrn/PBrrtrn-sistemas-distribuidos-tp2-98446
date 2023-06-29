@@ -30,7 +30,9 @@ def by_year_and_stations_trip_count_queue_consumer_factory(client_id: str, confi
     rpc_input_processor = RPCStationCounterInputProcessor(rpc_client=stations_rpc_client)
     storage_handler = StationCounterStorageHandler(
         storage_directory=config['STORAGE_PATH'],
-        checkpoint_frequency=int(config['CHECKPOINT_FREQUENCY']))
+        checkpoint_frequency=int(config['CHECKPOINT_FREQUENCY']),
+        client_id=client_id
+    )
     storage_output_processor = StorageOutputProcessor(
         rpc_queue=requests_queue_reader,
         storage_handler=storage_handler,
@@ -38,7 +40,7 @@ def by_year_and_stations_trip_count_queue_consumer_factory(client_id: str, confi
             'input_eofs': [common.network.constants.END_QUERY],
             'n_input_peers': 1,
             'rpc_input_processor': rpc_input_processor,
-            'eof_handler': EOFHandler(".eof", append="_rpc"),
+            'eof_handler': EOFHandler(".eof", append=f"_rpc_{client_id}"),
             'optional_rpc_eof': stations_rpc_client,
             'optional_rpc_eof_byte': common.network.constants.STATIONS_END
         }
@@ -50,7 +52,7 @@ def by_year_and_stations_trip_count_queue_consumer_factory(client_id: str, confi
         n_input_peers=int(config['N_BY_YEAR_TRIPS_FILTERS']),
         input_queue=filtered_trips_input_queue_reader,
         output_processor=storage_output_processor,
-        eof_handler=EOFHandler(".eof")
+        eof_handler=EOFHandler(".eof", append=f"_{client_id}")
     )
 
 
