@@ -45,7 +45,6 @@ class RPCClient:
         routing_key = self.rpc_queue_name
         if routing_key_suffix is not None:
             routing_key += routing_key_suffix
-        print(f"Writing EOF to RPC {routing_key}")
         self.channel.basic_publish(
             exchange='',
             routing_key=routing_key,
