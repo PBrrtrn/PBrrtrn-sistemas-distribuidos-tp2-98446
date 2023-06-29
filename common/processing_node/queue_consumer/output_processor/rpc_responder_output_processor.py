@@ -9,14 +9,15 @@ COMMIT_CHAR = "C\n"
 
 
 class RPCResponderOutputProcessor:
-    def __init__(self, rpc_queue: Queue, storage_handler: StorageHandler,
-                 optional_rpc_eof: RPCClient = None, optional_rpc_eof_byte: bytes = None):
+    def __init__(self, rpc_queue: Queue, storage_handler: StorageHandler, client_id,
+                 optional_rpc_eof: RPCClient = None, optional_rpc_eof_byte: bytes = None,
+                 ):
         self.rpc_queue = rpc_queue
         self.storage_handler = storage_handler
         self.optional_rpc_eof = optional_rpc_eof
         self.optional_rpc_eof_byte = optional_rpc_eof_byte
         self.storage = {"id_last_message_responded": 0, "eofs_sent": 0, "rpc_eof_sent": False}
-        filepath = f".eof/{FILENAME}"
+        filepath = f".eof/{FILENAME}_{client_id}"
         self.file = open(filepath, 'a+')
 
     def process_output(self, channel, message: bytes, method, properties, _client_id):
