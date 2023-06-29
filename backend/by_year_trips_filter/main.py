@@ -29,7 +29,8 @@ def main():
     forwarding_output_processor = ForwardingOutputProcessor(
         n_output_peers=1,
         output_exchange_writer=filtered_trips_exchange_writer,
-        output_eof=common.network.constants.TRIPS_END_ALL
+        output_eof=common.network.constants.TRIPS_END_ALL,
+        forward_with_routing_key=True
     )
 
     queue_consumer = QueueConsumer(

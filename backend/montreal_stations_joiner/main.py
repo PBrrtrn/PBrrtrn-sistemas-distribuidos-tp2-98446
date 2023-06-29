@@ -38,7 +38,8 @@ def main():
         n_output_peers=int(config['N_DISTANCE_CALCULATORS']),
         output_exchange_writer=trips_output_exchange_writer,
         output_eof=common.network.constants.TRIPS_END_ALL,
-        optional_rpc_eof=stations_join_rpc_client
+        optional_rpc_eof=stations_join_rpc_client,
+        forward_with_routing_key=False
     )
 
     queue_consumer = QueueConsumer(

@@ -2,7 +2,7 @@ import os
 from configparser import ConfigParser
 
 from common.rabbitmq.exchange_writer import ExchangeWriter
-from common.rabbitmq.rpc_client import RPCClient
+from common.rabbitmq.fanout_exchange_writer import FanoutExchangeWriter
 from data_ingestion_server import DataIngestionServer
 
 
@@ -26,11 +26,9 @@ def main():
         exchange_name=config['UNFILTERED_WEATHER_EXCHANGE_NAME'],
         queue_name=config['UNFILTERED_WEATHER_QUEUE_NAME']
     )
-    trips_exchange_writer = ExchangeWriter(
+    trips_exchange_writer = FanoutExchangeWriter(
         hostname=config["RABBITMQ_HOSTNAME"],
-        exchange_name=config['TRIPS_EXCHANGE_NAME'],
-        queue_name=config['TRIPS_QUEUE_NAME'],
-        exchange_type='fanout')
+        exchange_name=config['TRIPS_EXCHANGE_NAME'])
 
     new_clients_exchange_writer = ExchangeWriter(
         hostname=config["RABBITMQ_HOSTNAME"],

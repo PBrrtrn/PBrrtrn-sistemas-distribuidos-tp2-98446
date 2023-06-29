@@ -6,6 +6,7 @@ from common.network.socket_wrapper import SocketWrapper
 import socket
 
 from common.rabbitmq.exchange_writer import ExchangeWriter
+from common.rabbitmq.fanout_exchange_writer import FanoutExchangeWriter
 from common.rabbitmq.rpc_client import RPCClient
 
 from client_data_ingestor import ClientDataIngestor
@@ -17,7 +18,7 @@ class DataIngestionServer:
                  stations_exchange_writer: ExchangeWriter,
                  weather_exchange_writer: ExchangeWriter,
                  n_weather_filters: int,
-                 trips_exchange_writer: ExchangeWriter,
+                 trips_exchange_writer: FanoutExchangeWriter,
                  new_clients_exchange_writer: ExchangeWriter,
                  montreal_stations_over_6km_avg_trip_distance_queue_name: str,
                  with_precipitations_avg_trip_duration_queue_name: str,

@@ -1,5 +1,6 @@
 from common.network.socket_wrapper import SocketWrapper
 from common.rabbitmq.exchange_writer import ExchangeWriter
+from common.rabbitmq.fanout_exchange_writer import FanoutExchangeWriter
 from common.rabbitmq.rpc_client import RPCClient
 import common.network.constants
 import common.network.utils
@@ -13,7 +14,7 @@ class ClientDataIngestor:
                  stations_exchange_writer: ExchangeWriter,
                  weather_exchange_writer: ExchangeWriter,
                  n_weather_filters: int,
-                 trips_exchange_writer: ExchangeWriter,
+                 trips_exchange_writer: FanoutExchangeWriter,
                  new_clients_exchange_writer: ExchangeWriter,
                  montreal_stations_over_6km_avg_trip_distance_rpc: RPCClient,
                  with_precipitations_avg_trip_duration_rpc: RPCClient,
@@ -98,7 +99,7 @@ class ClientDataIngestor:
         while True:
             message_type = wrapped_socket.recv(common.network.constants.HEADER_TYPE_LEN)
             if message_type == common.network.constants.TRIPS_END:
-                self.trips_exchange_writer.write(common.network.constants.TRIPS_END, city)
+                self.trips_exchange_writer.write(common.network.constants.TRIPS_END)
                 break
             elif message_type != common.network.constants.TRIPS_BATCH:
                 print(f"ERROR - Protocol error (expected {common.network.constants.TRIPS_BATCH}, got {message_type})")

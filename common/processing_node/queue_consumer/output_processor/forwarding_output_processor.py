@@ -9,11 +9,12 @@ COMMIT_CHAR = "C\n"
 
 class ForwardingOutputProcessor:
     def __init__(self, n_output_peers: int, output_exchange_writer: ExchangeWriter, output_eof: bytes,
-                 optional_rpc_eof: RPCClient = None):
+                 forward_with_routing_key, optional_rpc_eof: RPCClient = None):
         self.n_output_peers = n_output_peers
         self.output_exchange_writer = output_exchange_writer
         self.output_eof = output_eof
         self.optional_rpc_eof = optional_rpc_eof
+        self.forward_with_routing_key = forward_with_routing_key
         self.forwarding_state_storage_handler = ForwardingStateStorageHandler(
             storage_directory=DIR,
             filename=FILENAME
@@ -28,7 +29,7 @@ class ForwardingOutputProcessor:
         #    channel.basic_ack(delivery_tag=method.delivery_tag)
 
         self.forwarding_state_storage_handler.prepare_last_message_id_increment()
-        self.output_exchange_writer.write(message, routing_key_suffix='1')
+        self._forward(self.output_exchange_writer, message)
         self.forwarding_state_storage_handler.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
@@ -41,5 +42,12 @@ class ForwardingOutputProcessor:
         remaining_eofs = self.n_output_peers - storage.get("eofs_sent", 0)
         for i in range(remaining_eofs):
             self.forwarding_state_storage_handler.prepare_eofs_sent_increment()
-            self.output_exchange_writer.write(self.output_eof, routing_key_suffix='1')
+            self._forward(self.output_exchange_writer, self.output_eof)
+            # self.output_exchange_writer.write(self.output_eof, routing_key_suffix='1')
             self.forwarding_state_storage_handler.commit()
+
+    def _forward(self, exchange_writer, message):
+        if self.forward_with_routing_key:
+            exchange_writer.write(message, routing_key_suffix='1')
+        else:
+            exchange_writer.write(message)

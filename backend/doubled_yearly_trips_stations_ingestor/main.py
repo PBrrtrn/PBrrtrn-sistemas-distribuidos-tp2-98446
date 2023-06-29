@@ -15,11 +15,11 @@ import common.network.constants
 def main():
     config = common.env_utils.read_config()
 
-    trips_input_queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
+    # trips_input_queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
     trips_input_queue = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
         name=config['TRIPS_INPUT_QUEUE_NAME'],
-        bindings=trips_input_queue_bindings,
+        bindings={'trips_exchange': ['']},
         exchange_type='fanout'
     )
 
@@ -32,7 +32,8 @@ def main():
     output_processor = ForwardingOutputProcessor(
         n_output_peers=int(config['N_BY_YEAR_TRIPS_FILTERS']),
         output_exchange_writer=trips_output_exchange_writer,
-        output_eof=common.network.constants.TRIPS_END_ALL
+        output_eof=common.network.constants.TRIPS_END_ALL,
+        forward_with_routing_key=False
     )
 
     queue_consumer = QueueConsumer(
