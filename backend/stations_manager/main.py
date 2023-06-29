@@ -2,7 +2,7 @@ import common.env_utils
 import common.supervisor.utils
 
 from common.processing_node.queue_consumer.process_input.identity_process_input import identity_process_input_without_header
-from common.processing_node.processing_node import ProcessingNode
+from common.processing_node.stateless_node import StatelessNode
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.processing_node.queue_consumer.eof_handler import EOFHandler
@@ -55,7 +55,7 @@ def main():
         eof_handler=EOFHandler(".eof")
     )
 
-    processing_node = ProcessingNode(
+    processing_node = StatelessNode(
         queue_consumer=queue_consumer,
         supervisor_process=common.supervisor.utils.create_from_config(config)
 

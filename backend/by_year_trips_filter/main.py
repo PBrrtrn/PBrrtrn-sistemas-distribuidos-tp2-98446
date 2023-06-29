@@ -4,7 +4,7 @@ from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.queue import Queue
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
-from common.processing_node.processing_node import ProcessingNode
+from common.processing_node.stateless_node import StatelessNode
 from common.processing_node.queue_consumer.eof_handler import EOFHandler
 from by_year_trips_filter_process_input import by_year_trips_filter_process_input
 import common.network.constants
@@ -41,7 +41,7 @@ def main():
         eof_handler=EOFHandler('.eof')
     )
 
-    processing_node = ProcessingNode(
+    processing_node = StatelessNode(
         queue_consumer=queue_consumer,
         supervisor_process=common.supervisor.utils.create_from_config(config)
     )
