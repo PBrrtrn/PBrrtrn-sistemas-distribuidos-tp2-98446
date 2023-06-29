@@ -4,10 +4,11 @@ import os
 def setup_file(file):
     file.seek(0, os.SEEK_END)
     file_size = file.tell()
-    file.seek(file_size - 1)
-    last_character = file.read(1)
-    if last_character != '\n':
-        file.write('\n')
+    if file_size != 0:
+        file.seek(file_size - 1)
+        last_character = file.read(1)
+        if last_character != '\n':
+            file.write('\n')
 
 
 def read_lines_backwards(file, buffer_size):

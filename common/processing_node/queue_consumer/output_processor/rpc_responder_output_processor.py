@@ -1,7 +1,7 @@
 import json
 
 from common.rabbitmq.queue import Queue
-from common.processing_node.storage_handler import StorageHandler
+from common.processing_node.queue_consumer.output_processor.storage_handler import StorageHandler
 from common.rabbitmq.rpc_client import RPCClient
 
 FILENAME = 'eof_sent_rpc'
