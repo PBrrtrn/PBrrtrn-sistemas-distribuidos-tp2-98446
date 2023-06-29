@@ -1,10 +1,11 @@
 from common.processing_node.queue_consumer.forwarding_state_storage_handler import ForwardingStateStorageHandler
+from common.processing_node.queue_consumer.client_list_storage_handler import ClientListStorageHandler
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.rpc_client import RPCClient
 
 DIR = '.eof'
-FILENAME = 'eof_sent'
-
+CLIENT_LOG_FILENAME = 'eof_sent'
+CLIENTS_LIST_FILENAME = 'clients_list'
 
 class ForwardingOutputProcessor:
     def __init__(self, n_output_peers: int, output_exchange_writer: ExchangeWriter, output_eof: bytes,
@@ -14,7 +15,13 @@ class ForwardingOutputProcessor:
         self.output_eof = output_eof
         self.optional_rpc_eof = optional_rpc_eof
         self.forward_with_routing_key = forward_with_routing_key
-        self.clients_storage_handler_dict = {} #Cargar de un archivo en donde estén los ids de los clientes
+        self.clients_list_handler = ClientListStorageHandler(storage_directory=DIR, filename=CLIENTS_LIST_FILENAME)
+        current_client_list = self.clients_list_handler.get_clients_list()
+        self.clients_storage_handler_dict = {}
+        for client_id in current_client_list:
+            self.clients_storage_handler_dict[client_id] = \
+                ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
+        #Cargar de un archivo en donde estén los ids de los clientes
         # {"id_cliente": ForwardingStateStorageHandler}
 
     def process_output(self, channel, message: bytes, method, _properties, client_id):
@@ -25,8 +32,10 @@ class ForwardingOutputProcessor:
         # if self.storage["id_last_message_forwarded"] == message.id: # Message id hay q cargarlo
         #    channel.basic_ack(delivery_tag=method.delivery_tag)
         if client_id not in self.clients_storage_handler_dict:
+            self.clients_list_handler.prepare(client_id)
+            self.clients_list_handler.commit()
             self.clients_storage_handler_dict[client_id] = \
-                ForwardingStateStorageHandler(storage_directory=DIR, filename=FILENAME, client_id=client_id)
+                ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
         client_storage_handler = self.clients_storage_handler_dict[client_id]
         client_storage_handler.prepare_last_message_id_increment()
         self._forward(self.output_exchange_writer, message, client_id)

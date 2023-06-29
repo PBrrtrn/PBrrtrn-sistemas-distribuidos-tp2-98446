@@ -1,8 +1,4 @@
-from os.path import exists
-
 from common.processing_node.queue_consumer.output_processor.storage_handler import StorageHandler
-
-LOGS_READER_BUFFER_SIZE = 1024 * 8
 
 
 class ForwardingStateStorageHandler(StorageHandler):
