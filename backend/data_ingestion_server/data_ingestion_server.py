@@ -8,6 +8,7 @@ import socket
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.fanout_exchange_writer import FanoutExchangeWriter
 from common.rabbitmq.rpc_client import RPCClient
+import common.network.constants
 
 from client_data_ingestor import ClientDataIngestor
 
@@ -44,7 +45,7 @@ class DataIngestionServer:
 
         client_socket, _ = server_socket.accept()
         wrapped_socket = SocketWrapper(client_socket)
-        client_id = str(len(self.clients_id) + 1)
+        client_id = str(len(self.clients_id) + 1).zfill(common.network.constants.CLIENT_ID_LEN)
         montreal_stations_over_6km_avg_trip_distance_rpc = RPCClient(
             f"{self.montreal_stations_over_6km_avg_trip_distance_queue_name}{client_id}"
         )

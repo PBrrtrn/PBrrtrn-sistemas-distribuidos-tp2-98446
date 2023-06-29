@@ -11,13 +11,14 @@ class StorageOutputProcessor:
         self.finish_processing_node_args = finish_processing_node_args
         self.rpc_queue = rpc_queue
 
-    def process_output(self, channel, message: bytes, method, _properties):
-        self.storage_handler.prepare(message)
+    def process_output(self, channel, message: bytes, method, _properties, _client_id):
+        message_body = message[4:]
+        self.storage_handler.prepare(message_body)
         channel.basic_ack(delivery_tag=method.delivery_tag)
         self.storage_handler.commit()
         # self.storage_handler.update_changes_in_disk()
 
-    def finish_processing(self):
+    def finish_processing(self, client_id):
         rpc_input_processor = self.finish_processing_node_args['rpc_input_processor']
         rpc_input_processor.set_storage(self.storage_handler.get_storage())
         rpc_responder_output_processor = RPCResponderOutputProcessor(

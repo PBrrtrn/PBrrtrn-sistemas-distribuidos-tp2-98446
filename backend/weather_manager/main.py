@@ -8,7 +8,7 @@ from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 
 from common.rabbitmq.queue import Queue
 from common.processing_node.queue_consumer.process_input.identity_process_input import \
-    identity_process_input_without_header
+    identity_process_input
 from common.processing_node.stateful_node import StatefulNode
 from common.processing_node.queue_consumer.eof_handler import EOFHandler
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
@@ -53,7 +53,7 @@ def weather_manager_queue_consumer_factory(client_id: str, config):
     )
 
     return QueueConsumer(
-        process_input=identity_process_input_without_header,
+        process_input=identity_process_input,
         input_eofs=[common.network.constants.WEATHER_END_ALL],
         n_input_peers=int(config['N_WEATHER_FILTERS']),
         input_queue=weather_queue,

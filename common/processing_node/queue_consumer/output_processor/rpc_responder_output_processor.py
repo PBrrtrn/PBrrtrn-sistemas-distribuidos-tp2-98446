@@ -19,7 +19,7 @@ class RPCResponderOutputProcessor:
         filepath = f".eof/{FILENAME}"
         self.file = open(filepath, 'a+')
 
-    def process_output(self, channel, message: bytes, method, properties):
+    def process_output(self, channel, message: bytes, method, properties, _client_id):
         # if self.storage["id_last_message_responded"] == message.id: #Message id hay q cargarlo
         #    channel.basic_ack(delivery_tag=method.delivery_tag)
 
@@ -32,7 +32,7 @@ class RPCResponderOutputProcessor:
         self.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
-    def finish_processing(self):
+    def finish_processing(self, _client_id):
         if not self.storage["rpc_eof_sent"] and self.optional_rpc_eof is not None:
             self.prepare_send_rcp_eof()
             self.optional_rpc_eof.write_eof(self.optional_rpc_eof_byte)

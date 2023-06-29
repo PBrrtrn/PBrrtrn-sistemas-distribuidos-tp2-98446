@@ -22,24 +22,29 @@ class QueueConsumer:
 
     def run(self):
         if self.eof_handler.number_of_received_eof_signals() == self.n_input_peers:
-            self.__finish_processing_and_close()
+            #self.__finish_processing_and_close()
+            pass #Habdría q preguntar por el último
         else:
             for (channel, method, properties, message) in self.input_queue.read_with_props():
-                message_type = message[:common.network.constants.HEADER_TYPE_LEN]
-                message_body = message[common.network.constants.HEADER_TYPE_LEN:]
+                header_type_len = common.network.constants.HEADER_TYPE_LEN
+                client_id_len = common.network.constants.CLIENT_ID_LEN
+                message_type = message[:header_type_len]
+                #print(f"ID_IN_BYTES: {message[:header_type_len + client_id_len]}")
+                client_id = message[header_type_len:header_type_len + client_id_len].decode('utf-8')
+                message_body = message[header_type_len + client_id_len:]
                 if message_type in self.input_eofs:
-                    self.register_eof(channel, method)
+                    self.register_eof(channel, method, client_id)
                 else:
-                    result = self.process_input(message_type, message_body)
-                    self.output_processor.process_output(channel, result, method, properties)
+                    result = self.process_input(message_type, message_body, client_id)
+                    self.output_processor.process_output(channel, result, method, properties, client_id)
 
-    def register_eof(self, channel, method):
+    def register_eof(self, channel, method, client_id):
         self.eof_handler.two_phase_commit(channel, method)
         # Cuando el processingNode esté andando bien, debe haber un cuidado entre hacer el commit del EOF,
         # hacer el ACK del EOF y enviar el EOF a los siguientes nodos.
         if self.eof_handler.number_of_received_eof_signals() == self.n_input_peers:
-            self.__finish_processing_and_close()
+            self.__finish_processing_and_close(client_id)
 
-    def __finish_processing_and_close(self):
-        self.output_processor.finish_processing()
+    def __finish_processing_and_close(self, client_id):
+        self.output_processor.finish_processing(client_id)
         self.input_queue.close()

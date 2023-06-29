@@ -128,18 +128,22 @@ def send_trips_end_all(wrapped_socket):
 def send_queries_request(wrapped_socket):
     wrapped_socket.send(common.network.serialize.serialize_queries_request())
     to_print_vec = [""]
+    client_id_in_bytes = None
     for _ in range(N_QUERIES):
         message_type = wrapped_socket.recv(common.network.constants.HEADER_TYPE_LEN)
+        client_id_in_bytes = wrapped_socket.recv(common.network.constants.CLIENT_ID_LEN)
         if message_type == common.network.constants.MONTREAL_STATIONS_OVER_6KM_AVG_TRIP_DISTANCE_RESULT:
             message_length = common.network.utils.receive_int(wrapped_socket)
             raw_stations = wrapped_socket.recv(message_length)
             stations = ', '.join(pickle.loads(raw_stations))
             to_print_vec.append(f"Montreal stations with average trip distance over 6km: {stations}")
+            print(f"Montreal stations with average trip distance over 6km: {stations}")
         elif message_type == common.network.constants.WITH_PRECIPITATIONS_AVG_TRIP_DURATION_RESULT:
             message_length = common.network.utils.receive_int(wrapped_socket)
             raw_avg_duration_with_precipitations = wrapped_socket.recv(message_length)
             avg_duration_precip = round(pickle.loads(raw_avg_duration_with_precipitations), 2)
             to_print_vec.append(f"Average duration for trips with >30mm precipitations: {avg_duration_precip} sec.")
+            print(f"Average duration for trips with >30mm precipitations: {avg_duration_precip} sec.")
         elif message_type == common.network.constants.DOUBLED_YEARLY_TRIPS_STATION_NAMES_RESULT:
             message_length = common.network.utils.receive_int(wrapped_socket)
             raw_stations = wrapped_socket.recv(message_length)
@@ -157,15 +161,16 @@ def send_queries_request(wrapped_socket):
                 stations_to_append.extend(to_append)
             to_print_vec.append(f"Stations with doubled yearly trips over 2017 and 2016: {stations_to_append}")
             to_print_vec.append(f"{len(stations)} rows")
+            print(f"Stations with doubled yearly trips over 2017 and 2016: {stations_to_append}")
     to_print = "\n".join(to_print_vec)
     logging.info(to_print)
-    save_final_result(to_print)
+    save_final_result(to_print, client_id_in_bytes.decode())
 
     wrapped_socket.close()
 
 
-def save_final_result(to_write):
-    with open(RESULTS_PATH, 'w') as file:
+def save_final_result(to_write, client_id):
+    with open(RESULTS_PATH + client_id, 'w') as file:
         current_time = datetime.datetime.now()
         file.write(f'{current_time}')
         file.write(to_write)
