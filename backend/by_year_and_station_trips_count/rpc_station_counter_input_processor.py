@@ -11,7 +11,7 @@ class RPCStationCounterInputProcessor:
     def set_storage(self, storage):
         self.storage = storage
 
-    def process_input(self, message_type: bytes, _message_body: bytes, client_id):
+    def process_input(self, message_type: bytes, _message_body: bytes, client_id, message_id):
         if message_type == common.network.constants.EXECUTE_QUERIES:
             doubled_stations = []
             for city in self.storage.keys():
@@ -20,9 +20,10 @@ class RPCStationCounterInputProcessor:
                     if self.storage[city][code]['2017'] >= 2 * self.storage[city][code]['2016']:
                         city_station_codes.append(code)
 
-                join_request = common.network.constants.STATIONS_BATCH + client_id.encode() \
+                join_request = common.network.constants.STATIONS_BATCH + client_id.encode() + message_id.encode() \
                                + pickle.dumps((city_station_codes, city))
                 rpc_response = self.rpc_client.call(join_request)
                 doubled_stations += pickle.loads(rpc_response[common.network.constants.MESSAGE_HEADER_LEN:])
-            return common.network.constants.EXECUTE_QUERIES + client_id.encode() + pickle.dumps(doubled_stations)
+            return common.network.constants.EXECUTE_QUERIES + client_id.encode() + message_id.encode() \
+                   + pickle.dumps(doubled_stations)
 

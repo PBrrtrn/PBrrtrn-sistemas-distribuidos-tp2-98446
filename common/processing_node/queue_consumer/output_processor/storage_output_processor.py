@@ -12,19 +12,19 @@ class StorageOutputProcessor:
         self.finish_processing_node_args = finish_processing_node_args
         self.rpc_queue = rpc_queue
 
-    def process_output(self, channel, message: bytes, method, _properties, _client_id):
+    def process_output(self, channel, message: bytes, method, _properties, _client_id, _message_id):
         message_body = message[common.network.constants.MESSAGE_HEADER_LEN:]
         self.storage_handler.prepare(message_body)
         channel.basic_ack(delivery_tag=method.delivery_tag)
         self.storage_handler.commit()
         # self.storage_handler.update_changes_in_disk()
 
-    def finish_processing(self, client_id):
+    def finish_processing(self, client_id, _message_id):
         rpc_input_processor = self.finish_processing_node_args['rpc_input_processor']
         rpc_input_processor.set_storage(self.storage_handler.get_storage())
         rpc_responder_output_processor = RPCResponderOutputProcessor(
             rpc_queue=self.rpc_queue,
-            storage_handler=self.storage_handler,
+            client_id=client_id,
             optional_rpc_eof=self.finish_processing_node_args.get('optional_rpc_eof', None),
             optional_rpc_eof_byte=self.finish_processing_node_args.get('optional_rpc_eof_byte', None)
         )
