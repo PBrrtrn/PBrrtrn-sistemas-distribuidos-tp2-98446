@@ -18,6 +18,7 @@ class StatefulNode:
         self.new_clients_queue = new_clients_queue
         self.queue_consumer_factory = queue_consumer_factory
         self.config = config
+        self.supervisor = supervisor_process
         self.clients_list_handler = ClientListStorageHandler(storage_directory=DIR, filename=CLIENTS_LIST_FILENAME)
         current_client_list = self.clients_list_handler.get_clients_list()
         self.clients_queue_handler_dict = {}
@@ -27,7 +28,9 @@ class StatefulNode:
     def run(self):
         for client_id in self.clients_queue_handler_dict:
             self.clients_queue_handler_dict[client_id].start()
-        # self.supervisor_process.run()
+
+        supervisor_process = Process(target=self.supervisor.run, args=(), daemon=True)
+        supervisor_process.start()
         for (channel, method, properties, message) in self.new_clients_queue.read_with_props():
             # message_type = message[:common.network.constants.HEADER_TYPE_LEN]
             # client_id = message[common.network.constants.HEADER_TYPE_LEN:]
@@ -37,8 +40,6 @@ class StatefulNode:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             self.clients_list_handler.commit()
             self.clients_queue_handler_dict[client_id].start()
-            self.clients_queue_handler_dict[client_id].join()
-            break
         # Duda: Joinear clientes viejos cada vez que se recibe un nuevo cliente,
             # O que por la cola manden que el cliente finalizó ?
             # register_new_client()
