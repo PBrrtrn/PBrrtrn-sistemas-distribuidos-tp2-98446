@@ -14,6 +14,7 @@ class ClientDataIngestor:
                  weather_exchange_writer: ExchangeWriter,
                  n_weather_filters: int,
                  trips_exchange_writer: ExchangeWriter,
+                 new_clients_exchange_writer: ExchangeWriter,
                  montreal_stations_over_6km_avg_trip_distance_rpc: RPCClient,
                  with_precipitations_avg_trip_duration_rpc: RPCClient,
                  doubled_yearly_trips_stations_rpc: RPCClient
@@ -24,6 +25,7 @@ class ClientDataIngestor:
         self.weather_exchange_writer = weather_exchange_writer
         self.n_weather_filters = n_weather_filters
         self.trips_exchange_writer = trips_exchange_writer
+        self.new_clients_exchange_writer = new_clients_exchange_writer
         self.montreal_stations_over_6km_avg_trip_distance_rpc = montreal_stations_over_6km_avg_trip_distance_rpc
         self.with_precipitations_avg_trip_duration_rpc = with_precipitations_avg_trip_duration_rpc
         self.doubled_yearly_trips_stations_rpc = doubled_yearly_trips_stations_rpc
@@ -143,4 +145,4 @@ class ClientDataIngestor:
                             raw_doubled_station_names)
 
     def set_up(self):
-        pass
+        self.new_clients_exchange_writer.write(pickle.dumps(str(self.client_id)))

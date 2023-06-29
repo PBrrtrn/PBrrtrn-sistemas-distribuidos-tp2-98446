@@ -32,7 +32,6 @@ class RPCResponderOutputProcessor:
 
     def finish_processing(self):
         if not self.storage["rpc_eof_sent"] and self.optional_rpc_eof is not None:
-            print(f"Sending {self.optional_rpc_eof_byte}")
             self.prepare_send_rcp_eof()
             self.optional_rpc_eof.write_eof(self.optional_rpc_eof_byte)
             self.commit()

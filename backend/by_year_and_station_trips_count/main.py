@@ -55,10 +55,18 @@ def by_year_and_stations_trip_count_queue_consumer_factory(client_id: str, confi
 
 def main():
     config = common.env_utils.read_config()
+    new_clients_queue_bindings = common.env_utils.parse_queue_bindings(config['NEW_CLIENTS_QUEUE_BINDINGS'])
+
+    new_clients_queue = Queue(
+        hostname=config['RABBITMQ_HOSTNAME'],
+        name=config['NEW_CLIENTS_QUEUE_NAME'],
+        bindings=new_clients_queue_bindings,
+        exchange_type='fanout'
+    )
 
     processing_node = StatefulNode(
         supervisor_process=common.supervisor.utils.create_from_config(config),
-        new_clients_queue=None,
+        new_clients_queue=new_clients_queue,
         queue_consumer_factory=by_year_and_stations_trip_count_queue_consumer_factory,
         config=config
     )

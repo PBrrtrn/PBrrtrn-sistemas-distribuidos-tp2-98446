@@ -17,6 +17,7 @@ class DataIngestionServer:
                  weather_exchange_writer: ExchangeWriter,
                  n_weather_filters: int,
                  trips_exchange_writer: ExchangeWriter,
+                 new_clients_exchange_writer: ExchangeWriter,
                  montreal_stations_over_6km_avg_trip_distance_queue_name: str,
                  with_precipitations_avg_trip_duration_queue_name: str,
                  doubled_yearly_trips_stations_queue_name: str):
@@ -26,6 +27,7 @@ class DataIngestionServer:
         self.weather_exchange_writer = weather_exchange_writer
         self.n_weather_filters = n_weather_filters
         self.trips_exchange_writer = trips_exchange_writer
+        self.new_clients_exchange_writer = new_clients_exchange_writer
         self.montreal_stations_over_6km_avg_trip_distance_queue_name =\
             montreal_stations_over_6km_avg_trip_distance_queue_name
         self.with_precipitations_avg_trip_duration_queue_name = with_precipitations_avg_trip_duration_queue_name
@@ -53,6 +55,7 @@ class DataIngestionServer:
         client_ingestor = ClientDataIngestor(wrapped_socket, client_id, self.stations_exchange_writer,
                                              self.weather_exchange_writer, self.n_weather_filters, 
                                              self.trips_exchange_writer,
+                                             self.new_clients_exchange_writer,
                                              montreal_stations_over_6km_avg_trip_distance_rpc,
                                              with_precipitations_avg_trip_duration_rpc,
                                              doubled_yearly_trips_stations_rpc)
