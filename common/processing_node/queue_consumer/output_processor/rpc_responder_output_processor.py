@@ -2,90 +2,43 @@ import json
 
 from common.rabbitmq.queue import Queue
 from common.processing_node.queue_consumer.output_processor.storage_handler import StorageHandler
+from common.processing_node.queue_consumer.forwarding_state_storage_handler import ForwardingStateStorageHandler
 from common.rabbitmq.rpc_client import RPCClient
 
+DIR = '.eof'
 FILENAME = 'eof_sent_rpc'
-COMMIT_CHAR = "C\n"
 
 
 class RPCResponderOutputProcessor:
-    def __init__(self, rpc_queue: Queue, storage_handler: StorageHandler, client_id,
-                 optional_rpc_eof: RPCClient = None, optional_rpc_eof_byte: bytes = None,
-                 ):
+    def __init__(self, rpc_queue: Queue, client_id, optional_rpc_eof: RPCClient = None,
+                 optional_rpc_eof_byte: bytes = None):
         self.rpc_queue = rpc_queue
-        self.storage_handler = storage_handler
         self.optional_rpc_eof = optional_rpc_eof
         self.optional_rpc_eof_byte = optional_rpc_eof_byte
-        self.storage = {"id_last_message_responded": 0, "eofs_sent": 0, "rpc_eof_sent": False}
+        self.forwarding_state_storage_handler = ForwardingStateStorageHandler(
+            storage_directory=DIR,
+            filename=FILENAME
+        )
+        """self.storage = {"id_last_message_responded": 0, "eofs_sent": 0, "rpc_eof_sent": False}
         filepath = f".eof/{FILENAME}_{client_id}"
-        self.file = open(filepath, 'a+')
+        self.file = open(filepath, 'a+')"""
 
     def process_output(self, channel, message: bytes, method, properties, _client_id):
         # if self.storage["id_last_message_responded"] == message.id: #Message id hay q cargarlo
         #    channel.basic_ack(delivery_tag=method.delivery_tag)
 
-        self.prepare_send_message()
+        self.forwarding_state_storage_handler.prepare_last_message_id_increment()
         self.rpc_queue.respond(
             message=message,
             to=properties.reply_to,
             correlation_id=properties.correlation_id,
         )
-        self.commit()
+        self.forwarding_state_storage_handler.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def finish_processing(self, _client_id):
-        if not self.storage["rpc_eof_sent"] and self.optional_rpc_eof is not None:
-            self.prepare_send_rcp_eof()
+        storage = self.forwarding_state_storage_handler.get_storage()
+        if not storage.get("rpc_eof_sent", False) and self.optional_rpc_eof is not None:
+            self.forwarding_state_storage_handler.prepare_set_rpc_eof_as_sent()
             self.optional_rpc_eof.write_eof(self.optional_rpc_eof_byte)
-            self.commit()
-
-    def prepare(self):
-        to_log = self._generate_log_map()
-        self._update_memory_map_with_logs(to_log)
-        self.__write_log_line(to_log)
-
-    def prepare_send_message(self):
-        to_log = self._generate_log_map_send_message()
-        self._update_memory_map_with_logs(to_log)
-        self.__write_log_line(to_log)
-
-    def commit(self):
-        if self.file is None:
-            return
-        self.file.write(COMMIT_CHAR)
-        self.file.flush()
-
-    def __write_log_line(self, to_log):
-        if self.file is None:
-            return
-        json.dump(to_log, self.file, indent=None)
-        self.file.flush()
-
-    def _update_memory_map_with_logs(self, to_log):
-        self.storage = to_log
-
-    def prepare_send_rcp_eof(self):
-        to_log = self._generate_log_map_send_rpc_eof()
-        self._update_memory_map_with_logs(to_log)
-        self.__write_log_line(to_log)
-
-    def _generate_log_map_send_rpc_eof(self):
-        return {
-            "id_last_message_responded": self.storage["id_last_message_responded"],
-            "eofs_sent": self.storage["eofs_sent"],
-            "rpc_eof_sent": True
-        }
-
-    def _generate_log_map_send_message(self):
-        return {
-            "id_last_message_responded": self.storage["id_last_message_responded"] + 1,
-            "eofs_sent": self.storage["eofs_sent"],
-            "rpc_eof_sent": self.storage["rpc_eof_sent"]
-        }
-
-    def _generate_log_map(self):
-        return {
-            "id_last_message_responded": self.storage["id_last_message_responded"],
-            "eofs_sent": self.storage["eofs_sent"] + 1,
-            "rpc_eof_sent": self.storage["rpc_eof_sent"]
-        }
+            self.forwarding_state_storage_handler.commit()

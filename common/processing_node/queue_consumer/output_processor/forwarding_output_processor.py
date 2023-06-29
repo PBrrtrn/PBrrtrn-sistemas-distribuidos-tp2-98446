@@ -4,7 +4,6 @@ from common.rabbitmq.rpc_client import RPCClient
 
 DIR = '.eof'
 FILENAME = 'eof_sent'
-COMMIT_CHAR = "C\n"
 
 
 class ForwardingOutputProcessor:
