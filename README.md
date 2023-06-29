@@ -51,9 +51,11 @@ Es importante notar que para ejecutar las queries, deben primero haberse ingresa
 ![Grafo dirigido acíclico](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/dag.png)
 
 ## Vista física
-El flujo de datos en el sistema es manejado por nodos que se comunican mediante middlewares de colas distribuidas. Para que el sistema sea funcional, se necesita dar de alta al menos un nodo de cada tipo, aunque es posible dar de alta más de de un nodo de un tipo a fin de escalar junto a la demanda. Cada uno de estos nodos se encuentran conectados al broker de RabbitMQ, de modo que puedan consumir mensajes de otros nodos que conozcan las colas de las cuales toman su entrada de datos:
+El flujo de datos en el sistema es manejado por nodos que se comunican mediante middlewares de colas distribuidas. Para que el sistema sea funcional, se necesita dar de alta al menos un nodo de cada tipo, aunque es posible dar de alta más de un nodo de un tipo a fin de escalar junto a la demanda. Cada uno de estos nodos se encuentran conectados al broker de RabbitMQ, de modo que puedan consumir mensajes de otros nodos que conozcan las colas de las cuales toman su entrada de datos:
 
 ![Diagrama de despliegue](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/deployment_diagram.png)
+
+Nótese que en el diagrama de despliegue no se incluyen el módulo common, ya que sus contenidos son comunes a todos los nodos, pero todos los nodos deben ser desplegados con el módulo Supervisor para formar su red de supervisores.
 
 Para la entrada de datos, el nodo de ingesta de datos recibe los registros correpondientes a estaciones, clima y viajes y los distribuye a lo largo del sistema para que sean analizados y finalmente almacenados para poder construir la respuesta a las consultas.
 
@@ -76,24 +78,30 @@ La distribución de los viajes a modo de nutrir a los nodos StationDistanceRunni
 
 Al ejecutar las consultas, se envía mensajes a los tres nodos que almacenan las agregaciones de datos. StationDistanceRunningAvg y DurationRunningAvg calculan sus resultados inmediatamente y los devuelven, mientras que ByYearAndStationTripsCount debe primer hacer un llamado a StationsManager para buscar los nombres de las estaciones que apliquen.
 
+## Vista estática
+
+En el núcleo de la estructura de objetos del programa se encuentra la clase `ProcessingNode`, que representa un nodo de la red en ejecución. Al instanciar un ProcessingNode, este debe componer una clase QueueConsumer, y un SupervisorProcess, a modo de encapsular dentro de estos colaboradores la acción de ingesta, procesamiento y salida de datos, y la acción de supervisión de nodos en la red, respectivamente.
+
+Todo `QueueConsumer` se compone de una cola de la cual se leen los mensajes a procesar, una callback de procesamiento con la cual procesar los mensajes, y un OutputProcessor que maneja la salida.
+
+La jerarquía de los `OutputProcessor` se divide en tres clases:
+- `ForwardingOutputProcessor` es usado exclusivamente por los nodos de tipo stateless, solamente encolando (guardando en disco el estado a modo de poder recuperarlo) el resultado de la callback de procesamiento de input.
+- `StorageOutputProcessor` guarda el resultado del procesamiento del input en un estado persistente y recuperable a fallas, componiendo el mismo a partir de los datos que llegan provenientes de la ingesta. Cuando la ingesta de datos termina, evento que se señaliza con la llegada de N señales de EOF, el StorageOutputProcessor comienza a ejecutar su propio QueueConsumer a modo de leer una cola de pedidos RPC leyendo del estado final de su storage.
+
 ## Vista de desarrollo
 La completitud del código, tanto el cliente como los componentes del sistema de cálculo distribuido y los scripts de infraestructura de colas, se encuentra en un único repositorio de Git.
 
-Dentro del repositorio, el código se encuentra dividido en cuatro directorios: frontend, backend y common.
+Dentro del repositorio, el código se encuentra dividido en cuatro directorios: frontend, backend, common y test.
 
 ![Diagrama de paquetes del repositorio](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/fd_overview.png)
 
-Por su parte el directorio **frontend** cuenta con un main.py, un objeto cliente, y un objeto batch_reader para facilitar la lectura de archivos. Dentro del directorio se encuantran también los archivos dockerfile y de configuración.
+Por su parte el directorio **frontend** cuenta con un main.py, un objeto cliente, y un objeto batch_reader para facilitar la lectura de archivos. Dentro del directorio se encuentran también los archivos dockerfile y de configuración necesarios para lanzar un proceso cliente. Frontend importa utilidades de parseo que, por conveniencia, se guardan en el módulo Common.
 
-El directorio **backend** se divide en subdirectorios, donde cada uno contiene todo lo necesario para desplegar un nodo de cada tipo necesario para el funcionamiento del sistema, incluyendo el punto de entrada de Python, todas las clases involucradas, los archivos de configuración y los Dockerfile para containerizar el depliegue.
+El directorio **backend** se divide en trece subdirectorios con archivos de configuración e inicialización para poner a ejecutar un nodo de procesamiento configurado para cumplir con la funcionalidad del nodo en cuestión, así como los Dockerfile necesarios para hacer su despliegue. En cada `main` se inicializa un StatefulNode o un StatelessNode con sus correspondientes componentes y se lo pone a correr, inyectándole las capas de modelo y comunicación.
 
-**common** contiene utilidades varias para dar contexto al ambiente de los procesos en el archivo `env_utils.py`, así como tres subdirectorios `network`, `model` y `rabbitmq`
+**common** contiene utilidades varias para dar contexto al ambiente de los procesos en el archivo `env_utils.py`, utilidades varias usadas por diversas clases del sistema, y módulos con los distintos componentes que deben inicializarse en un nodo para configurar su comportamiento. `model` contiene objetos de la lógica del dominio propuesto, y `network` aloja utilidades de la capa de comunicación, como ser constantes y funciones de serialización. El módulo `supervisor` es donde están las implementaciones de los algoritmos de elección de líder y supervisor, utilidades de comunicación específicas de los supervisores, y objetos que manejan el cliente de Docker responsable de reiniciar containers.
 
-El subdirectorio **network** contiene utilidades y convenciones de la capa de comunicación, unificando el serializado de las entidades y las constantes en el protocolo.
-
-**model** contiene entidades del dominio utilizadas tanto por el cliente como por el backend
-
-Finalmente **rabbitmq** introduce un framework para manejo del middleware con objetos para leer de colas, escribir a exchanges, y 
+El módulo más extenso dentro de **common** es `processing_node`. En este nodo se encuentran las abstracciones que permiten construir un nodo de procesamiento: StatefulNode, StatelessNode, QueueConsumer, los distintos OutputProcessor y funciones universales de ProcessInput, además de los StorageHandler, abstracciones usadas para persistir el estado de un nodo al recuperarse de una falla.
 
 ## Vista de procesos/dinámica
 
