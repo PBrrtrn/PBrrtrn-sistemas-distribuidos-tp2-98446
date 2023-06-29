@@ -39,21 +39,21 @@ La comunicación entre el cliente y el backend se lleva a cabo mediante una cone
 
 A fin de permitir atender múltiples clientes, los nodos de procesamiento hacen una división lógica entre nodos Stateful y nodos Stateless. Los nodos Stateless son aquellos que no necesitan guardar data de clientes, si no que simplemente reciben datos, los procesan y los forwardean a sus peers. En cambio, los nodos Stateful deben poder ingerir datos de algunos clientes al mismo tiempo que responden a los pedidos de otros cuya ingesta ya haya terminado. Para contemplar este caso, el servidor que se comunica con el cliente anuncia clientes nuevos mediante una cola de fanout para que los nodos de tipo Stateful inicien un proceso ocupado de atender al nodo. Ese proceso utilizará un esquema publisher-subscriber, consumiendo únicamente datos y pedidos del nodo correspondiente. Este esquema requiere colaboración por parte de los nodos Stateless -- Cuando un nodo Stateless forwardea un dato procesado para que sea almacenado, lo encola con la clave de enrutamiento necesaria para que el dato sea almacenado junto al resto de los datos provenientes de ese cliente.
 
-![Comunicación entre nodos de procesamiento y de almacenamiento](https://github.com/PBrrtrn/sistemas-distribuidos-tp2-98446/blob/master/.img/stateless_and_stateful_pubsub.png)
+![Comunicación entre nodos de procesamiento y de almacenamiento](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/stateless_and_stateful_pubsub.png)
 
 ## Casos de uso
 El cliente interactua con el sistema mediante seis casos de uso posibles. Como puede verse en el siguiente diagrama, los casos de uso se dividen en tres que corresponden a la entrada de datos al sistema, y tres casos que ejecutan las consultas al sistema:
 
-![Diagrama de casos de uso](https://github.com/PBrrtrn/sistemas-distribuidos-tp2-98446/blob/master/.img/use_case_diagram.png)
+![Diagrama de casos de uso](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/use_case_diagram.png)
 
 Es importante notar que para ejecutar las queries, deben primero haberse ingresado los datos correspondientes a estaciones, clima y viajes, de modo que las queries se ejecuten una vez que todos estos elementos hayan sido procesados. Esta secuencia de entrada de datos puede apreciarse en la forma de un **grafo dirigido acíclico (DAG)** que muestra las dependencias de tareas previas para calcular cada query.
 
-![Grafo dirigido acíclico](https://github.com/PBrrtrn/sistemas-distribuidos-tp2-98446/blob/master/.img/dag.png)
+![Grafo dirigido acíclico](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/dag.png)
 
 ## Vista física
 El flujo de datos en el sistema es manejado por nodos que se comunican mediante middlewares de colas distribuidas. Para que el sistema sea funcional, se necesita dar de alta al menos un nodo de cada tipo, aunque es posible dar de alta más de de un nodo de un tipo a fin de escalar junto a la demanda. Cada uno de estos nodos se encuentran conectados al broker de RabbitMQ, de modo que puedan consumir mensajes de otros nodos que conozcan las colas de las cuales toman su entrada de datos:
 
-![Diagrama de despliegue](https://github.com/PBrrtrn/sistemas-distribuidos-tp2-98446/blob/master/.img/deployment_diagram.png)
+![Diagrama de despliegue](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/deployment_diagram.png)
 
 Para la entrada de datos, el nodo de ingesta de datos recibe los registros correpondientes a estaciones, clima y viajes y los distribuye a lo largo del sistema para que sean analizados y finalmente almacenados para poder construir la respuesta a las consultas.
 
@@ -72,7 +72,7 @@ Finalmente, para responder la query de duración de viajes con precipitaciones, 
 La distribución de los viajes a modo de nutrir a los nodos StationDistanceRunningAvg, DurationRunningAvg y ByYearAndStationTripsCount puede apreciarse en el siguiente diagrama de robustez:
 
 
-![Diagrama de robustez](https://github.com/PBrrtrn/sistemas-distribuidos-tp2-98446/blob/master/.img/robustness_diagram.png)
+![Diagrama de robustez](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/robustness_diagram.png)
 
 Al ejecutar las consultas, se envía mensajes a los tres nodos que almacenan las agregaciones de datos. StationDistanceRunningAvg y DurationRunningAvg calculan sus resultados inmediatamente y los devuelven, mientras que ByYearAndStationTripsCount debe primer hacer un llamado a StationsManager para buscar los nombres de las estaciones que apliquen.
 
@@ -81,7 +81,7 @@ La completitud del código, tanto el cliente como los componentes del sistema de
 
 Dentro del repositorio, el código se encuentra dividido en cuatro directorios: frontend, backend y common.
 
-![Diagrama de paquetes del repositorio](https://github.com/PBrrtrn/sistemas-distribuidos-tp2-98446/blob/master/.img/fd_overview.png)
+![Diagrama de paquetes del repositorio](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/fd_overview.png)
 
 Por su parte el directorio **frontend** cuenta con un main.py, un objeto cliente, y un objeto batch_reader para facilitar la lectura de archivos. Dentro del directorio se encuantran también los archivos dockerfile y de configuración.
 
@@ -113,33 +113,33 @@ Al terminar de enviar la data, el cliente envía un mensaje EXECUTE_QUERIES y qu
 
 Finalmente el cliente imprime los resultados, cierra el socket y termina de ejecutar.
 
-![Diagrama de secuencia general del protocolo](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/protocol_sequence_diagram.png)
+![Diagrama de secuencia general del protocolo](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/protocol_sequence_diagram.png)
 
 Al ingresar los viajes, estos son enviados a un nodo _MontrealStationsOver6kmAvgTripDistanceIngestor_, el cual filtra los viajes quedandose solo con los batches de Montreal. Acto seguido, el nodo hace un llamado al StationManager para obtener las estaciones de llegada y de partida para ese viaje. Al recibir un viaje, el StationNode lo matchea con su índice de estaciones en un Left Join y lo devuelve con las estaciones. Con ese resultado, el nodo lo envía a un nodo DistanceCalculator para obtener la distancia del viaje, y finalmente todo llega al nodo DistanceRunningAvg. Al terminar de recibir viajes, el nodo de ingesta de datos avisa al DistanceNode y al StationsManager que llegó un EOF para que estos pueden procesarlo.
 
 El DistanceNode terminará al recibir la señal de EOF, pero el StationsManager solo saldrá cuando haya recibido señales de EOF por parte del nodo de ingesta actual, así como el de estaciones que hayan duplicado sus viajes.
 
-![Diagrama de secuencia de los viajes para calcular la distancia promedio de viaje de las estaciones de Montreal](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/montreal_stations_over_6km_average_sequence.png)
+![Diagrama de secuencia de los viajes para calcular la distancia promedio de viaje de las estaciones de Montreal](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/montreal_stations_over_6km_average_sequence.png)
 
 Para ejecutar la Query 3, el cliente envía la consulta al ByStationRunningAvgNode, que calcula el promedio de todas las estaciones de Montreal que guardó, y devuelve las que hayan registrado un viaje promedio mayor a 6km.
 
-![Diagrama de actividad de los viajes para la Query 3](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/avg_montreal_trip_distance_per_station_activity.png)
+![Diagrama de actividad de los viajes para la Query 3](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/avg_montreal_trip_distance_per_station_activity.png)
 
 Los viajes también son forwardeados a los ByYearFilterNode, donde son filtrados para quedarse sólo con aquellos de los años 2016 y 2017. Acto seguido, los viajes de 2016 y 2017 pasan a un ByStationYearlyTripsNode, que lleva la cuenta de los viajes en cada estación por año, indexandolas primero por ciudad y luego por código de estación.
 
-![Diagrama de secuencia de los viajes para la Query 2](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/stations_doubled_yearly_trips_sequence.png)
+![Diagrama de secuencia de los viajes para la Query 2](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/stations_doubled_yearly_trips_sequence.png)
 
 Al ejecutar la Query de estaciones que hayan duplicado el número de viajes anuales entre 2016 y 2017, se envía el pedido al ByStationYearlyTripsNode. En respuesta, el nodo recurre su índice de viajes por estación y se queda sólo con los códigos de aquellas que hayan duplicado sus viajes. Luego, pide a los StationsNode hacer el join de los códigos con los nombres, y devuelve la lista de nombres al cliente que realizó la consulta.
 
-![Diagrama de secuencia para la ejecución de la consulta](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/stations_doubled_yearly_trips_query.png)
+![Diagrama de secuencia para la ejecución de la consulta](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/stations_doubled_yearly_trips_query.png)
 
 Los registros de clima se propagan desde el servidor de ingesta al sistema pasando por filtros de weather que solo deja pasar aquellos registros con >30mm de precipitaciones, y de ahí pasan al WeatherManager. Al llegar la señal de EOF, los filtros la forwardean al manager y cierran su ejecución. Al recibir una señal de EOF por cada filtro, el WeatherManager empieza a atender pedidos por RPC.
 
-![Diagrama de secuencia para la propagacion de registros climaticos](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/weather_ingestion_sequence.png)
+![Diagrama de secuencia para la propagacion de registros climaticos](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/weather_ingestion_sequence.png)
 
 Al entrar viajes, pasan a un nodo que hace pedidos por RPC a WeatherManager. WeatherManager responde haciendo un Inner Join y devolviendo los viajes que hayan sucedido en una fecha con >30mm de precipitaciones. Al recibir los viajes, el nodo de ingesta los pasa a un nodo que lleva el running average para todos los viajes recibidos. Al recibir una señal de EOF, el nodo de ingesta la pasa al running average para que empiece a recibir pedidos por RPC.
 
-![Diagrama de secuencia para la propagacion de viajes para la consulta de duración de viajes con >30mm de precipitaciones](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/avg_duration_with_precipitations_trip_ingestion_sequence.png)
+![Diagrama de secuencia para la propagacion de viajes para la consulta de duración de viajes con >30mm de precipitaciones](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/avg_duration_with_precipitations_trip_ingestion_sequence.png)
 
 ## Known Issues
 - El uso de nodos que centralizan el calculo de las queries aumentan el número de RTTs necesarios para distribuir los datos, además de limitar cuanto se puede escalar levantando nodos adicionales
