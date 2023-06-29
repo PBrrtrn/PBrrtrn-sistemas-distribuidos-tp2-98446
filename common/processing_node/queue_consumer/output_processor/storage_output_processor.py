@@ -1,7 +1,7 @@
 from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.queue import Queue
 from common.processing_node.queue_consumer.output_processor.rpc_responder_output_processor import RPCResponderOutputProcessor
-from common.processing_node.storage_handler import StorageHandler
+from common.processing_node.queue_consumer.output_processor.storage_handler import StorageHandler
 
 
 class StorageOutputProcessor:

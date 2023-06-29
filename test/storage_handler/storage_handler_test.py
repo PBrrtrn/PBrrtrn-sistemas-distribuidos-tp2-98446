@@ -2,7 +2,7 @@ import os
 import pickle
 import unittest
 
-from common.processing_node.storage_handler import StorageHandler
+from common.processing_node.queue_consumer.output_processor.storage_handler import StorageHandler
 
 LOGS_DIR = "storage_handler_logs"
 LOG_FILENAME = "log"
