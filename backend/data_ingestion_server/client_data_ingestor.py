@@ -55,7 +55,6 @@ class ClientDataIngestor:
 
         self.wrapped_socket.close()
 
-
     def receive_and_handle_stations_batch(self, wrapped_socket):
         city = common.network.utils.receive_string(wrapped_socket)
 

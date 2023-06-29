@@ -1,6 +1,6 @@
 import pickle
 
-from common.processing_node.storage_handler import StorageHandler
+from common.processing_node.queue_consumer.output_processor.storage_handler import StorageHandler
 
 
 class TripDurationStorageHandler(StorageHandler):

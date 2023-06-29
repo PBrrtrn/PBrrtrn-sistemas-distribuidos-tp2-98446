@@ -10,6 +10,7 @@ from common.rabbitmq.rpc_client import RPCClient
 
 from client_data_ingestor import ClientDataIngestor
 
+
 class DataIngestionServer:
     def __init__(self, port,
                  listen_backlog,

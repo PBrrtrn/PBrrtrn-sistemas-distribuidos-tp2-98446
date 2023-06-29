@@ -54,6 +54,7 @@ def stations_manager_queue_consumer_factory(client_id: str, config):
         eof_handler=EOFHandler(".eof")
     )
 
+
 def main():
     config = common.env_utils.read_config()
     new_clients_queue_bindings = common.env_utils.parse_queue_bindings(config['NEW_CLIENTS_QUEUE_BINDINGS'])
@@ -67,7 +68,7 @@ def main():
 
     processing_node = StatefulNode(
         supervisor_process=common.supervisor.utils.create_from_config(config),
-        new_clients_queue = new_clients_queue,
+        new_clients_queue=new_clients_queue,
         queue_consumer_factory=stations_manager_queue_consumer_factory,
         config=config
     )

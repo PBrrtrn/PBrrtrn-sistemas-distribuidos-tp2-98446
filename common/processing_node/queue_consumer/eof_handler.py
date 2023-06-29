@@ -1,13 +1,15 @@
 import json
 import os
-import pickle
-from os.path import exists
+
+import common.read_lines_backwards
 
 FILENAME = 'eof_received'
-COMMIT_CHAR = "C\n"
 
 
 class EOFHandler:
+    BUFFER_SIZE = 64
+    COMMIT_CHAR = "C\n"
+
     def __init__(self, eof_directory, append=''):
         filepath = f"{eof_directory}/{FILENAME}{append}"
         self.__load_storage_from_disk(file_path=filepath)
@@ -16,18 +18,15 @@ class EOFHandler:
             self.file = open(filepath, 'a+')
 
     def __load_storage_from_disk(self, file_path):
-        self.storage = {
-            "received_eof_signals": 0,
-        }
-        """if not exists(file_path):
-            return
-        with open(file_path, "r+") as file:
-            for line in file:
-                if line.endswith(COMMIT_CHAR):
-                    log_map = json.loads(line[:-len(COMMIT_CHAR)])
-                    self._update_memory_map_with_logs(log_map)
-                elif not line.endswith('\n'):
-                    file.write('\n')"""
+        self.storage = {'received_eof_signals': 0}
+        if os.path.exists(file_path):
+            with open(file_path, 'r+') as file:
+                common.read_lines_backwards.setup_file(file)
+                for line, position in common.read_lines_backwards.read_lines_backwards(file, self.BUFFER_SIZE):
+                    if line.endswith(self.COMMIT_CHAR):
+                        self.storage = json.loads(line[:-len(self.COMMIT_CHAR)])
+                        break
+                    file.seek(position)
 
     def __prepare(self):
         to_log = self._generate_log_map()
@@ -37,7 +36,7 @@ class EOFHandler:
     def __commit(self):
         if self.file is None:
             return
-        self.file.write(COMMIT_CHAR)
+        self.file.write(self.COMMIT_CHAR)
         self.file.flush()
 
     def two_phase_commit(self, channel, method):

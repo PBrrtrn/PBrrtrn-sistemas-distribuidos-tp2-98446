@@ -12,7 +12,7 @@ LOGS_READER_BUFFER_SIZE = 1024 * 8
 
 
 class StorageHandler(ABC):
-    def __init__(self, storage_directory, checkpoint_frequency):
+    def __init__(self, storage_directory, filename=FILENAME, checkpoint_frequency=-1):
         self.checkpoint_frequency = checkpoint_frequency
         self.storage = {}
         self.commits = 0
@@ -20,7 +20,7 @@ class StorageHandler(ABC):
         self.__load_storage_from_disk(filepath)
         self.file = open(filepath, 'a+')
 
-    def prepare(self, message: bytes):
+    def prepare(self, message):
         if self.commits == self.checkpoint_frequency:
             self.__write_checkpoint()
         to_log = self._generate_log_map(message)
