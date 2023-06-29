@@ -37,7 +37,7 @@ def stations_distance_running_avg_queue_consumer_factory(client_id: str, config)
             'input_eofs': [common.network.constants.END_QUERY],
             'n_input_peers': 1,
             'rpc_input_processor': rpc_input_processor,
-            'eof_handler': EOFHandler(".eof", append="_rpc")
+            'eof_handler': EOFHandler(".eof", append=f"_rpc_{client_id}")
         }
     )
 
@@ -47,7 +47,7 @@ def stations_distance_running_avg_queue_consumer_factory(client_id: str, config)
         n_input_peers=int(config['N_DISTANCE_CALCULATORS']),
         input_queue=stations_trip_distance_input_queue_reader,
         output_processor=storage_output_processor,
-        eof_handler=EOFHandler(".eof")
+        eof_handler=EOFHandler(".eof", append=f"_{client_id}")
     )
 
 

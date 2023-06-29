@@ -48,7 +48,7 @@ def weather_manager_queue_consumer_factory(client_id: str, config):
             'input_eofs': [common.network.constants.TRIPS_END_ALL],
             'n_input_peers': 1,
             'rpc_input_processor': rpc_input_processor,
-            'eof_handler': EOFHandler(".eof", append="_rpc")
+            'eof_handler': EOFHandler(".eof", append=f"_rpc_{client_id}")
         }
     )
 
@@ -58,7 +58,7 @@ def weather_manager_queue_consumer_factory(client_id: str, config):
         n_input_peers=int(config['N_WEATHER_FILTERS']),
         input_queue=weather_queue,
         output_processor=storage_output_processor,
-        eof_handler=EOFHandler(".eof")
+        eof_handler=EOFHandler(".eof", append=f"_{client_id}")
     )
 
 
