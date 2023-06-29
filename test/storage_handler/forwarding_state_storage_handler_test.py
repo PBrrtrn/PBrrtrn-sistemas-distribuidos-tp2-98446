@@ -15,7 +15,6 @@ class ForwardingStateStorageHandlerTest(unittest.TestCase):
 
     def test_incremental_message_ids(self):
         storage_handler = ForwardingStateStorageHandler(storage_directory=LOGS_DIR, filename=LOG_FILENAME)
-        print(f"INITIAL STORAGE IN INCREMENTAL MESSAGE IDS TEST: {storage_handler.get_storage()}")
 
         for _ in range(5):
             storage_handler.prepare_last_message_id_increment()
@@ -26,7 +25,6 @@ class ForwardingStateStorageHandlerTest(unittest.TestCase):
 
     def test_recover_incremental_message_ids(self):
         storage_handler = ForwardingStateStorageHandler(storage_directory=LOGS_DIR, filename=LOG_FILENAME)
-        print(f"INITIAL STORAGE IN RECOVERY TEST: {storage_handler.get_storage()}")
         for _ in range(5):
             storage_handler.prepare_last_message_id_increment()
             storage_handler.commit()
