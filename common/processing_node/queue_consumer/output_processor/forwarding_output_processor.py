@@ -22,7 +22,7 @@ class ForwardingOutputProcessor:
             self.clients_storage_handler_dict[client_id] = \
                 ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
 
-    def process_output(self, channel, message: bytes, method, _properties, client_id):
+    def process_output(self, channel, message: bytes, method, _properties, client_id, _message_id):
         if message is None:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             return
@@ -40,17 +40,18 @@ class ForwardingOutputProcessor:
         client_storage_handler.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
-    def finish_processing(self, client_id):
+    def finish_processing(self, client_id, message_id):
         client_storage_handler = self.clients_storage_handler_dict[client_id]
         storage = client_storage_handler.get_storage()
         if not storage.get("rpc_eof_sent", False) and self.optional_rpc_eof is not None:
             client_storage_handler.prepare_set_rpc_eof_as_sent()
-            self.optional_rpc_eof.write_eof(self.output_eof, routing_key_suffix=client_id)
+            self.optional_rpc_eof.write_eof(self.output_eof + client_id.encode() + message_id.encode(),
+                                            routing_key_suffix=client_id)
             client_storage_handler.commit()
         remaining_eofs = self.n_output_peers - storage.get("eofs_sent", 0)
         for i in range(remaining_eofs):
             client_storage_handler.prepare_eofs_sent_increment()
-            self._forward_eof(self.output_exchange_writer, self.output_eof, client_id)
+            self._forward_eof(self.output_exchange_writer, self.output_eof, client_id, message_id)
             client_storage_handler.commit()
 
     def _forward(self, exchange_writer, message, client_id):
@@ -59,8 +60,8 @@ class ForwardingOutputProcessor:
         else:
             exchange_writer.write(message)
 
-    def _forward_eof(self, exchange_writer, output_eof, client_id):
+    def _forward_eof(self, exchange_writer, output_eof, client_id, message_id):
         if self.forward_with_routing_key:
-            exchange_writer.write(output_eof + client_id.encode(), routing_key_suffix=client_id)
+            exchange_writer.write(output_eof + client_id.encode() + message_id.encode(), routing_key_suffix=client_id)
         else:
-            exchange_writer.write(output_eof + client_id.encode())
+            exchange_writer.write(output_eof + client_id.encode() + message_id.encode())

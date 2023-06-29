@@ -12,7 +12,7 @@ class RPCWeatherInputProcessor:
     def set_storage(self, storage):
         self.storage = storage
 
-    def process_input(self, message_type: bytes, message_body: bytes, client_id):
+    def process_input(self, message_type: bytes, message_body: bytes, client_id, message_id):
         if message_type == common.network.constants.TRIPS_BATCH:
             raw_batch, city = pickle.loads(message_body)
             trips_batch = common.network.deserialize.deserialize_trips_batch(raw_batch)
@@ -23,8 +23,6 @@ class RPCWeatherInputProcessor:
                     if trip_date in self.storage[city]:
                         response.append(trip)
 
-            return message_type + client_id.encode() + pickle.dumps(response)
-        elif message_type == common.network.constants.TRIPS_END_ALL:
-            return b''
+            return message_type + client_id.encode() + message_id.encode() + pickle.dumps(response)
         else:
             print(f"ERROR - Unknown message header (got {message_type})")
