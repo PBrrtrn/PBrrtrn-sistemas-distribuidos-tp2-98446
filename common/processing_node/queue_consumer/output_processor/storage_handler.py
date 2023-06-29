@@ -3,7 +3,6 @@ from abc import ABC, abstractmethod
 from os.path import exists
 from common.processing_node.logs_reader import LogsReader
 
-# TODO: Cada nodo debe tener su propia carpeta para loggear y debe indexar por cliente
 FILENAME = 'log'
 COMMIT_CHAR = "C\n"
 CHECKPOINT_BEGIN = "CHECKPOINT_START"
