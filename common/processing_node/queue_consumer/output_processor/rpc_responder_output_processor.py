@@ -17,11 +17,8 @@ class RPCResponderOutputProcessor:
         self.optional_rpc_eof_byte = optional_rpc_eof_byte
         self.forwarding_state_storage_handler = ForwardingStateStorageHandler(
             storage_directory=DIR,
-            filename=FILENAME
+            filename=f"{FILENAME}_{client_id}"
         )
-        """self.storage = {"id_last_message_responded": 0, "eofs_sent": 0, "rpc_eof_sent": False}
-        filepath = f".eof/{FILENAME}_{client_id}"
-        self.file = open(filepath, 'a+')"""
 
     def process_output(self, channel, message: bytes, method, properties, _client_id):
         # if self.storage["id_last_message_responded"] == message.id: #Message id hay q cargarlo
