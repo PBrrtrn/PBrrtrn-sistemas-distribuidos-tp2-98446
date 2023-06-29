@@ -8,5 +8,12 @@ class ProcessingNode:
         self.supervisor_process = supervisor_process
 
     def run(self):
-        # self.supervisor_process.run()
+        #self.supervisor_process.run()
+        #while True:
+            #Popear de la cola
+            #Preparar cliente (Instanciar queueconsumer process), escribir en un archivo un log con los
+    # ids de los clientes actualizadas
+    #Commit
+            #ACK
         self.queue_consumer.run()
+        #Lista de queue consumers self.queue_consumer.run()
