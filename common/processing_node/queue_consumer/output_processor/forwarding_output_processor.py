@@ -15,7 +15,7 @@ class ForwardingOutputProcessor:
         self.output_exchange_writer = output_exchange_writer
         self.output_eof = output_eof
         self.optional_rpc_eof = optional_rpc_eof
-        self.storage = {"id_last_message_forwarded": 0, "eofs_sent": 0, "rpc_call_sent": False}
+        self.storage = {"id_last_message_forwarded": 0, "eofs_sent": 0, "rpc_eof_sent": False}
         filepath = f".eof/{FILENAME}"
         self.file = open(filepath, 'a+')
 
@@ -30,8 +30,8 @@ class ForwardingOutputProcessor:
         self.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
-    def finish_processing(self, _result, _delivery_tag, _correlation_id, _reply_to):
-        if not self.storage["rpc_call_sent"] and self.optional_rpc_eof is not None:
+    def finish_processing(self):
+        if not self.storage["rpc_eof_sent"] and self.optional_rpc_eof is not None:
             self.prepare_send_rcp_eof()
             self.optional_rpc_eof.write_eof(self.output_eof)
             self.commit()
@@ -50,7 +50,7 @@ class ForwardingOutputProcessor:
         return {
             "id_last_message_forwarded": self.storage["id_last_message_forwarded"],
             "eofs_sent": self.storage["eofs_sent"] + 1,
-            "rpc_call_sent": self.storage["rpc_call_sent"]
+            "rpc_eof_sent": self.storage["rpc_eof_sent"]
         }
 
     def _update_memory_map_with_logs(self, to_log):
@@ -77,7 +77,7 @@ class ForwardingOutputProcessor:
         return {
             "id_last_message_forwarded": self.storage["id_last_message_forwarded"] + 1,
             "eofs_sent": self.storage["eofs_sent"],
-            "rpc_call_sent": self.storage["rpc_call_sent"]
+            "rpc_eof_sent": self.storage["rpc_eof_sent"]
         }
 
     def prepare_send_rcp_eof(self):
@@ -89,5 +89,5 @@ class ForwardingOutputProcessor:
         return {
             "id_last_message_forwarded": self.storage["id_last_message_forwarded"],
             "eofs_sent": self.storage["eofs_sent"],
-            "rpc_call_sent": True
+            "rpc_eof_sent": True
         }

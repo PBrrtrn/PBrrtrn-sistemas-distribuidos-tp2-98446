@@ -14,7 +14,7 @@ class RPCResponderOutputProcessor:
         self.storage_handler = storage_handler
         self.optional_rpc_eof = optional_rpc_eof
         self.optional_rpc_eof_byte = optional_rpc_eof_byte
-        self.storage = {"id_last_message_responded": 0, "eofs_sent": 0, "rpc_call_sent": False}
+        self.storage = {"id_last_message_responded": 0, "eofs_sent": 0, "rpc_eof_sent": False}
         filepath = f".eof/{FILENAME}"
         self.file = open(filepath, 'a+')
 
@@ -30,8 +30,8 @@ class RPCResponderOutputProcessor:
         self.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
-    def finish_processing(self, _message: bytes, _delivery_tag, _correlation_id, _reply_to):
-        if not self.storage["rpc_call_sent"] and self.optional_rpc_eof is not None:
+    def finish_processing(self):
+        if not self.storage["rpc_eof_sent"] and self.optional_rpc_eof is not None:
             print(f"Sending {self.optional_rpc_eof_byte}")
             self.prepare_send_rcp_eof()
             self.optional_rpc_eof.write_eof(self.optional_rpc_eof_byte)
@@ -71,19 +71,19 @@ class RPCResponderOutputProcessor:
         return {
             "id_last_message_responded": self.storage["id_last_message_responded"],
             "eofs_sent": self.storage["eofs_sent"],
-            "rpc_call_sent": True
+            "rpc_eof_sent": True
         }
 
     def _generate_log_map_send_message(self):
         return {
             "id_last_message_responded": self.storage["id_last_message_responded"] + 1,
             "eofs_sent": self.storage["eofs_sent"],
-            "rpc_call_sent": self.storage["rpc_call_sent"]
+            "rpc_eof_sent": self.storage["rpc_eof_sent"]
         }
 
     def _generate_log_map(self):
         return {
             "id_last_message_responded": self.storage["id_last_message_responded"],
             "eofs_sent": self.storage["eofs_sent"] + 1,
-            "rpc_call_sent": self.storage["rpc_call_sent"]
+            "rpc_eof_sent": self.storage["rpc_eof_sent"]
         }

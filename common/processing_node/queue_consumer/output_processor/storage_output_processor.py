@@ -17,7 +17,7 @@ class StorageOutputProcessor:
         self.storage_handler.commit()
         # self.storage_handler.update_changes_in_disk()
 
-    def finish_processing(self, _result, _delivery_tag, _correlation_id, _reply_to):
+    def finish_processing(self):
         rpc_input_processor = self.finish_processing_node_args['rpc_input_processor']
         rpc_input_processor.set_storage(self.storage_handler.get_storage())
         rpc_responder_output_processor = RPCResponderOutputProcessor(
