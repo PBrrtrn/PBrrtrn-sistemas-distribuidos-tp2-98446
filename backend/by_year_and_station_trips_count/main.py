@@ -38,7 +38,9 @@ def main():
             'input_eofs': [common.network.constants.END_QUERY],
             'n_input_peers': 1,
             'rpc_input_processor': rpc_input_processor,
-            'eof_handler': EOFHandler(".eof", append="_rpc")
+            'eof_handler': EOFHandler(".eof", append="_rpc"),
+            'optional_rpc_eof': stations_rpc_client,
+            'optional_rpc_eof_byte': common.network.constants.STATIONS_END
         }
     )
 

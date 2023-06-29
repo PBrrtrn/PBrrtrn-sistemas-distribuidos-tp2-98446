@@ -1,18 +1,21 @@
 import json
-import os
 
 from common.rabbitmq.exchange_writer import ExchangeWriter
-
+from common.rabbitmq.rpc_client import RPCClient
+import common.network.constants
 
 FILENAME = 'eof_sent'
 COMMIT_CHAR = "C\n"
 
+
 class ForwardingOutputProcessor:
-    def __init__(self, n_output_peers: int, output_exchange_writer: ExchangeWriter, output_eof: bytes):
+    def __init__(self, n_output_peers: int, output_exchange_writer: ExchangeWriter, output_eof: bytes,
+                 optional_rpc_eof: RPCClient = None):
         self.n_output_peers = n_output_peers
         self.output_exchange_writer = output_exchange_writer
         self.output_eof = output_eof
-        self.storage = {"id_last_message_forwarded": 0, "eofs_sent": 0}
+        self.optional_rpc_eof = optional_rpc_eof
+        self.storage = {"id_last_message_forwarded": 0, "eofs_sent": 0, "rpc_call_sent": False}
         filepath = f".eof/{FILENAME}"
         self.file = open(filepath, 'a+')
 
@@ -20,7 +23,7 @@ class ForwardingOutputProcessor:
         if message is None:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             return
-        #if self.storage["id_last_message_forwarded"] == message.id: #Message id hay q cargarlo
+        # if self.storage["id_last_message_forwarded"] == message.id: #Message id hay q cargarlo
         #    channel.basic_ack(delivery_tag=method.delivery_tag)
         self.prepare_send_message()
         self.output_exchange_writer.write(message)
@@ -28,6 +31,10 @@ class ForwardingOutputProcessor:
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def finish_processing(self, _result, _delivery_tag, _correlation_id, _reply_to):
+        if not self.storage["rpc_call_sent"] and self.optional_rpc_eof is not None:
+            self.prepare_send_rcp_eof()
+            self.optional_rpc_eof.write_eof(self.output_eof)
+            self.commit()
         remaining_eofs = self.n_output_peers - self.storage["eofs_sent"]
         for i in range(remaining_eofs):
             self.prepare()
@@ -42,7 +49,8 @@ class ForwardingOutputProcessor:
     def _generate_log_map(self):
         return {
             "id_last_message_forwarded": self.storage["id_last_message_forwarded"],
-            "eofs_sent": self.storage["eofs_sent"] + 1
+            "eofs_sent": self.storage["eofs_sent"] + 1,
+            "rpc_call_sent": self.storage["rpc_call_sent"]
         }
 
     def _update_memory_map_with_logs(self, to_log):
@@ -68,5 +76,18 @@ class ForwardingOutputProcessor:
     def _generate_log_map_send_message(self):
         return {
             "id_last_message_forwarded": self.storage["id_last_message_forwarded"] + 1,
-            "eofs_sent": self.storage["eofs_sent"]
+            "eofs_sent": self.storage["eofs_sent"],
+            "rpc_call_sent": self.storage["rpc_call_sent"]
+        }
+
+    def prepare_send_rcp_eof(self):
+        to_log = self._generate_log_map_send_rpc_eof()
+        self._update_memory_map_with_logs(to_log)
+        self.__write_log_line(to_log)
+
+    def _generate_log_map_send_rpc_eof(self):
+        return {
+            "id_last_message_forwarded": self.storage["id_last_message_forwarded"],
+            "eofs_sent": self.storage["eofs_sent"],
+            "rpc_call_sent": True
         }

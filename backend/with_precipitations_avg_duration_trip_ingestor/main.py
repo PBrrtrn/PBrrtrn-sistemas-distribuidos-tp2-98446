@@ -35,7 +35,8 @@ def main():
     output_processor = ForwardingOutputProcessor(
         n_output_peers=1,
         output_exchange_writer=running_avg_duration_exchange_writer,
-        output_eof=common.network.constants.TRIPS_END_ALL
+        output_eof=common.network.constants.TRIPS_END_ALL,
+        optional_rpc_eof=weather_rpc_client
     )
 
     queue_consumer = QueueConsumer(

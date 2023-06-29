@@ -20,4 +20,5 @@ class MontrealJoinerInputProcessor:
                 raw_joined_montreal_trips = self.stations_join_rpc_client.call(join_trips_request)
                 return common.network.constants.TRIPS_BATCH + raw_joined_montreal_trips
         elif message_type == common.network.constants.TRIPS_END_ALL:
-            self.stations_join_rpc_client.write_eof(message_type)
+            pass
+            #self.stations_join_rpc_client.write_eof(message_type)

@@ -2,6 +2,8 @@ import logging
 import pickle
 import socket
 import datetime
+from time import sleep
+
 import common.network.serialize
 import common.network.constants
 import common.network.utils
@@ -19,11 +21,14 @@ class Client:
 
     def run(self):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            sock.connect((self.config['SERVER_ADDRESS'], int(self.config["SERVER_PORT"])))
-        except TimeoutError:
-            # TODO: Log
-            return
+        retries = 0
+        while retries < 5:
+            try:
+                sock.connect((self.config['SERVER_ADDRESS'], int(self.config["SERVER_PORT"])))
+                break
+            except Exception:
+                retries += 1
+                sleep(4)
 
         wrapped_socket = SocketWrapper(sock)
         self.send_stations(wrapped_socket)

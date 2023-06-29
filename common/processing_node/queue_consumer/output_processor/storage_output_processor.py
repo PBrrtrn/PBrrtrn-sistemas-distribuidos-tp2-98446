@@ -22,7 +22,9 @@ class StorageOutputProcessor:
         rpc_input_processor.set_storage(self.storage_handler.get_storage())
         rpc_responder_output_processor = RPCResponderOutputProcessor(
             rpc_queue=self.rpc_queue,
-            storage_handler=self.storage_handler
+            storage_handler=self.storage_handler,
+            optional_rpc_eof=self.finish_processing_node_args.get('optional_rpc_eof', None),
+            optional_rpc_eof_byte=self.finish_processing_node_args.get('optional_rpc_eof_byte', None)
         )
 
         queue_consumer = QueueConsumer(

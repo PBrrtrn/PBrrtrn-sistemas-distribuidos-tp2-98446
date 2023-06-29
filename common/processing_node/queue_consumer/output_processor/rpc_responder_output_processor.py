@@ -2,15 +2,19 @@ import json
 
 from common.rabbitmq.queue import Queue
 from common.processing_node.storage_handler import StorageHandler
+from common.rabbitmq.rpc_client import RPCClient
 
 FILENAME = 'eof_sent_rpc'
 COMMIT_CHAR = "C\n"
 
 class RPCResponderOutputProcessor:
-    def __init__(self, rpc_queue: Queue, storage_handler: StorageHandler):
+    def __init__(self, rpc_queue: Queue, storage_handler: StorageHandler,
+                 optional_rpc_eof: RPCClient = None, optional_rpc_eof_byte: bytes = None):
         self.rpc_queue = rpc_queue
         self.storage_handler = storage_handler
-        self.storage = {"id_last_message_responded": 0, "eofs_sent": 0}
+        self.optional_rpc_eof = optional_rpc_eof
+        self.optional_rpc_eof_byte = optional_rpc_eof_byte
+        self.storage = {"id_last_message_responded": 0, "eofs_sent": 0, "rpc_call_sent": False}
         filepath = f".eof/{FILENAME}"
         self.file = open(filepath, 'a+')
 
@@ -28,10 +32,15 @@ class RPCResponderOutputProcessor:
 
     def finish_processing(self, message: bytes, delivery_tag, correlation_id, reply_to):
         # Eventualmente tmb recibe el id del cliente
-
         #self.storage_handler.prepare_delete()
-        #self.prepare()
-        """self.rpc_queue.respond(
+        print("Finish processing!!")
+        if not self.storage["rpc_call_sent"] and self.optional_rpc_eof is not None:
+            print(f"Sending {self.optional_rpc_eof_byte}")
+            self.prepare_send_rcp_eof()
+            self.optional_rpc_eof.write_eof(self.optional_rpc_eof_byte)
+            self.commit()
+        """self.prepare()
+        self.rpc_queue.respond(
             message=message,
             to=reply_to,
             correlation_id=correlation_id,
@@ -64,14 +73,28 @@ class RPCResponderOutputProcessor:
     def _update_memory_map_with_logs(self, to_log):
         self.storage = to_log
 
+    def prepare_send_rcp_eof(self):
+        to_log = self._generate_log_map_send_rpc_eof()
+        self._update_memory_map_with_logs(to_log)
+        self.__write_log_line(to_log)
+
+    def _generate_log_map_send_rpc_eof(self):
+        return {
+            "id_last_message_responded": self.storage["id_last_message_responded"],
+            "eofs_sent": self.storage["eofs_sent"],
+            "rpc_call_sent": True
+        }
+
     def _generate_log_map_send_message(self):
         return {
             "id_last_message_responded": self.storage["id_last_message_responded"] + 1,
-            "eofs_sent": self.storage["eofs_sent"]
+            "eofs_sent": self.storage["eofs_sent"],
+            "rpc_call_sent": self.storage["rpc_call_sent"]
         }
 
     def _generate_log_map(self):
         return {
             "id_last_message_responded": self.storage["id_last_message_responded"],
-            "eofs_sent": self.storage["eofs_sent"] + 1
+            "eofs_sent": self.storage["eofs_sent"] + 1,
+            "rpc_call_sent": self.storage["rpc_call_sent"]
         }
