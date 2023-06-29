@@ -7,8 +7,9 @@ import common.supervisor.utils
 from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 
 from common.rabbitmq.queue import Queue
-from common.processing_node.queue_consumer.process_input.identity_process_input import identity_process_input_without_header
-from common.processing_node.stateless_node import StatelessNode
+from common.processing_node.queue_consumer.process_input.identity_process_input import \
+    identity_process_input_without_header
+from common.processing_node.stateful_node import StatefulNode
 from common.processing_node.queue_consumer.eof_handler import EOFHandler
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from rpc_weather_input_processor import RPCWeatherInputProcessor
@@ -22,9 +23,7 @@ def read_config():
     return config["DEFAULT"]
 
 
-def main():
-    config = read_config()
-
+def weather_manager_queue_consumer_factory(client_id: str, config):
     input_queue_bindings = common.env_utils.parse_queue_bindings(config['FILTERED_WEATHER_QUEUE_BINDINGS'])
     weather_queue = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
@@ -52,7 +51,7 @@ def main():
         }
     )
 
-    queue_consumer = QueueConsumer(
+    return QueueConsumer(
         process_input=identity_process_input_without_header,
         input_eofs=[common.network.constants.WEATHER_END_ALL],
         n_input_peers=int(config['N_WEATHER_FILTERS']),
@@ -61,9 +60,15 @@ def main():
         eof_handler=EOFHandler(".eof")
     )
 
-    processing_node = StatelessNode(
-        queue_consumer=queue_consumer,
-        supervisor_process=common.supervisor.utils.create_from_config(config)
+
+def main():
+    config = read_config()
+
+    processing_node = StatefulNode(
+        supervisor_process=common.supervisor.utils.create_from_config(config),
+        new_clients_queue=None,
+        queue_consumer_factory=weather_manager_queue_consumer_factory,
+        config=config
     )
     processing_node.run()
 

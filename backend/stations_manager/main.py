@@ -2,7 +2,7 @@ import common.env_utils
 import common.supervisor.utils
 
 from common.processing_node.queue_consumer.process_input.identity_process_input import identity_process_input_without_header
-from common.processing_node.stateless_node import StatelessNode
+from common.processing_node.stateful_node import StatefulNode
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.processing_node.queue_consumer.eof_handler import EOFHandler
@@ -12,9 +12,7 @@ import common.network.constants
 from common.rabbitmq.queue import Queue
 
 
-def main():
-    config = common.env_utils.read_config()
-
+def stations_manager_queue_consumer_factory(client_id: str, config):
     queue_bindings = common.env_utils.parse_queue_bindings(config['STATIONS_INPUT_QUEUE_BINDINGS'])
     stations_queue = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
@@ -46,7 +44,7 @@ def main():
     # Quedó deprecada la implementación del StationManager, siendo que este necesita un EOF por ciudad, por eso se
     # hardcodea que hay 3 input_peers cuando en realidad no los hay -- así, se espera a recibir tres EOF. Habría que
     # arreglarlo, pero está acoplado al protocolo (aunque no debería ser un cambio tan grande)
-    queue_consumer = QueueConsumer(
+    return QueueConsumer(
         process_input=identity_process_input_without_header,
         input_eofs=[common.network.constants.STATIONS_END],
         n_input_peers=3,
@@ -55,10 +53,14 @@ def main():
         eof_handler=EOFHandler(".eof")
     )
 
-    processing_node = StatelessNode(
-        queue_consumer=queue_consumer,
-        supervisor_process=common.supervisor.utils.create_from_config(config)
+def main():
+    config = common.env_utils.read_config()
 
+    processing_node = StatefulNode(
+        supervisor_process=common.supervisor.utils.create_from_config(config),
+        new_clients_queue = None,
+        queue_consumer_factory=stations_manager_queue_consumer_factory,
+        config=config
     )
 
     processing_node.run()

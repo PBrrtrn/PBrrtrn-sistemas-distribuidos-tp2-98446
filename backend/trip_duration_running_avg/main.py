@@ -4,16 +4,14 @@ import common.network.constants
 from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.queue import Queue
 from common.processing_node.queue_consumer.process_input.identity_process_input import identity_process_input_without_header
-from common.processing_node.stateless_node import StatelessNode
+from common.processing_node.stateful_node import StatefulNode
 from common.processing_node.queue_consumer.eof_handler import EOFHandler
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from rpc_duration_input_processor import RPCDurationInputProcessor
 from trip_duration_storage_handler import TripDurationStorageHandler
 
 
-def main():
-    config = common.env_utils.read_config()
-
+def trip_duration_running_avg_queue_consumer_factory(client_id: str, config):
     trips_input_queue_bindings = common.env_utils.parse_queue_bindings(config["TRIPS_INPUT_QUEUE_BINDINGS"])
     trips_input_queue_name = config["TRIPS_INPUT_QUEUE_NAME"]
     trips_input_queue_reader = Queue(
@@ -42,7 +40,7 @@ def main():
         }
     )
 
-    queue_consumer = QueueConsumer(
+    return QueueConsumer(
         process_input=identity_process_input_without_header,
         input_eofs=[common.network.constants.TRIPS_END_ALL],
         n_input_peers=1,
@@ -51,9 +49,14 @@ def main():
         eof_handler=EOFHandler(".eof")
     )
 
-    processing_node = StatelessNode(
-        queue_consumer=queue_consumer,
-        supervisor_process=common.supervisor.utils.create_from_config(config)
+def main():
+    config = common.env_utils.read_config()
+
+    processing_node = StatefulNode(
+        supervisor_process=common.supervisor.utils.create_from_config(config),
+        new_clients_queue=None,
+        queue_consumer_factory=trip_duration_running_avg_queue_consumer_factory,
+        config=config
     )
 
     processing_node.run()
