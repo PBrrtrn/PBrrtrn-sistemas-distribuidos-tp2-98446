@@ -3,7 +3,8 @@ import common.supervisor.utils
 import common.network.constants
 from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.queue import Queue
-from common.processing_node.queue_consumer.process_input.identity_process_input import identity_process_input_without_header
+from common.processing_node.queue_consumer.process_input.identity_process_input import \
+    identity_process_input_without_header
 from common.processing_node.stateful_node import StatefulNode
 from common.processing_node.queue_consumer.eof_handler import EOFHandler
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
@@ -12,17 +13,18 @@ from trip_duration_storage_handler import TripDurationStorageHandler
 
 
 def trip_duration_running_avg_queue_consumer_factory(client_id: str, config):
-    trips_input_queue_bindings = common.env_utils.parse_queue_bindings(config["TRIPS_INPUT_QUEUE_BINDINGS"])
+    trips_input_queue_bindings = common.env_utils.parse_queue_bindings_with_client_id(
+        config["TRIPS_INPUT_QUEUE_BINDINGS"], client_id)
     trips_input_queue_name = config["TRIPS_INPUT_QUEUE_NAME"]
     trips_input_queue_reader = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=trips_input_queue_name,
+        name=trips_input_queue_name + client_id,
         bindings=trips_input_queue_bindings
     )
 
     rpc_queue_reader = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=config["RPC_QUEUE_NAME"]
+        name=config["RPC_QUEUE_NAME"] + client_id
     )
     rpc_input_processor = RPCDurationInputProcessor()
     storage_handler = TripDurationStorageHandler(
@@ -48,6 +50,7 @@ def trip_duration_running_avg_queue_consumer_factory(client_id: str, config):
         output_processor=storage_output_processor,
         eof_handler=EOFHandler(".eof")
     )
+
 
 def main():
     config = common.env_utils.read_config()

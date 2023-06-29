@@ -24,16 +24,17 @@ def read_config():
 
 
 def weather_manager_queue_consumer_factory(client_id: str, config):
-    input_queue_bindings = common.env_utils.parse_queue_bindings(config['FILTERED_WEATHER_QUEUE_BINDINGS'])
+    input_queue_bindings = common.env_utils.parse_queue_bindings_with_client_id(
+        config['FILTERED_WEATHER_QUEUE_BINDINGS'], client_id)
     weather_queue = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=config['FILTERED_WEATHER_QUEUE_NAME'],
+        name=config['FILTERED_WEATHER_QUEUE_NAME'] + client_id,
         bindings=input_queue_bindings
     )
 
     rpc_queue = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=config['WEATHER_RPC_QUEUE_NAME']
+        name=config['WEATHER_RPC_QUEUE_NAME'] + client_id
     )
     rpc_input_processor = RPCWeatherInputProcessor()
     storage_handler = WeatherStorageHandler(

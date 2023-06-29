@@ -13,16 +13,17 @@ from common.rabbitmq.queue import Queue
 
 
 def stations_manager_queue_consumer_factory(client_id: str, config):
-    queue_bindings = common.env_utils.parse_queue_bindings(config['STATIONS_INPUT_QUEUE_BINDINGS'])
+    queue_bindings = common.env_utils.parse_queue_bindings_with_client_id(
+        config['STATIONS_INPUT_QUEUE_BINDINGS'], client_id)
     stations_queue = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=config['STATIONS_INPUT_QUEUE_NAME'],
+        name=config['STATIONS_INPUT_QUEUE_NAME'] + client_id,
         bindings=queue_bindings
     )
 
     requests_queue_reader = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=config['STATIONS_RPC_QUEUE_NAME']
+        name=config['STATIONS_RPC_QUEUE_NAME'] + client_id
     )
 
     rpc_input_processor = RPCStationInputProcessor()

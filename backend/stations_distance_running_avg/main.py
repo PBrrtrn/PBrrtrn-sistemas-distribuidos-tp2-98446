@@ -13,16 +13,17 @@ from rpc_distance_input_processor import RPCDistanceInputProcessor
 
 
 def stations_distance_running_avg_queue_consumer_factory(client_id: str, config):
-    queue_bindings = common.env_utils.parse_queue_bindings(config['STATIONS_TRIP_DISTANCE_INPUT_QUEUE_BINDINGS'])
+    queue_bindings = common.env_utils.parse_queue_bindings_with_client_id(
+        config['STATIONS_TRIP_DISTANCE_INPUT_QUEUE_BINDINGS'], client_id)
     stations_trip_distance_input_queue_reader = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=config['STATIONS_TRIP_DISTANCE_INPUT_QUEUE_NAME'],
+        name=config['STATIONS_TRIP_DISTANCE_INPUT_QUEUE_NAME'] + client_id,
         bindings=queue_bindings
     )
 
     rpc_queue_reader = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=config['QUERY_RPC_QUEUE_NAME']
+        name=config['QUERY_RPC_QUEUE_NAME'] + client_id
     )
     rpc_input_processor = RPCDistanceInputProcessor()
     storage_handler = StationDistanceStorageHandler(

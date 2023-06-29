@@ -14,18 +14,19 @@ import common.network.constants
 
 
 def by_year_and_stations_trip_count_queue_consumer_factory(client_id: str, config):
-    filtered_trips_input_queue_bindings = common.env_utils.parse_queue_bindings(config['FILTERED_TRIPS_QUEUE_BINDINGS'])
+    filtered_trips_input_queue_bindings = common.env_utils.parse_queue_bindings_with_client_id(
+        config['FILTERED_TRIPS_QUEUE_BINDINGS'], client_id)
     filtered_trips_input_queue_reader = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=config['FILTERED_TRIPS_QUEUE_NAME'],
+        name=config['FILTERED_TRIPS_QUEUE_NAME'] + client_id,
         bindings=filtered_trips_input_queue_bindings
     )
 
     requests_queue_reader = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=config['DOUBLED_YEARLY_TRIPS_STATIONS_RPC_QUEUE_NAME']
+        name=config['DOUBLED_YEARLY_TRIPS_STATIONS_RPC_QUEUE_NAME'] + client_id
     )
-    stations_rpc_client = RPCClient(rpc_queue_name=config['STATIONS_RPC_QUEUE_NAME'])
+    stations_rpc_client = RPCClient(rpc_queue_name=config['STATIONS_RPC_QUEUE_NAME'] + client_id)
     rpc_input_processor = RPCStationCounterInputProcessor(rpc_client=stations_rpc_client)
     storage_handler = StationCounterStorageHandler(
         storage_directory=config['STORAGE_PATH'],
