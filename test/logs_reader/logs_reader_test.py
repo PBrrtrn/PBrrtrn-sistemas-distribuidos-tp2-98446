@@ -5,7 +5,7 @@ import unittest
 class LogsReaderTest(unittest.TestCase):
     COMMIT = "C\n"
     BEGIN = "CHECKPOINT_START"
-    END = "CHECKPOINT_END"
+    END = "CHECKPOINT_END\n"
 
     def _buffer_test(self, buffer_size):
         file_path = "logs_reader_broken_checkpoint_log"

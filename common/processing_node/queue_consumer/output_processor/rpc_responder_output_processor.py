@@ -7,6 +7,7 @@ from common.rabbitmq.rpc_client import RPCClient
 FILENAME = 'eof_sent_rpc'
 COMMIT_CHAR = "C\n"
 
+
 class RPCResponderOutputProcessor:
     def __init__(self, rpc_queue: Queue, storage_handler: StorageHandler,
                  optional_rpc_eof: RPCClient = None, optional_rpc_eof_byte: bytes = None):
@@ -19,7 +20,7 @@ class RPCResponderOutputProcessor:
         self.file = open(filepath, 'a+')
 
     def process_output(self, channel, message: bytes, method, properties):
-        #if self.storage["id_last_message_responded"] == message.id: #Message id hay q cargarlo
+        # if self.storage["id_last_message_responded"] == message.id: #Message id hay q cargarlo
         #    channel.basic_ack(delivery_tag=method.delivery_tag)
         self.prepare_send_message()
         self.rpc_queue.respond(

@@ -2,7 +2,6 @@ import json
 
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.rpc_client import RPCClient
-import common.network.constants
 
 FILENAME = 'eof_sent'
 COMMIT_CHAR = "C\n"
@@ -23,8 +22,10 @@ class ForwardingOutputProcessor:
         if message is None:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             return
+
         # if self.storage["id_last_message_forwarded"] == message.id: #Message id hay q cargarlo
         #    channel.basic_ack(delivery_tag=method.delivery_tag)
+
         self.prepare_send_message()
         self.output_exchange_writer.write(message)
         self.commit()
