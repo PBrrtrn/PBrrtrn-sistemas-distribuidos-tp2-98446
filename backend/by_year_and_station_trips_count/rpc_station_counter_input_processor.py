@@ -23,6 +23,6 @@ class RPCStationCounterInputProcessor:
                 join_request = common.network.constants.STATIONS_BATCH + pickle.dumps((city_station_codes, city))
                 response += pickle.loads(self.rpc_client.call(join_request))
 
-            self.rpc_client.call(common.network.constants.STATIONS_END)
+            self.rpc_client.write_eof(common.network.constants.STATIONS_END)
             return pickle.dumps(response)
 

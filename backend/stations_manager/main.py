@@ -33,8 +33,8 @@ def main():
         rpc_queue=requests_queue_reader,
         storage_handler=storage_handler,
         finish_processing_node_args={
-            'input_eofs': [common.network.constants.EXECUTE_QUERIES],
-            'n_input_peers': int(config['N_MONTREAL_STATIONS_JOINERS']),
+            'input_eofs': [common.network.constants.STATIONS_END, common.network.constants.TRIPS_END_ALL],
+            'n_input_peers': int(config['N_MONTREAL_STATIONS_JOINERS']) + 1,
             'rpc_input_processor': rpc_input_processor,
             'eof_handler': EOFHandler(".eof", append="_rpc")
         }
