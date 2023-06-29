@@ -30,13 +30,13 @@ class RPCResponderOutputProcessor:
         # Eventualmente tmb recibe el id del cliente
 
         #self.storage_handler.prepare_delete()
-        self.prepare()
+        #self.prepare()
         self.rpc_queue.respond(
             message=message,
             to=reply_to,
             correlation_id=correlation_id,
         )
-        self.commit()
+        #self.commit()
         #self.storage_handler.commit_delete()
 
     def prepare(self):
