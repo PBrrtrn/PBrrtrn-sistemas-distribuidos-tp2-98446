@@ -1,6 +1,8 @@
-import pickle
+from os.path import exists
 
 from common.processing_node.queue_consumer.output_processor.storage_handler import StorageHandler
+
+LOGS_READER_BUFFER_SIZE = 1024 * 8
 
 
 class ForwardingStateStorageHandler(StorageHandler):
@@ -30,4 +32,6 @@ class ForwardingStateStorageHandler(StorageHandler):
         return message
 
     def _update_memory_map_with_logs(self, storage, log_map):
-        storage = log_map
+        storage['id_last_message_forwarded'] = log_map['id_last_message_forwarded']
+        storage['eofs_sent'] = log_map['eofs_sent']
+        storage['rpc_eof_sent'] = log_map['rpc_eof_sent']
