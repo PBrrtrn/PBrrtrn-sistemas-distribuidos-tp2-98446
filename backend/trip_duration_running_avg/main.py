@@ -27,7 +27,10 @@ def main():
         name=config["RPC_QUEUE_NAME"]
     )
     rpc_input_processor = RPCDurationInputProcessor()
-    storage_handler = TripDurationStorageHandler(storage_directory=config['STORAGE_PATH'])
+    storage_handler = TripDurationStorageHandler(
+        storage_directory=config['STORAGE_PATH'],
+        checkpoint_frequency=int(config['CHECKPOINT_FREQUENCY'])
+    )
     storage_output_processor = StorageOutputProcessor(
         rpc_queue=rpc_queue_reader,
         storage_handler=storage_handler,

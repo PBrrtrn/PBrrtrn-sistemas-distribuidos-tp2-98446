@@ -1,1 +1,1 @@
-python3 station_counter_storage_handler_test.py
+python3 -m unittest discover --pattern="*_test.py"

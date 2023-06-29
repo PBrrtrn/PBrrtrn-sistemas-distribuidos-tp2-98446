@@ -15,9 +15,18 @@ class StationStorageHandler(StorageHandler):
             to_log[city][station.code] = common.model.station.to_dict(station)
         return to_log
 
-    def _update_memory_map_with_logs(self, log_map):
+    def _update_memory_map_with_logs(self, storage, log_map):
         for city in log_map:
-            if city not in self.storage:
-                self.storage[city] = {}
+            if city not in storage:
+                storage[city] = {}
             for station_code in log_map[city]:
-                self.storage[city][station_code] = common.model.station.from_dict(log_map[city][station_code])
+                storage[city][station_code] = common.model.station.from_dict(log_map[city][station_code])
+
+    def _create_checkpoint_from_storage(self):
+        checkpoint = {}
+        for city, stations_by_code in self.storage.items():
+            checkpoint[city] = {}
+            for code, station in stations_by_code.items():
+                checkpoint[city][code] = common.model.station.to_dict(station)
+
+        return checkpoint

@@ -38,13 +38,13 @@ class StationCounterStorageHandler(StorageHandler):
     def __update_changes_in_disk(self):
         pass
 
-    def _update_memory_map_with_logs(self, log_map):
-        for city in log_map:
-            if city not in self.storage:
-                self.storage[city] = {}
-            for start_station_code in log_map[city]:
-                if start_station_code not in self.storage[city]:
-                    self.storage[city][start_station_code] = {'2016': 0, '2017': 0}
-                for year in log_map[city][start_station_code]:
-                    new_value = log_map[city][start_station_code][year]
-                    self.storage[city][start_station_code][year] = new_value
+    def _update_memory_map_with_logs(self, storage, log_entry):
+        for city in log_entry:
+            if city not in storage:
+                storage[city] = {}
+            for start_station_code in log_entry[city]:
+                if start_station_code not in storage[city]:
+                    storage[city][start_station_code] = {'2016': 0, '2017': 0}
+                for year in log_entry[city][start_station_code]:
+                    new_value = log_entry[city][start_station_code][year]
+                    storage[city][start_station_code][year] = new_value

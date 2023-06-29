@@ -17,11 +17,8 @@ class TripDurationStorageHandler(StorageHandler):
             'n_trips': self.storage.get('n_trips', 0) + n_trips_counter
         }
 
-    def _update_memory_map_with_logs(self, log_map):
+    def _update_memory_map_with_logs(self, storage, log_map):
         new_total_duration = log_map['total_duration']
         new_total_n_trips = log_map['n_trips']
-        if len(self.storage) == 0:
-            self.storage = {'total_duration': new_total_duration, 'n_trips': new_total_n_trips}
-        else:
-            self.storage['total_duration'] = new_total_duration
-            self.storage['n_trips'] = new_total_n_trips
+        storage['total_duration'] = new_total_duration
+        storage['n_trips'] = new_total_n_trips

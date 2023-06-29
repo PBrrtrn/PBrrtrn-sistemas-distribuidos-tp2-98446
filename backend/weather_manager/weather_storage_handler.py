@@ -12,9 +12,18 @@ class WeatherStorageHandler(StorageHandler):
             to_log[city][weather.date] = common.model.weather.to_dict(weather)
         return to_log
 
-    def _update_memory_map_with_logs(self, log_map):
+    def _update_memory_map_with_logs(self, storage, log_map):
         for city in log_map:
-            if city not in self.storage:
-                self.storage[city] = {}
+            if city not in storage:
+                storage[city] = {}
             for date in log_map[city]:
-                self.storage[city][date] = common.model.weather.from_dict(log_map[city][date])
+                storage[city][date] = common.model.weather.from_dict(log_map[city][date])
+
+    def _create_checkpoint_from_storage(self):
+        checkpoint = {}
+        for city, weathers_by_date in self.storage.items():
+            checkpoint[city] = {}
+            for date, weather in weathers_by_date.items():
+                checkpoint[city][date] = common.model.weather.to_dict(weather)
+
+        return checkpoint

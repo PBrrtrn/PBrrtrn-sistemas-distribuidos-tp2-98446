@@ -20,15 +20,15 @@ class StationDistanceStorageHandler(StorageHandler):
                 }
         return to_log
 
-    def _update_memory_map_with_logs(self, log_map):
+    def _update_memory_map_with_logs(self, storage, log_map):
         for end_station_name in log_map:
             new_distance = log_map[end_station_name]["total_distance"]
             new_n_trips = log_map[end_station_name]["n_trips"]
-            if end_station_name in self.storage:
-                self.storage[end_station_name]["total_distance"] = new_distance
-                self.storage[end_station_name]["n_trips"] = new_n_trips
+            if end_station_name in storage:
+                storage[end_station_name]["total_distance"] = new_distance
+                storage[end_station_name]["n_trips"] = new_n_trips
             else:
-                self.storage[end_station_name] = {
+                storage[end_station_name] = {
                     "total_distance": new_distance,
                     "n_trips": new_n_trips
                 }

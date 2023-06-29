@@ -1,0 +1,10 @@
+{"a": 2}C
+{"b": 1}C
+{"a": 3}C
+{"c": 2}C
+CHECKPOINT_START{"a": 3, "b": 1, "c": 2}CHECKPOINT_END
+{"c": 3, "d": 1}C
+{"b": 2}C
+{"a": 4}C
+{"d": 3}C
+CHECKPOINT_START{"a":
