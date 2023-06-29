@@ -20,7 +20,7 @@ class ForwardingOutputProcessor:
             filename=FILENAME
         )
 
-    def process_output(self, channel, message: bytes, method, _properties):
+    def process_output(self, channel, message: bytes, method, _properties, client_id):
         if message is None:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             return
@@ -29,25 +29,31 @@ class ForwardingOutputProcessor:
         #    channel.basic_ack(delivery_tag=method.delivery_tag)
 
         self.forwarding_state_storage_handler.prepare_last_message_id_increment()
-        self._forward(self.output_exchange_writer, message)
+        self._forward(self.output_exchange_writer, message, client_id)
         self.forwarding_state_storage_handler.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
-    def finish_processing(self):
+    def finish_processing(self, client_id):
         storage = self.forwarding_state_storage_handler.get_storage()
         if not storage.get("rpc_eof_sent", False) and self.optional_rpc_eof is not None:
             self.forwarding_state_storage_handler.prepare_set_rpc_eof_as_sent()
-            self.optional_rpc_eof.write_eof(self.output_eof, routing_key_suffix='1')
+            self.optional_rpc_eof.write_eof(self.output_eof, routing_key_suffix=client_id)
             self.forwarding_state_storage_handler.commit()
         remaining_eofs = self.n_output_peers - storage.get("eofs_sent", 0)
         for i in range(remaining_eofs):
             self.forwarding_state_storage_handler.prepare_eofs_sent_increment()
-            self._forward(self.output_exchange_writer, self.output_eof)
+            self._forward_eof(self.output_exchange_writer, self.output_eof, client_id)
             # self.output_exchange_writer.write(self.output_eof, routing_key_suffix='1')
             self.forwarding_state_storage_handler.commit()
 
-    def _forward(self, exchange_writer, message):
+    def _forward(self, exchange_writer, message, client_id):
         if self.forward_with_routing_key:
-            exchange_writer.write(message, routing_key_suffix='1')
+            exchange_writer.write(message, routing_key_suffix=client_id)
         else:
             exchange_writer.write(message)
+
+    def _forward_eof(self, exchange_writer, output_eof, client_id):
+        if self.forward_with_routing_key:
+            exchange_writer.write(output_eof + client_id.encode(), routing_key_suffix=client_id)
+        else:
+            exchange_writer.write(output_eof + client_id.encode())

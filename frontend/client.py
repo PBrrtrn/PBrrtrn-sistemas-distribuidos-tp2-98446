@@ -9,8 +9,8 @@ import common.network.constants
 import common.network.utils
 from common.network.socket_wrapper import SocketWrapper
 
-RESULTS_PATH = "/results/result.txt"
-
+RESULTS_PATH = "/results/"
+RESULTS_FILE_NAME = "result.txt"
 
 class Client:
     def __init__(self, stations_sources, weather_sources, trips_sources, config):
@@ -128,8 +128,10 @@ def send_trips_end_all(wrapped_socket):
 def send_queries_request(wrapped_socket):
     wrapped_socket.send(common.network.serialize.serialize_queries_request())
     to_print_vec = [""]
+    client_id_in_bytes = None
     for _ in range(N_QUERIES):
         message_type = wrapped_socket.recv(common.network.constants.HEADER_TYPE_LEN)
+        client_id_in_bytes = wrapped_socket.recv(common.network.constants.CLIENT_ID_LEN)
         if message_type == common.network.constants.MONTREAL_STATIONS_OVER_6KM_AVG_TRIP_DISTANCE_RESULT:
             message_length = common.network.utils.receive_int(wrapped_socket)
             raw_stations = wrapped_socket.recv(message_length)
@@ -159,13 +161,13 @@ def send_queries_request(wrapped_socket):
             to_print_vec.append(f"{len(stations)} rows")
     to_print = "\n".join(to_print_vec)
     logging.info(to_print)
-    save_final_result(to_print)
+    save_final_result(to_print, client_id_in_bytes.decode())
 
     wrapped_socket.close()
 
 
-def save_final_result(to_write):
-    with open(RESULTS_PATH, 'w') as file:
+def save_final_result(to_write, client_id):
+    with open(f"{RESULTS_PATH}{client_id}{RESULTS_FILE_NAME}", 'w') as file:
         current_time = datetime.datetime.now()
         file.write(f'{current_time}')
         file.write(to_write)

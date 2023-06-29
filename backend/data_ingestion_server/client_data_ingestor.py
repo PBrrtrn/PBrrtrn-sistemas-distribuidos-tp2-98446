@@ -22,6 +22,8 @@ class ClientDataIngestor:
                  ):
         self.wrapped_socket = wrapped_socket
         self.client_id = client_id
+        self.client_id_in_bytes = client_id.encode('utf-8')
+        print(f"New client id: {self.client_id_in_bytes}")
         self.stations_exchange_writer = stations_exchange_writer
         self.weather_exchange_writer = weather_exchange_writer
         self.n_weather_filters = n_weather_filters
@@ -43,7 +45,7 @@ class ClientDataIngestor:
             elif message_type == common.network.constants.WEATHER_START:
                 self.receive_and_handle_weather_batch(self.wrapped_socket)
             elif message_type == common.network.constants.WEATHER_END_ALL:
-                self.weather_exchange_writer.write(common.network.constants.WEATHER_END_ALL)
+                self.weather_exchange_writer.write(common.network.constants.WEATHER_END_ALL + self.client_id_in_bytes)
             elif message_type == common.network.constants.TRIPS_START:
                 self.receive_and_handle_trips_batch(self.wrapped_socket)
             elif message_type == common.network.constants.TRIPS_END_ALL:
@@ -62,7 +64,7 @@ class ClientDataIngestor:
         while True:
             message_type = wrapped_socket.recv(common.network.constants.HEADER_TYPE_LEN)
             if message_type == common.network.constants.STATIONS_END:
-                self.stations_exchange_writer.write(common.network.constants.STATIONS_END + city.encode('utf-8'),
+                self.stations_exchange_writer.write(common.network.constants.STATIONS_END + self.client_id_in_bytes + city.encode('utf-8'),
                                                     routing_key_suffix=self.client_id)
                 break
             elif message_type != common.network.constants.STATIONS_BATCH:
@@ -73,7 +75,7 @@ class ClientDataIngestor:
             batch_size = common.network.utils.receive_int(wrapped_socket)
             raw_batch = wrapped_socket.recv(batch_size)
 
-            message = common.network.constants.STATIONS_BATCH + pickle.dumps((raw_batch, city))
+            message = common.network.constants.STATIONS_BATCH + self.client_id_in_bytes + pickle.dumps((raw_batch, city))
             self.stations_exchange_writer.write(message, routing_key_suffix=self.client_id)
 
     def receive_and_handle_weather_batch(self, wrapped_socket):
@@ -90,7 +92,7 @@ class ClientDataIngestor:
             batch_size = common.network.utils.receive_int(wrapped_socket)
             raw_batch = wrapped_socket.recv(batch_size)
 
-            message = common.network.constants.WEATHER_BATCH + pickle.dumps((raw_batch, city))
+            message = common.network.constants.WEATHER_BATCH + self.client_id_in_bytes + pickle.dumps((raw_batch, city))
             self.weather_exchange_writer.write(message)
 
     def receive_and_handle_trips_batch(self, wrapped_socket):
@@ -99,7 +101,7 @@ class ClientDataIngestor:
         while True:
             message_type = wrapped_socket.recv(common.network.constants.HEADER_TYPE_LEN)
             if message_type == common.network.constants.TRIPS_END:
-                self.trips_exchange_writer.write(common.network.constants.TRIPS_END)
+                self.trips_exchange_writer.write(common.network.constants.TRIPS_END + self.client_id_in_bytes)
                 break
             elif message_type != common.network.constants.TRIPS_BATCH:
                 print(f"ERROR - Protocol error (expected {common.network.constants.TRIPS_BATCH}, got {message_type})")
@@ -108,42 +110,46 @@ class ClientDataIngestor:
             batch_size = common.network.utils.receive_int(wrapped_socket)
             raw_batch = wrapped_socket.recv(batch_size)
 
-            message = common.network.constants.TRIPS_BATCH + pickle.dumps((raw_batch, city))
+            message = common.network.constants.TRIPS_BATCH + self.client_id_in_bytes + pickle.dumps((raw_batch, city))
             self.trips_exchange_writer.write(message)
 
     def notify_weather_end_all(self):
         for _ in range(self.n_weather_filters):
-            self.weather_exchange_writer.write(common.network.constants.WEATHER_END_ALL)
+            self.weather_exchange_writer.write(common.network.constants.WEATHER_END_ALL + self.client_id_in_bytes)
 
     def notify_trips_end_all(self):
-        self.trips_exchange_writer.write(common.network.constants.TRIPS_END_ALL)
+        self.trips_exchange_writer.write(common.network.constants.TRIPS_END_ALL + self.client_id_in_bytes)
 
     def execute_queries(self, wrapped_socket):
-        raw_montreal_stations = self.montreal_stations_over_6km_avg_trip_distance_rpc.call(
-            common.network.constants.EXECUTE_QUERIES
+
+        response = self.montreal_stations_over_6km_avg_trip_distance_rpc.call(
+            common.network.constants.EXECUTE_QUERIES + self.client_id_in_bytes
         )
 
         wrapped_socket.send(common.network.constants.MONTREAL_STATIONS_OVER_6KM_AVG_TRIP_DISTANCE_RESULT +
-                            len(raw_montreal_stations).to_bytes(4, 'big') +
-                            raw_montreal_stations)
+                            self.client_id_in_bytes + len(response[4:]).to_bytes(4, 'big') +
+                            response[4:])
 
-        raw_avg_duration = self.with_precipitations_avg_trip_duration_rpc.call(
-            common.network.constants.EXECUTE_QUERIES
+        raw_avg_duration_response = self.with_precipitations_avg_trip_duration_rpc.call(
+            common.network.constants.EXECUTE_QUERIES + self.client_id_in_bytes
         )
 
         wrapped_socket.send(common.network.constants.WITH_PRECIPITATIONS_AVG_TRIP_DURATION_RESULT +
-                            len(raw_avg_duration).to_bytes(4, 'big') +
-                            raw_avg_duration)
+                            self.client_id_in_bytes + len(raw_avg_duration_response[4:]).to_bytes(4, 'big') +
+                            raw_avg_duration_response[4:])
 
-        raw_doubled_station_names = self.doubled_yearly_trips_stations_rpc.call(
-            common.network.constants.EXECUTE_QUERIES
+        raw_doubled_station_names_response = self.doubled_yearly_trips_stations_rpc.call(
+            common.network.constants.EXECUTE_QUERIES + self.client_id_in_bytes
         )
-        self.montreal_stations_over_6km_avg_trip_distance_rpc.write_eof(common.network.constants.END_QUERY)
-        self.with_precipitations_avg_trip_duration_rpc.write_eof(common.network.constants.END_QUERY)
-        self.doubled_yearly_trips_stations_rpc.write_eof(common.network.constants.END_QUERY)
+
         wrapped_socket.send(common.network.constants.DOUBLED_YEARLY_TRIPS_STATION_NAMES_RESULT +
-                            len(raw_doubled_station_names).to_bytes(4, 'big') +
-                            raw_doubled_station_names)
+                            self.client_id_in_bytes + len(raw_doubled_station_names_response[4:]).to_bytes(4, 'big') +
+                            raw_doubled_station_names_response[4:])
+
+        self.montreal_stations_over_6km_avg_trip_distance_rpc.write_eof(common.network.constants.END_QUERY + self.client_id_in_bytes)
+        self.with_precipitations_avg_trip_duration_rpc.write_eof(common.network.constants.END_QUERY + self.client_id_in_bytes)
+        self.doubled_yearly_trips_stations_rpc.write_eof(common.network.constants.END_QUERY + self.client_id_in_bytes)
+
 
     def set_up(self):
         self.new_clients_exchange_writer.write(pickle.dumps(self.client_id))

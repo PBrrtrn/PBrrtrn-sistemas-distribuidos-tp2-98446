@@ -4,7 +4,7 @@ from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.queue import Queue
 from common.processing_node.stateful_node import StatefulNode
 from common.processing_node.queue_consumer.process_input.identity_process_input import \
-    identity_process_input_without_header
+    identity_process_input
 from common.rabbitmq.rpc_client import RPCClient
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from station_counter_storage_handler import StationCounterStorageHandler
@@ -45,7 +45,7 @@ def by_year_and_stations_trip_count_queue_consumer_factory(client_id: str, confi
     )
 
     return QueueConsumer(
-        process_input=identity_process_input_without_header,
+        process_input=identity_process_input,
         input_eofs=[common.network.constants.TRIPS_END_ALL],
         n_input_peers=int(config['N_BY_YEAR_TRIPS_FILTERS']),
         input_queue=filtered_trips_input_queue_reader,

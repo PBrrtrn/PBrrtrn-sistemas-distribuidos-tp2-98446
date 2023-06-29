@@ -4,14 +4,14 @@ import common.network.constants
 from haversine import haversine
 
 
-def distance_calculator_process_input(message_type: bytes, message_body: bytes):
+def distance_calculator_process_input(message_type: bytes, message_body: bytes, client_id):
     if message_type == common.network.constants.TRIPS_BATCH:
-        return _calculate_distances(message_body)
+        return _calculate_distances(message_body, client_id)
     else:
         print(f"ERROR - Received unknown message type ({message_type})")
 
 
-def _calculate_distances(raw_batch: bytes):
+def _calculate_distances(raw_batch: bytes, client_id):
     joined_trips = pickle.loads(raw_batch)
 
     distances_batch = []
@@ -21,5 +21,5 @@ def _calculate_distances(raw_batch: bytes):
         distance = haversine(start, end)
         distances_batch.append((end_station.name, distance))
 
-    serialized_batch = common.network.constants.TRIPS_BATCH + pickle.dumps(distances_batch)
+    serialized_batch = common.network.constants.TRIPS_BATCH + client_id.encode() + pickle.dumps(distances_batch)
     return serialized_batch
