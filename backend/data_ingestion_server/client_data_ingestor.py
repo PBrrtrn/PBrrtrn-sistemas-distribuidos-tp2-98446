@@ -1,5 +1,6 @@
 from common.network.socket_wrapper import SocketWrapper
 from common.rabbitmq.exchange_writer import ExchangeWriter
+from common.rabbitmq.fanout_exchange_writer import FanoutExchangeWriter
 from common.rabbitmq.rpc_client import RPCClient
 import common.network.constants
 import common.network.utils
@@ -9,11 +10,12 @@ import pickle
 
 class ClientDataIngestor:
     def __init__(self, wrapped_socket: SocketWrapper,
-                 client_id: int,
+                 client_id: str,
                  stations_exchange_writer: ExchangeWriter,
                  weather_exchange_writer: ExchangeWriter,
                  n_weather_filters: int,
-                 trips_exchange_writer: ExchangeWriter,
+                 trips_exchange_writer: FanoutExchangeWriter,
+                 new_clients_exchange_writer: ExchangeWriter,
                  montreal_stations_over_6km_avg_trip_distance_rpc: RPCClient,
                  with_precipitations_avg_trip_duration_rpc: RPCClient,
                  doubled_yearly_trips_stations_rpc: RPCClient
@@ -24,6 +26,7 @@ class ClientDataIngestor:
         self.weather_exchange_writer = weather_exchange_writer
         self.n_weather_filters = n_weather_filters
         self.trips_exchange_writer = trips_exchange_writer
+        self.new_clients_exchange_writer = new_clients_exchange_writer
         self.montreal_stations_over_6km_avg_trip_distance_rpc = montreal_stations_over_6km_avg_trip_distance_rpc
         self.with_precipitations_avg_trip_duration_rpc = with_precipitations_avg_trip_duration_rpc
         self.doubled_yearly_trips_stations_rpc = doubled_yearly_trips_stations_rpc
@@ -53,14 +56,14 @@ class ClientDataIngestor:
 
         self.wrapped_socket.close()
 
-
     def receive_and_handle_stations_batch(self, wrapped_socket):
         city = common.network.utils.receive_string(wrapped_socket)
 
         while True:
             message_type = wrapped_socket.recv(common.network.constants.HEADER_TYPE_LEN)
             if message_type == common.network.constants.STATIONS_END:
-                self.stations_exchange_writer.write(common.network.constants.STATIONS_END + city.encode('utf-8'))
+                self.stations_exchange_writer.write(common.network.constants.STATIONS_END + city.encode('utf-8'),
+                                                    routing_key_suffix=self.client_id)
                 break
             elif message_type != common.network.constants.STATIONS_BATCH:
                 print(
@@ -71,7 +74,7 @@ class ClientDataIngestor:
             raw_batch = wrapped_socket.recv(batch_size)
 
             message = common.network.constants.STATIONS_BATCH + pickle.dumps((raw_batch, city))
-            self.stations_exchange_writer.write(message)
+            self.stations_exchange_writer.write(message, routing_key_suffix=self.client_id)
 
     def receive_and_handle_weather_batch(self, wrapped_socket):
         city = common.network.utils.receive_string(wrapped_socket)
@@ -96,7 +99,7 @@ class ClientDataIngestor:
         while True:
             message_type = wrapped_socket.recv(common.network.constants.HEADER_TYPE_LEN)
             if message_type == common.network.constants.TRIPS_END:
-                self.trips_exchange_writer.write(common.network.constants.TRIPS_END, city)
+                self.trips_exchange_writer.write(common.network.constants.TRIPS_END)
                 break
             elif message_type != common.network.constants.TRIPS_BATCH:
                 print(f"ERROR - Protocol error (expected {common.network.constants.TRIPS_BATCH}, got {message_type})")
@@ -143,4 +146,4 @@ class ClientDataIngestor:
                             raw_doubled_station_names)
 
     def set_up(self):
-        pass
+        self.new_clients_exchange_writer.write(pickle.dumps(self.client_id))

@@ -2,8 +2,9 @@ import common.env_utils
 import common.supervisor.utils
 from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.queue import Queue
-from common.processing_node.processing_node import ProcessingNode
-from common.processing_node.queue_consumer.process_input.identity_process_input import identity_process_input_without_header
+from common.processing_node.stateful_node import StatefulNode
+from common.processing_node.queue_consumer.process_input.identity_process_input import \
+    identity_process_input_without_header
 from common.rabbitmq.rpc_client import RPCClient
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from station_counter_storage_handler import StationCounterStorageHandler
@@ -12,21 +13,20 @@ from common.processing_node.queue_consumer.eof_handler import EOFHandler
 import common.network.constants
 
 
-def main():
-    config = common.env_utils.read_config()
-
-    filtered_trips_input_queue_bindings = common.env_utils.parse_queue_bindings(config['FILTERED_TRIPS_QUEUE_BINDINGS'])
+def by_year_and_stations_trip_count_queue_consumer_factory(client_id: str, config):
+    filtered_trips_input_queue_bindings = common.env_utils.parse_queue_bindings_with_client_id(
+        config['FILTERED_TRIPS_QUEUE_BINDINGS'], client_id)
     filtered_trips_input_queue_reader = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=config['FILTERED_TRIPS_QUEUE_NAME'],
+        name=config['FILTERED_TRIPS_QUEUE_NAME'] + client_id,
         bindings=filtered_trips_input_queue_bindings
     )
 
     requests_queue_reader = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=config['DOUBLED_YEARLY_TRIPS_STATIONS_RPC_QUEUE_NAME']
+        name=config['DOUBLED_YEARLY_TRIPS_STATIONS_RPC_QUEUE_NAME'] + client_id
     )
-    stations_rpc_client = RPCClient(rpc_queue_name=config['STATIONS_RPC_QUEUE_NAME'])
+    stations_rpc_client = RPCClient(rpc_queue_name=config['STATIONS_RPC_QUEUE_NAME'] + client_id)
     rpc_input_processor = RPCStationCounterInputProcessor(rpc_client=stations_rpc_client)
     storage_handler = StationCounterStorageHandler(
         storage_directory=config['STORAGE_PATH'],
@@ -44,7 +44,7 @@ def main():
         }
     )
 
-    queue_consumer = QueueConsumer(
+    return QueueConsumer(
         process_input=identity_process_input_without_header,
         input_eofs=[common.network.constants.TRIPS_END_ALL],
         n_input_peers=int(config['N_BY_YEAR_TRIPS_FILTERS']),
@@ -53,9 +53,23 @@ def main():
         eof_handler=EOFHandler(".eof")
     )
 
-    processing_node = ProcessingNode(
-        queue_consumer=queue_consumer,
-        supervisor_process=common.supervisor.utils.create_from_config(config)
+
+def main():
+    config = common.env_utils.read_config()
+    new_clients_queue_bindings = common.env_utils.parse_queue_bindings(config['NEW_CLIENTS_QUEUE_BINDINGS'])
+
+    new_clients_queue = Queue(
+        hostname=config['RABBITMQ_HOSTNAME'],
+        name=config['NEW_CLIENTS_QUEUE_NAME'],
+        bindings=new_clients_queue_bindings,
+        exchange_type='fanout'
+    )
+
+    processing_node = StatefulNode(
+        supervisor_process=common.supervisor.utils.create_from_config(config),
+        new_clients_queue=new_clients_queue,
+        queue_consumer_factory=by_year_and_stations_trip_count_queue_consumer_factory,
+        config=config
     )
 
     processing_node.run()

@@ -4,10 +4,10 @@ import pika
 import pika.exceptions
 
 
-class ExchangeWriter:
+class FanoutExchangeWriter:
     MAX_RETRIES = 10
 
-    def __init__(self, hostname: str, exchange_name: str, exchange_type: str = 'direct', queue_name: str = ''):
+    def __init__(self, hostname: str, exchange_name: str):
         retries = 0
         while retries < self.MAX_RETRIES:
             try:
@@ -23,20 +23,12 @@ class ExchangeWriter:
 
         self.channel = self.connection.channel()
         self.exchange_name = exchange_name
-        self.queue_name = queue_name
-        self.channel.exchange_declare(exchange=self.exchange_name, exchange_type=exchange_type)
+        self.channel.exchange_declare(exchange=self.exchange_name, exchange_type='fanout')
 
-    def write(self, message: bytes, routing_key: str = None, routing_key_suffix: str = None):
-        if routing_key is None:
-            routing_key = self.queue_name
-            if routing_key_suffix is not None:
-                routing_key += routing_key_suffix
+    def write(self, message: bytes):
         self.channel.basic_publish(exchange=self.exchange_name,
-                                   routing_key=routing_key,
+                                   routing_key='',
                                    body=message,
                                    properties=pika.BasicProperties(
                                        delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
                                    ))
-
-    def shutdown(self):
-        self.channel.close()

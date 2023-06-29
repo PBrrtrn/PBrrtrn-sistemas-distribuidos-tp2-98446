@@ -16,7 +16,7 @@ class StorageHandler(ABC):
         self.checkpoint_frequency = checkpoint_frequency
         self.storage = {}
         self.commits = 0
-        filepath = f"{storage_directory}/{FILENAME}"
+        filepath = f"{storage_directory}/{filename}"
         self.__load_storage_from_disk(filepath)
         self.file = open(filepath, 'a+')
 

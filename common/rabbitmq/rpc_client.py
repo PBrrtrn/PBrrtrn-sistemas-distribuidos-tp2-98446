@@ -25,12 +25,12 @@ class RPCClient:
         if self.corr_id == props.correlation_id:
             self.response = body
 
-    def call(self, message):
+    def call(self, message, routing_key_suffix=''):
         self.response = None
         self.corr_id = str(uuid.uuid4())
         self.channel.basic_publish(
             exchange='',
-            routing_key=self.rpc_queue_name,
+            routing_key=self.rpc_queue_name + routing_key_suffix,
             properties=pika.BasicProperties(
                 reply_to=self.response_queue_name,
                 correlation_id=self.corr_id
@@ -41,10 +41,13 @@ class RPCClient:
         self.connection.process_data_events(time_limit=None)
         return self.response
 
-    def write_eof(self, eof: bytes):
+    def write_eof(self, eof: bytes, routing_key_suffix: str = None):
+        routing_key = self.rpc_queue_name
+        if routing_key_suffix is not None:
+            routing_key += routing_key_suffix
         self.channel.basic_publish(
             exchange='',
-            routing_key=self.rpc_queue_name,
+            routing_key=routing_key,
             properties=pika.BasicProperties(
                 delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
             ),

@@ -4,7 +4,7 @@ from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.queue import Queue
-from common.processing_node.processing_node import ProcessingNode
+from common.processing_node.stateless_node import StatelessNode
 from common.processing_node.queue_consumer.process_input.identity_process_input import identity_process_input
 from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
 from common.processing_node.queue_consumer.eof_handler import EOFHandler
@@ -15,11 +15,11 @@ import common.network.constants
 def main():
     config = common.env_utils.read_config()
 
-    trips_input_queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
+    # trips_input_queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
     trips_input_queue = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
         name=config['TRIPS_INPUT_QUEUE_NAME'],
-        bindings=trips_input_queue_bindings,
+        bindings={'trips_exchange': ['']},
         exchange_type='fanout'
     )
 
@@ -32,7 +32,8 @@ def main():
     output_processor = ForwardingOutputProcessor(
         n_output_peers=int(config['N_BY_YEAR_TRIPS_FILTERS']),
         output_exchange_writer=trips_output_exchange_writer,
-        output_eof=common.network.constants.TRIPS_END_ALL
+        output_eof=common.network.constants.TRIPS_END_ALL,
+        forward_with_routing_key=False
     )
 
     queue_consumer = QueueConsumer(
@@ -44,7 +45,7 @@ def main():
         eof_handler=EOFHandler(".eof")
     )
 
-    processing_node = ProcessingNode(
+    processing_node = StatelessNode(
         queue_consumer=queue_consumer,
         supervisor_process=common.supervisor.utils.create_from_config(config)
     )

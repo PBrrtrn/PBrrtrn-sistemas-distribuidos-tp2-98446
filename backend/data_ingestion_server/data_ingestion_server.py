@@ -6,9 +6,11 @@ from common.network.socket_wrapper import SocketWrapper
 import socket
 
 from common.rabbitmq.exchange_writer import ExchangeWriter
+from common.rabbitmq.fanout_exchange_writer import FanoutExchangeWriter
 from common.rabbitmq.rpc_client import RPCClient
 
 from client_data_ingestor import ClientDataIngestor
+
 
 class DataIngestionServer:
     def __init__(self, port,
@@ -16,7 +18,8 @@ class DataIngestionServer:
                  stations_exchange_writer: ExchangeWriter,
                  weather_exchange_writer: ExchangeWriter,
                  n_weather_filters: int,
-                 trips_exchange_writer: ExchangeWriter,
+                 trips_exchange_writer: FanoutExchangeWriter,
+                 new_clients_exchange_writer: ExchangeWriter,
                  montreal_stations_over_6km_avg_trip_distance_queue_name: str,
                  with_precipitations_avg_trip_duration_queue_name: str,
                  doubled_yearly_trips_stations_queue_name: str):
@@ -26,6 +29,7 @@ class DataIngestionServer:
         self.weather_exchange_writer = weather_exchange_writer
         self.n_weather_filters = n_weather_filters
         self.trips_exchange_writer = trips_exchange_writer
+        self.new_clients_exchange_writer = new_clients_exchange_writer
         self.montreal_stations_over_6km_avg_trip_distance_queue_name =\
             montreal_stations_over_6km_avg_trip_distance_queue_name
         self.with_precipitations_avg_trip_duration_queue_name = with_precipitations_avg_trip_duration_queue_name
@@ -40,19 +44,20 @@ class DataIngestionServer:
 
         client_socket, _ = server_socket.accept()
         wrapped_socket = SocketWrapper(client_socket)
-        client_id = len(self.clients_id) + 1
+        client_id = str(len(self.clients_id) + 1)
         montreal_stations_over_6km_avg_trip_distance_rpc = RPCClient(
-            f"{self.montreal_stations_over_6km_avg_trip_distance_queue_name}"#_{client_id}"
+            f"{self.montreal_stations_over_6km_avg_trip_distance_queue_name}{client_id}"
         )
         with_precipitations_avg_trip_duration_rpc = RPCClient(
-            f"{self.with_precipitations_avg_trip_duration_queue_name}"#_{client_id}"
+            f"{self.with_precipitations_avg_trip_duration_queue_name}{client_id}"
         )
         doubled_yearly_trips_stations_rpc = RPCClient(
-            f"{self.doubled_yearly_trips_stations_queue_name}"#_{client_id}"
+            f"{self.doubled_yearly_trips_stations_queue_name}{client_id}"
         )
         client_ingestor = ClientDataIngestor(wrapped_socket, client_id, self.stations_exchange_writer,
                                              self.weather_exchange_writer, self.n_weather_filters, 
                                              self.trips_exchange_writer,
+                                             self.new_clients_exchange_writer,
                                              montreal_stations_over_6km_avg_trip_distance_rpc,
                                              with_precipitations_avg_trip_duration_rpc,
                                              doubled_yearly_trips_stations_rpc)

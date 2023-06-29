@@ -17,6 +17,8 @@ class MontrealJoinerInputProcessor:
             city = message[1]
             if city == self.MONTREAL:
                 join_trips_request = common.network.constants.TRIPS_BATCH + message_body
-                raw_joined_montreal_trips = self.stations_join_rpc_client.call(join_trips_request)
+                raw_joined_montreal_trips = self.stations_join_rpc_client.call(
+                    join_trips_request, routing_key_suffix='1'
+                )
                 return common.network.constants.TRIPS_BATCH + raw_joined_montreal_trips
             

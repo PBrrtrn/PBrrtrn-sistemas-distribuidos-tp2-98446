@@ -3,7 +3,7 @@ import common.supervisor.utils
 from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from distance_calculator_process_input import distance_calculator_process_input
 from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
-from common.processing_node.processing_node import ProcessingNode
+from common.processing_node.stateless_node import StatelessNode
 from common.rabbitmq.queue import Queue
 from common.processing_node.queue_consumer.eof_handler import EOFHandler
 import common.network.constants
@@ -31,7 +31,8 @@ def main():
     output_processor = ForwardingOutputProcessor(
         n_output_peers=1,
         output_exchange_writer=trips_output_exchange_writer,
-        output_eof=common.network.constants.TRIPS_END_ALL
+        output_eof=common.network.constants.TRIPS_END_ALL,
+        forward_with_routing_key=True
     )
 
     queue_consumer = QueueConsumer(
@@ -43,7 +44,7 @@ def main():
         eof_handler=EOFHandler('.eof')
     )
 
-    processing_node = ProcessingNode(
+    processing_node = StatelessNode(
         queue_consumer=queue_consumer,
         supervisor_process=common.supervisor.utils.create_from_config(config)
     )

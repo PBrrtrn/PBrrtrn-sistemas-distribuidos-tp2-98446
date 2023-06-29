@@ -6,7 +6,7 @@ from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.rpc_client import RPCClient
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.queue import Queue
-from common.processing_node.processing_node import ProcessingNode
+from common.processing_node.stateless_node import StatelessNode
 from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
 from common.processing_node.queue_consumer.eof_handler import EOFHandler
 from with_precipitation_input_processor import PrecipitationAvgDurationTripIngestorProcessor
@@ -15,11 +15,11 @@ from with_precipitation_input_processor import PrecipitationAvgDurationTripInges
 def main():
     config = common.env_utils.read_config()
 
-    trips_queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
+    # trips_queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
     trips_input_queue = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
         name=config['TRIPS_INPUT_QUEUE_NAME'],
-        bindings=trips_queue_bindings,
+        bindings={'trips_exchange': ['']},
         exchange_type='fanout'
     )
 
@@ -36,7 +36,8 @@ def main():
         n_output_peers=1,
         output_exchange_writer=running_avg_duration_exchange_writer,
         output_eof=common.network.constants.TRIPS_END_ALL,
-        optional_rpc_eof=weather_rpc_client
+        optional_rpc_eof=weather_rpc_client,
+        forward_with_routing_key=True
     )
 
     queue_consumer = QueueConsumer(
@@ -48,7 +49,7 @@ def main():
         eof_handler=EOFHandler(".eof")
     )
 
-    processing_node = ProcessingNode(
+    processing_node = StatelessNode(
         queue_consumer=queue_consumer,
         supervisor_process=common.supervisor.utils.create_from_config(config)
     )

@@ -2,7 +2,7 @@ from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.rabbitmq.rpc_client import RPCClient
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.rabbitmq.queue import Queue
-from common.processing_node.processing_node import ProcessingNode
+from common.processing_node.stateless_node import StatelessNode
 from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
 from montreal_joiner_input_processor import MontrealJoinerInputProcessor
 from common.processing_node.queue_consumer.eof_handler import EOFHandler
@@ -38,7 +38,8 @@ def main():
         n_output_peers=int(config['N_DISTANCE_CALCULATORS']),
         output_exchange_writer=trips_output_exchange_writer,
         output_eof=common.network.constants.TRIPS_END_ALL,
-        optional_rpc_eof=stations_join_rpc_client
+        optional_rpc_eof=stations_join_rpc_client,
+        forward_with_routing_key=False
     )
 
     queue_consumer = QueueConsumer(
@@ -50,7 +51,7 @@ def main():
         eof_handler=EOFHandler(".eof")
     )
 
-    processing_node = ProcessingNode(
+    processing_node = StatelessNode(
         queue_consumer=queue_consumer,
         supervisor_process=common.supervisor.utils.create_from_config(config)
     )
