@@ -1,26 +1,30 @@
 # Bike Rides Analyzer
-## TP1 de Sistemas Distribuidos (75.74) - FIUBA
-### Pablo Berrotarán
+## TP2 de Sistemas Distribuidos (75.74) - FIUBA
+### Pablo Berrotarán (98446) y Andrés Zambrano
 
 **Bike Rides Analyzer** es un sistema destinado a la recolección y análisis de grandes cantidades de datos sobre el uso de estaciones de bicicleta en las ciudades de Montreal, Toronto y Washington. **Bike Rides Analyzer** cumple con necesidades de escalabilidad implementando un sistema de calculo distribuido construido sobre RabbitMQ que distribuye y paraleliza la carga de cómputo a lo largo de varias unidades de procesamiento.
 
+Además, el sistema muestra alta disponibilidad al cliente, siendo este capaz de recuperarse de fallas y continuar ejecutando y respondiendo pedidos de clientes incluso cuando los nodos que conforman su red de procesamiento encuentran irregularidades en su comportamiento.
+
 ## Alcance
-El sistema propuesto apunta a resolver tres consultas con la mayor eficiencia posible. Las consultas en cuestión son:
+El sistema propuesto apunta a resolver de forma asincrónica consultas provenientes de los distintos clientes que se conectan al mismo. Aquellos clientes que tengan intenciones de consumir el sistema deberían conectarse al sistema usando un programa cliente y enviar sus datos, los cuales serán procesados y agregados para eventualmente dar una respuesta al cliente en cuestión. Las consultas que el sistema debe poder responder son:
 - La duración promedio de viajes que iniciaron en días con >30mm de precipitaciones
 - Los nombres de estaciones que al menos duplicaron la cantidad de viajes iniciados en ellas entre 2016 y 2017
 - Los nombres de estaciones de Montreal para las cuales el promedio de ciclistas recorren más de 6km en llegar a ellas
 
-Para responder a estas consultas, el sistema requiere que el cliente realice la entrada de datos correspondientes a clima, seguido de los datos de estaciones, y finalmente los datos de los viajes. Para obtener la data del cliente, se utilizó el dataset disponible en Kaggle  [Public bike sharing in North America](https://kaggle.com/datasets/jeanmidev/public-bike-sharing-in-north-america).
+Para responder a estas consultas, el sistema requiere que los clientes realicen la entrada de datos correspondientes a clima, seguido de los datos de estaciones, y finalmente los datos de los viajes. Para obtener la data del cliente, se utilizó el dataset disponible en Kaggle  [Public bike sharing in North America](https://kaggle.com/datasets/jeanmidev/public-bike-sharing-in-north-america).
 
 El formato de las líneas a ingresar al cliente para su posterior análisis debe ser el siguiente:
 - Para las estaciones: `code, name, latitude, longitude, yearid`
 - Para el registro climático: `date, prectot, qv2m, rh2m, ps, t2m_range, ts, t2mdew, t2mwet, t2m_max, t2m_min, t2m, ws50m_range, ws10m_range, ws50m_min, ws10m_min, ws50m_max, ws10m_max, ws50m, ws10m, yearid`
 - Para los viajes: `start_date, start_station_code, end_date, end_station_code, duration_sec, is_member, yearid`
 
-## Arquitectura
-El front-end del sistema se compone de un programa cliente que sirve de punto de entrada para el usuario tanto para nutrir el sistema de datos como para hacer el pedido de las consultas. Por otro lado, el back-end comprende varios tipos distintos de procesos que se nutren e informan resultados entre ellos mediante colas de RabbitMQ. El cliente puede ser configurado para enviar los datos en batches de distinto tamaño, a modo de aminorar la cantidad de operaciones de send y receive realizadas.
+Para facilitar el escalamiento horizontal del sistema, se busca que el agregar nodos adicionales para procesamiento de consultas sea lo menos doloroso y lo más accesible posible. Estos nodos deben poder caerse del sistema sin que el mismo deje de aparentar alta disponibilidad, de modo tal que si uno cae el resto pueda seguir operando normalmente con capacidades reducidas hasta que el nodo vuelva. La eventual aparición de fallas en el sistema debería manifestarse como un aumento en el tiempo de ejecución de las consultas, y no como un evento irrecuperable que cause que se tenga que re-ejecutar una consulta.
 
-Por otro lado, el backend tolera que en el despliegue se declaren nodos adicionales a modo de paralelizar el trabajo y escalar acorde al volumen de datos recibidos.
+## Arquitectura
+El front-end del sistema se compone de un programa cliente que sirve de punto de entrada para el usuario tanto para nutrir el sistema de datos como para hacer el pedido de las consultas. El programa cliente se encarga de leer los datos de entrada y enviarlos mediante un socket standard TCP a un programa que hace las de servidor de ingesta de datos. El servidor de ingesta de datos luego se ocupa de distribuir los datos recibidos del cliente al resto del sistema, conectándose a un broker de RabbitMQ y usando las colas del mismo para garantizar la entrega de los datos. Por otro lado, el back-end comprende varios tipos distintos de procesos que se nutren e informan resultados entre ellos mediante colas de RabbitMQ. El cliente puede ser configurado para enviar los datos en batches de distinto tamaño, a modo de aminorar la cantidad de operaciones de send y receive realizadas.
+
+Adicionalmente, el backend tolera que en el despliegue se declaren nodos adicionales a modo de paralelizar el trabajo y escalar acorde al volumen de datos recibidos.
 
 La comunicación entre el cliente y el backend se lleva a cabo mediante una conexión punto a punto con TCP. Mientras tanto, los procesos que componen el backend usan el middleware RabbitMQ para comunicarse entre ellos con colas de mensajes, permitiendo así un mejor asincronismo en la distribución de datos y cálculos realizados.
 
