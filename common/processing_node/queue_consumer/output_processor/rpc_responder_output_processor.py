@@ -17,7 +17,8 @@ class RPCResponderOutputProcessor:
         self.optional_rpc_eof_byte = optional_rpc_eof_byte
         self.forwarding_state_storage_handler = ForwardingStateStorageHandler(
             storage_directory=DIR,
-            filename=f"{FILENAME}_{client_id}"
+            filename=FILENAME,
+            client_id=client_id
         )
 
     def process_output(self, channel, message: bytes, method, properties, _client_id):

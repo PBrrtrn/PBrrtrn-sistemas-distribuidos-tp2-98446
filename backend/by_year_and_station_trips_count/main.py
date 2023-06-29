@@ -30,7 +30,9 @@ def by_year_and_stations_trip_count_queue_consumer_factory(client_id: str, confi
     rpc_input_processor = RPCStationCounterInputProcessor(rpc_client=stations_rpc_client)
     storage_handler = StationCounterStorageHandler(
         storage_directory=config['STORAGE_PATH'],
-        checkpoint_frequency=int(config['CHECKPOINT_FREQUENCY']))
+        checkpoint_frequency=int(config['CHECKPOINT_FREQUENCY']),
+        client_id=client_id
+    )
     storage_output_processor = StorageOutputProcessor(
         rpc_queue=requests_queue_reader,
         storage_handler=storage_handler,

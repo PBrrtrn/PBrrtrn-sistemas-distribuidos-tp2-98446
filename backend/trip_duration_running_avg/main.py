@@ -29,7 +29,8 @@ def trip_duration_running_avg_queue_consumer_factory(client_id: str, config):
     rpc_input_processor = RPCDurationInputProcessor()
     storage_handler = TripDurationStorageHandler(
         storage_directory=config['STORAGE_PATH'],
-        checkpoint_frequency=int(config['CHECKPOINT_FREQUENCY'])
+        checkpoint_frequency=int(config['CHECKPOINT_FREQUENCY']),
+        client_id=client_id
     )
     storage_output_processor = StorageOutputProcessor(
         rpc_queue=rpc_queue_reader,

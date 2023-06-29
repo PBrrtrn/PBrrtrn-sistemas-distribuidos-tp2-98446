@@ -29,7 +29,8 @@ def stations_manager_queue_consumer_factory(client_id: str, config):
     rpc_input_processor = RPCStationInputProcessor()
     storage_handler = StationStorageHandler(
         storage_directory=config['STORAGE_PATH'],
-        checkpoint_frequency=int(config['CHECKPOINT_FREQUENCY'])
+        checkpoint_frequency=int(config['CHECKPOINT_FREQUENCY']),
+        client_id=client_id
     )
     storage_output_processor = StorageOutputProcessor(
         rpc_queue=requests_queue_reader,

@@ -28,7 +28,8 @@ def stations_distance_running_avg_queue_consumer_factory(client_id: str, config)
     rpc_input_processor = RPCDistanceInputProcessor()
     storage_handler = StationDistanceStorageHandler(
         storage_directory=config['STORAGE_PATH'],
-        checkpoint_frequency=int(config['CHECKPOINT_FREQUENCY'])
+        checkpoint_frequency=int(config['CHECKPOINT_FREQUENCY']),
+        client_id=client_id
     )
     storage_output_processor = StorageOutputProcessor(
         rpc_queue=rpc_queue_reader,
