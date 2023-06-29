@@ -40,7 +40,6 @@ class QueueConsumer:
         self.eof_handler.two_phase_commit(channel, result, method, properties)
         # Cuando el processingNode esté andando bien, debe haber un cuidado entre hacer el commit del EOF,
         # hacer el ACK del EOF y enviar el EOF a los siguientes nodos.
-        print(f"Received EOF {self.eof_handler.number_of_received_eof_signals()} of {self.n_input_peers}")
         if self.eof_handler.number_of_received_eof_signals() == self.n_input_peers:
             self.__finish_processing_and_close(result, method.delivery_tag,
                                                properties.correlation_id, properties.reply_to)

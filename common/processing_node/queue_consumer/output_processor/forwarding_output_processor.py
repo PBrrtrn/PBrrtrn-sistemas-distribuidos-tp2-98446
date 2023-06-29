@@ -29,7 +29,6 @@ class ForwardingOutputProcessor:
 
     def finish_processing(self, _result, _delivery_tag, _correlation_id, _reply_to):
         remaining_eofs = self.n_output_peers - self.storage["eofs_sent"]
-        print(f"SENDING EOFS {self.output_eof}")
         for i in range(remaining_eofs):
             self.prepare()
             self.output_exchange_writer.write(self.output_eof)
