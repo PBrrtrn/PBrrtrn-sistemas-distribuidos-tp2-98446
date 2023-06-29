@@ -39,21 +39,21 @@ La comunicación entre el cliente y el backend se lleva a cabo mediante una cone
 
 A fin de permitir atender múltiples clientes, los nodos de procesamiento hacen una división lógica entre nodos Stateful y nodos Stateless. Los nodos Stateless son aquellos que no necesitan guardar data de clientes, si no que simplemente reciben datos, los procesan y los forwardean a sus peers. En cambio, los nodos Stateful deben poder ingerir datos de algunos clientes al mismo tiempo que responden a los pedidos de otros cuya ingesta ya haya terminado. Para contemplar este caso, el servidor que se comunica con el cliente anuncia clientes nuevos mediante una cola de fanout para que los nodos de tipo Stateful inicien un proceso ocupado de atender al nodo. Ese proceso utilizará un esquema publisher-subscriber, consumiendo únicamente datos y pedidos del nodo correspondiente. Este esquema requiere colaboración por parte de los nodos Stateless -- Cuando un nodo Stateless forwardea un dato procesado para que sea almacenado, lo encola con la clave de enrutamiento necesaria para que el dato sea almacenado junto al resto de los datos provenientes de ese cliente.
 
-![Comunicación entre nodos de procesamiento y de almacenamiento](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/stateless_and_stateful_pubsub.png)
+![Comunicación entre nodos de procesamiento y de almacenamiento](https://github.com/PBrrtrn/sistemas-distribuidos-tp2-98446/blob/master/.img/stateless_and_stateful_pubsub.png)
 
 ## Casos de uso
 El cliente interactua con el sistema mediante seis casos de uso posibles. Como puede verse en el siguiente diagrama, los casos de uso se dividen en tres que corresponden a la entrada de datos al sistema, y tres casos que ejecutan las consultas al sistema:
 
-![Diagrama de casos de uso](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/use_case_diagram.png)
+![Diagrama de casos de uso](https://github.com/PBrrtrn/sistemas-distribuidos-tp2-98446/blob/master/.img/use_case_diagram.png)
 
 Es importante notar que para ejecutar las queries, deben primero haberse ingresado los datos correspondientes a estaciones, clima y viajes, de modo que las queries se ejecuten una vez que todos estos elementos hayan sido procesados. Esta secuencia de entrada de datos puede apreciarse en la forma de un **grafo dirigido acíclico (DAG)** que muestra las dependencias de tareas previas para calcular cada query.
 
-![Grafo dirigido acíclico](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/dag.png)
+![Grafo dirigido acíclico](https://github.com/PBrrtrn/sistemas-distribuidos-tp2-98446/blob/master/.img/dag.png)
 
 ## Vista física
 El flujo de datos en el sistema es manejado por nodos que se comunican mediante middlewares de colas distribuidas. Para que el sistema sea funcional, se necesita dar de alta al menos un nodo de cada tipo, aunque es posible dar de alta más de de un nodo de un tipo a fin de escalar junto a la demanda. Cada uno de estos nodos se encuentran conectados al broker de RabbitMQ, de modo que puedan consumir mensajes de otros nodos que conozcan las colas de las cuales toman su entrada de datos:
 
-![Diagrama de despliegue](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/deployment_diagram.png)
+![Diagrama de despliegue](https://github.com/PBrrtrn/sistemas-distribuidos-tp2-98446/blob/master/.img/deployment_diagram.png)
 
 Para la entrada de datos, el nodo de ingesta de datos recibe los registros correpondientes a estaciones, clima y viajes y los distribuye a lo largo del sistema para que sean analizados y finalmente almacenados para poder construir la respuesta a las consultas.
 
@@ -72,7 +72,7 @@ Finalmente, para responder la query de duración de viajes con precipitaciones, 
 La distribución de los viajes a modo de nutrir a los nodos StationDistanceRunningAvg, DurationRunningAvg y ByYearAndStationTripsCount puede apreciarse en el siguiente diagrama de robustez:
 
 
-![Diagrama de robustez](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/robustness_diagram.png)
+![Diagrama de robustez](https://github.com/PBrrtrn/sistemas-distribuidos-tp2-98446/blob/master/.img/robustness_diagram.png)
 
 Al ejecutar las consultas, se envía mensajes a los tres nodos que almacenan las agregaciones de datos. StationDistanceRunningAvg y DurationRunningAvg calculan sus resultados inmediatamente y los devuelven, mientras que ByYearAndStationTripsCount debe primer hacer un llamado a StationsManager para buscar los nombres de las estaciones que apliquen.
 
@@ -81,7 +81,7 @@ La completitud del código, tanto el cliente como los componentes del sistema de
 
 Dentro del repositorio, el código se encuentra dividido en cuatro directorios: frontend, backend y common.
 
-![Diagrama de paquetes del repositorio](https://github.com/PBrrtrn/sistemas-distribuidos-tp1-98446/blob/master/.img/fd_overview.png)
+![Diagrama de paquetes del repositorio](https://github.com/PBrrtrn/sistemas-distribuidos-tp2-98446/blob/master/.img/fd_overview.png)
 
 Por su parte el directorio **frontend** cuenta con un main.py, un objeto cliente, y un objeto batch_reader para facilitar la lectura de archivos. Dentro del directorio se encuantran también los archivos dockerfile y de configuración.
 
