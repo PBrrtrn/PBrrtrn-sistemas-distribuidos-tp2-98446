@@ -135,7 +135,9 @@ class ClientDataIngestor:
         raw_doubled_station_names = self.doubled_yearly_trips_stations_rpc.call(
             common.network.constants.EXECUTE_QUERIES
         )
-
+        self.montreal_stations_over_6km_avg_trip_distance_rpc.write_eof(common.network.constants.END_QUERY)
+        self.with_precipitations_avg_trip_duration_rpc.write_eof(common.network.constants.END_QUERY)
+        self.doubled_yearly_trips_stations_rpc.write_eof(common.network.constants.END_QUERY)
         wrapped_socket.send(common.network.constants.DOUBLED_YEARLY_TRIPS_STATION_NAMES_RESULT +
                             len(raw_doubled_station_names).to_bytes(4, 'big') +
                             raw_doubled_station_names)

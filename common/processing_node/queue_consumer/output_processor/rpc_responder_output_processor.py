@@ -31,11 +31,11 @@ class RPCResponderOutputProcessor:
 
         #self.storage_handler.prepare_delete()
         #self.prepare()
-        self.rpc_queue.respond(
+        """self.rpc_queue.respond(
             message=message,
             to=reply_to,
             correlation_id=correlation_id,
-        )
+        )"""
         #self.commit()
         #self.storage_handler.commit_delete()
 
