@@ -1,0 +1,98 @@
+version: '3'
+services:
+  rabbitmq-supervisor:
+    container_name: rabbitmq-supervisor
+    build:
+      context: .
+      dockerfile: ./rabbitmq/rabbitmq.dockerfile
+    ports:
+      - "15672:15672"
+    healthcheck:
+      test: rabbitmq-diagnostics check_port_connectivity
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: on-failure
+    volumes:
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+    networks:
+      - supervisor_test_net
+
+  supervisor-node-1:
+    container_name: supervisor-node-1
+    build:
+      context: .
+      dockerfile: simplified-supervisor-test/supervisor_node.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq-supervisor
+    environment:
+      - PYTHONUNBUFFERED=1
+      - SUPERVISOR_NODE_ID=1
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - supervisor_test_net
+
+  supervisor-node-2:
+    container_name: supervisor-node-2
+    build:
+      context: .
+      dockerfile: simplified-supervisor-test/supervisor_node.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq-supervisor
+    environment:
+      - PYTHONUNBUFFERED=1
+      - SUPERVISOR_NODE_ID=2
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - supervisor_test_net
+
+  supervisor-node-3:
+    container_name: supervisor-node-3
+    build:
+      context: .
+      dockerfile: simplified-supervisor-test/supervisor_node.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq-supervisor
+    environment:
+      - PYTHONUNBUFFERED=1
+      - SUPERVISOR_NODE_ID=3
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - supervisor_test_net
+
+  supervisor-node-4:
+    container_name: supervisor-node-4
+    build:
+      context: .
+      dockerfile: simplified-supervisor-test/supervisor_node.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq-supervisor
+    environment:
+      - PYTHONUNBUFFERED=1
+      - SUPERVISOR_NODE_ID=4
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - supervisor_test_net
+
+networks:
+  supervisor_test_net:
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.25.126.0/24

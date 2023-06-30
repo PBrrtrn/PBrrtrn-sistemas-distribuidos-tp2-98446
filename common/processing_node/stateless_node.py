@@ -1,5 +1,5 @@
 from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
-from common.supervisor.supervisor_process import SupervisorProcess
+from common.supervisor.simplified_supervisor_process import SupervisorProcess
 
 
 class StatelessNode:
@@ -8,5 +8,5 @@ class StatelessNode:
         self.supervisor_process = supervisor_process
 
     def run(self):
-        # self.supervisor_process.run()
+        self.supervisor_process.run()
         self.queue_consumer.run()
