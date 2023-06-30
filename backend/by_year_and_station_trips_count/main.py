@@ -40,7 +40,7 @@ def by_year_and_stations_trip_count_queue_consumer_factory(client_id: str, confi
             'input_eofs': [common.network.constants.END_QUERY],
             'n_input_peers': 1,
             'rpc_input_processor': rpc_input_processor,
-            'eof_handler': EOFHandler(".eof", append=f"_rpc_{client_id}"),
+            'eof_handler': EOFHandler(storage_directory=".eof", filename=f"eof_received_rpc_{client_id}"),
             'optional_rpc_eof': stations_rpc_client,
             'optional_rpc_eof_byte': common.network.constants.STATIONS_END
         }
@@ -52,7 +52,7 @@ def by_year_and_stations_trip_count_queue_consumer_factory(client_id: str, confi
         n_input_peers=int(config['N_BY_YEAR_TRIPS_FILTERS']),
         input_queue=filtered_trips_input_queue_reader,
         output_processor=storage_output_processor,
-        eof_handler=EOFHandler(".eof", append=f"_{client_id}")
+        eof_handler=EOFHandler(".eof", filename=f"eof_received_{client_id}")
     )
 
 

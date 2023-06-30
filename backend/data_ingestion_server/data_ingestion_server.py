@@ -5,8 +5,6 @@ from common.network.socket_wrapper import SocketWrapper
 
 import socket
 
-from common.rabbitmq.exchange_writer import ExchangeWriter
-from common.rabbitmq.fanout_exchange_writer import FanoutExchangeWriter
 import common.network.constants
 
 from client_data_ingestor import ClientDataIngestor
@@ -39,10 +37,8 @@ class DataIngestionServer:
             client_id = str(len(self.clients_id) + 1).zfill(common.network.constants.CLIENT_ID_LEN)
             stations_exchange_writer, weather_exchange_writer, trips_exchange_writer, \
             new_clients_exchange_writer = self.exchange_writers_factory(self.config)
-            print(stations_exchange_writer, weather_exchange_writer, trips_exchange_writer, new_clients_exchange_writer)
             montreal_stations_over_6km_avg_trip_distance_rpc, with_precipitations_avg_trip_duration_rpc, \
             doubled_yearly_trips_stations_rpc = self.rpc_clients_factory(self.config, client_id)
-            print(montreal_stations_over_6km_avg_trip_distance_rpc, with_precipitations_avg_trip_duration_rpc, doubled_yearly_trips_stations_rpc)
 
             client_ingestor = ClientDataIngestor(wrapped_socket, client_id, stations_exchange_writer,
                                                  weather_exchange_writer, self.n_weather_filters,

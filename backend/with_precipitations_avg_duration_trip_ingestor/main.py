@@ -15,11 +15,11 @@ from with_precipitation_input_processor import PrecipitationAvgDurationTripInges
 def main():
     config = common.env_utils.read_config()
 
-    # trips_queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
+    trips_queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
     trips_input_queue = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
         name=config['TRIPS_INPUT_QUEUE_NAME'],
-        bindings={'trips_exchange': ['']},
+        bindings={'trips_exchange': trips_queue_bindings},
         exchange_type='fanout'
     )
 
@@ -46,7 +46,7 @@ def main():
         n_input_peers=1,
         input_queue=trips_input_queue,
         output_processor=output_processor,
-        eof_handler=EOFHandler(".eof")
+        eof_handler=EOFHandler(".eof", filename="eof_received")
     )
 
     processing_node = StatelessNode(

@@ -41,7 +41,7 @@ def main():
         n_input_peers=int(config['N_MONTREAL_STATIONS_JOINERS']),
         input_queue=trips_input_queue,
         output_processor=output_processor,
-        eof_handler=EOFHandler('.eof')
+        eof_handler=EOFHandler('.eof', filename="eof_received")
     )
 
     processing_node = StatelessNode(

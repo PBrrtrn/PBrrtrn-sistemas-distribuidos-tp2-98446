@@ -39,7 +39,7 @@ def main():
         n_input_peers=1,
         input_queue=trips_input_queue,
         output_processor=forwarding_output_processor,
-        eof_handler=EOFHandler('.eof')
+        eof_handler=EOFHandler('.eof', filename="eof_received")
     )
 
     processing_node = StatelessNode(
