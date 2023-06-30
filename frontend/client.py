@@ -3,6 +3,7 @@ import pickle
 import socket
 import datetime
 from time import sleep
+import random
 
 import common.network.serialize
 import common.network.constants
@@ -20,7 +21,7 @@ class Client:
         self.config = config
 
     def run(self):
-        sleep(10)
+        sleep(10 + random.randint(0,9))
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         retries = 0
         while retries < 5:

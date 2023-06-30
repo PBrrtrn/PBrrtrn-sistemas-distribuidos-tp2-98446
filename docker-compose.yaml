@@ -141,7 +141,7 @@ services:
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./backend/by_year_trips_filter/.eof_1:/.eof
+      - ./backend/by_year_trips_filter/.eof:/.eof
       - ./backend/by_year_trips_filter/.clients:/.clients
     networks:
       - local_net
@@ -405,6 +405,24 @@ services:
       - local_net
 
   client:
+    build:
+      context: .
+      dockerfile: ./frontend/client.dockerfile
+    restart: on-failure
+    depends_on:
+       - data-ingestion-server
+    entrypoint: python3 /main.py
+    environment:
+      - PYTHONUNBUFFERED=1
+      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
+      - DATA_PATH=data
+    networks:
+      - local_net
+    volumes:
+      - ./.data:/data
+      - results:/results
+
+  client1:
     build:
       context: .
       dockerfile: ./frontend/client.dockerfile

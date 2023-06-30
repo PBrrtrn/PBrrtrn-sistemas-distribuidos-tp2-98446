@@ -129,3 +129,4 @@ dmypy.json
 
 backend/*/.eof*/*
 backend/*/.storage/*
+backend/*/.clients*/*
