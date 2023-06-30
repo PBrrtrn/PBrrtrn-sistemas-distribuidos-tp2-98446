@@ -14,11 +14,11 @@ from common.processing_node.queue_consumer.eof_handler import EOFHandler
 def main():
     config = common.env_utils.read_config()
 
-    # queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
+    queue_bindings = common.env_utils.parse_queue_bindings(config['TRIPS_INPUT_QUEUE_BINDINGS'])
     trips_input_queue = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
         name=config['TRIPS_INPUT_QUEUE_NAME'],
-        bindings={'trips_exchange': ['']},
+        bindings={'trips_exchange': queue_bindings},
         exchange_type='fanout'
     )
 

@@ -29,17 +29,17 @@ class StatefulNode:
     def run(self):
         for client_id in self.clients_queue_handler_dict:
             self.clients_queue_handler_dict[client_id].start()
-
         self.supervisor_process.run()
         for (channel, method, properties, message) in self.new_clients_queue.read_with_props():
-            # message_type = message[:common.network.constants.HEADER_TYPE_LEN]
-            # client_id = message[common.network.constants.HEADER_TYPE_LEN:]
             client_id = pickle.loads(message)
+            if client_id in self.clients_queue_handler_dict:
+                continue
             self.clients_list_handler.prepare(client_id)
             self.clients_queue_handler_dict[client_id] = self.create_queue_consumer_process(client_id)
             channel.basic_ack(delivery_tag=method.delivery_tag)
             self.clients_list_handler.commit()
             self.clients_queue_handler_dict[client_id].start()
+
         # Duda: Joinear clientes viejos cada vez que se recibe un nuevo cliente,
         # O que por la cola manden que el cliente finalizó ?
         # register_new_client()
