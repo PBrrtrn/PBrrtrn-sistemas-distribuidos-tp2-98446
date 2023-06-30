@@ -23,12 +23,12 @@ class FanoutExchangeWriter:
 
         self.channel = self.connection.channel()
         self.exchange_name = exchange_name
-        self.channel.exchange_declare(exchange=self.exchange_name, exchange_type='fanout')
+        self.channel.exchange_declare(exchange=self.exchange_name, exchange_type='fanout', durable=True)
 
     def write(self, message: bytes):
         self.channel.basic_publish(exchange=self.exchange_name,
                                    routing_key='',
                                    body=message,
                                    properties=pika.BasicProperties(
-                                       delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
+                                       delivery_mode=2
                                    ))

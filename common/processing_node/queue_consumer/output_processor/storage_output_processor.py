@@ -17,7 +17,6 @@ class StorageOutputProcessor:
         self.storage_handler.prepare(message_body)
         channel.basic_ack(delivery_tag=method.delivery_tag)
         self.storage_handler.commit()
-        # self.storage_handler.update_changes_in_disk()
 
     def finish_processing(self, client_id, _message_id):
         rpc_input_processor = self.finish_processing_node_args['rpc_input_processor']
@@ -35,7 +34,8 @@ class StorageOutputProcessor:
             n_input_peers=self.finish_processing_node_args['n_input_peers'],
             input_queue=self.rpc_queue,
             output_processor=rpc_responder_output_processor,
-            eof_handler=self.finish_processing_node_args['eof_handler']
+            eof_handlers_dict=self.finish_processing_node_args['eof_handlers_dict'],
+            many_clients=False
         )
 
         queue_consumer.run()

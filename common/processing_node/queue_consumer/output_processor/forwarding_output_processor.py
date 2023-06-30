@@ -9,14 +9,12 @@ CLIENTS_LIST_FILENAME = 'clients_list'
 
 class ForwardingOutputProcessor:
     def __init__(self, n_output_peers: int, output_exchange_writer: ExchangeWriter, output_eof: bytes,
-                 forward_with_routing_key, optional_rpc_eof: RPCClient = None):
+                 forward_with_routing_key: bool, current_client_list, optional_rpc_eof: RPCClient = None):
         self.n_output_peers = n_output_peers
         self.output_exchange_writer = output_exchange_writer
         self.output_eof = output_eof
         self.optional_rpc_eof = optional_rpc_eof
         self.forward_with_routing_key = forward_with_routing_key
-        self.clients_list_handler = ClientListStorageHandler(storage_directory=DIR, filename=CLIENTS_LIST_FILENAME)
-        current_client_list = self.clients_list_handler.get_clients_list()
         self.clients_storage_handler_dict = {}
         for client_id in current_client_list:
             self.clients_storage_handler_dict[client_id] = \
@@ -27,13 +25,12 @@ class ForwardingOutputProcessor:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             return
         if client_id not in self.clients_storage_handler_dict:
-            self.clients_list_handler.prepare(client_id)
-            self.clients_list_handler.commit()
             self.clients_storage_handler_dict[client_id] = \
                 ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
         client_storage_handler = self.clients_storage_handler_dict[client_id]
         if client_storage_handler.get_storage().get("id_last_message_forwarded", 0) == message_id:
             channel.basic_ack(delivery_tag=method.delivery_tag)
+            return
         client_storage_handler.prepare_last_message_id_increment(message_id)
         self._forward(self.output_exchange_writer, message, client_id)
         client_storage_handler.commit()

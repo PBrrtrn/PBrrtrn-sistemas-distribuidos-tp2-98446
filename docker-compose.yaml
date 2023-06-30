@@ -40,6 +40,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/stations_manager/.storage:/.storage
       - ./backend/stations_manager/.eof:/.eof
+      - ./backend/stations_manager/.clients:/.clients
     networks:
       - local_net
 
@@ -64,6 +65,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/weather_manager/.storage:/.storage
       - ./backend/weather_manager/.eof:/.eof
+      - ./backend/weather_manager/.clients:/.clients
     networks:
       - local_net
 
@@ -88,6 +90,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/trip_duration_running_avg/.storage:/.storage
       - ./backend/trip_duration_running_avg/.eof:/.eof
+      - ./backend/trip_duration_running_avg/.clients:/.clients
     networks:
       - local_net
 
@@ -114,6 +117,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/by_year_and_station_trips_count/.storage:/.storage
       - ./backend/by_year_and_station_trips_count/.eof:/.eof
+      - ./backend/by_year_and_station_trips_count/.clients:/.clients
     networks:
       - local_net
 
@@ -138,6 +142,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/by_year_trips_filter/.eof_1:/.eof
+      - ./backend/by_year_trips_filter/.clients:/.clients
     networks:
       - local_net
 
@@ -162,6 +167,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/weather_filter/.eof_1:/.eof
+      - ./backend/weather_filter/.clients_1:/.clients
     networks:
       - local_net
 
@@ -187,6 +193,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/stations_distance_running_avg/.storage:/.storage
       - ./backend/stations_distance_running_avg/.eof:/.eof
+      - ./backend/stations_distance_running_avg/.clients:/.clients
     networks:
       - local_net
 
@@ -212,6 +219,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/distance_calculator/.eof_1:/.eof
+      - ./backend/distance_calculator/.clients_1:/.clients
     networks:
       - local_net
 
@@ -237,6 +245,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/distance_calculator/.eof_2:/.eof
+      - ./backend/distance_calculator/.clients_2:/.clients
     networks:
       - local_net
 
@@ -263,6 +272,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/montreal_stations_joiner/.eof_1:/.eof
+      - ./backend/montreal_stations_joiner/.clients_1:/.clients
     networks:
       - local_net
 
@@ -289,6 +299,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/montreal_stations_joiner/.eof_2:/.eof
+      - ./backend/montreal_stations_joiner/.clients_2:/.clients
     networks:
       - local_net
 
@@ -316,6 +327,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/montreal_stations_over_6km_avg_trip_distance_ingestor/.eof:/.eof
+      - ./backend/montreal_stations_over_6km_avg_trip_distance_ingestor/.clients:/.clients
     networks:
       - local_net
 
@@ -341,6 +353,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/doubled_yearly_trips_stations_ingestor/.eof:/.eof
+      - ./backend/doubled_yearly_trips_stations_ingestor/.clients:/.clients
     networks:
       - local_net
 
@@ -364,6 +377,7 @@ services:
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./backend/with_precipitations_avg_duration_trip_ingestor/.clients:/.clients
       - ./backend/with_precipitations_avg_duration_trip_ingestor/.eof:/.eof
     networks:
       - local_net

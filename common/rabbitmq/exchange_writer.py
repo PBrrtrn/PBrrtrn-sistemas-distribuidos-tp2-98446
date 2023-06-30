@@ -24,7 +24,7 @@ class ExchangeWriter:
         self.channel = self.connection.channel()
         self.exchange_name = exchange_name
         self.queue_name = queue_name
-        self.channel.exchange_declare(exchange=self.exchange_name, exchange_type=exchange_type)
+        self.channel.exchange_declare(exchange=self.exchange_name, exchange_type=exchange_type, durable=True)
 
     def write(self, message: bytes, routing_key: str = None, routing_key_suffix: str = None):
         if routing_key is None:
@@ -35,7 +35,7 @@ class ExchangeWriter:
                                    routing_key=routing_key,
                                    body=message,
                                    properties=pika.BasicProperties(
-                                       delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
+                                       delivery_mode=2
                                    ))
 
     def shutdown(self):

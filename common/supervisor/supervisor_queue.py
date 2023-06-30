@@ -15,9 +15,9 @@ class SupervisorQueue:
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=hostname))
         self.channel = self.connection.channel()
 
-        self.channel.queue_declare(self.name, exclusive=True)
+        self.channel.queue_declare(self.name, exclusive=True, durable=True)
         for exchange, routing_keys in bindings.items():
-            self.channel.exchange_declare(exchange=exchange, exchange_type=exchange_type)
+            self.channel.exchange_declare(exchange=exchange, exchange_type=exchange_type, durable=True)
             for routing_key in routing_keys:
                 self.channel.queue_bind(exchange=exchange,
                                         queue=self.name,

@@ -10,6 +10,7 @@ from common.processing_node.queue_consumer.eof_handler import EOFHandler
 from common.processing_node.queue_consumer.output_processor.storage_output_processor import StorageOutputProcessor
 from rpc_duration_input_processor import RPCDurationInputProcessor
 from trip_duration_storage_handler import TripDurationStorageHandler
+from common.processing_node.queue_consumer.client_list_storage_handler import ClientListStorageHandler
 
 
 def trip_duration_running_avg_queue_consumer_factory(client_id: str, config):
@@ -39,7 +40,7 @@ def trip_duration_running_avg_queue_consumer_factory(client_id: str, config):
             'input_eofs': [common.network.constants.END_QUERY],
             'n_input_peers': 1,
             'rpc_input_processor': rpc_input_processor,
-            'eof_handler': EOFHandler(storage_directory=".eof", filename=f"eof_received_rpc_{client_id}")
+            'eof_handlers_dict': {client_id: EOFHandler(storage_directory=".eof", filename=f"eof_received_rpc_{client_id}")},
         }
     )
 
@@ -49,13 +50,18 @@ def trip_duration_running_avg_queue_consumer_factory(client_id: str, config):
         n_input_peers=1,
         input_queue=trips_input_queue_reader,
         output_processor=storage_output_processor,
-        eof_handler=EOFHandler(".eof", filename=f"eof_received_{client_id}")
+        eof_handlers_dict={client_id: EOFHandler(".eof", filename=f"eof_received", client_id=client_id)},
+        many_clients=False
     )
+
+DIR = '.clients'
+CLIENTS_LIST_FILENAME = 'clients_list'
 
 
 def main():
     config = common.env_utils.read_config()
     new_clients_queue_bindings = common.env_utils.parse_queue_bindings(config['NEW_CLIENTS_QUEUE_BINDINGS'])
+    clients_list_handler = ClientListStorageHandler(storage_directory=DIR, filename=CLIENTS_LIST_FILENAME)
 
     new_clients_queue = Queue(
         hostname=config['RABBITMQ_HOSTNAME'],
@@ -68,7 +74,8 @@ def main():
         supervisor_process=common.supervisor.utils.create_from_config(config),
         new_clients_queue=new_clients_queue,
         queue_consumer_factory=trip_duration_running_avg_queue_consumer_factory,
-        config=config
+        config=config,
+        clients_list_handler=clients_list_handler
     )
 
     processing_node.run()

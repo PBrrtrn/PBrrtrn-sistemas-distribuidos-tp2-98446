@@ -24,6 +24,7 @@ class RPCResponderOutputProcessor:
     def process_output(self, channel, message: bytes, method, properties, _client_id, message_id):
         if self.forwarding_state_storage_handler.get_storage().get("id_last_message_responded", 0) == message_id:
             channel.basic_ack(delivery_tag=method.delivery_tag)
+            return
 
         self.forwarding_state_storage_handler.prepare_last_message_id_increment(message_id)
         self.rpc_queue.respond(

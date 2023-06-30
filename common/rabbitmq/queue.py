@@ -34,9 +34,9 @@ class Queue:
             raise Exception("Failed to connect to RabbitMQ")
         self.channel = self.connection.channel()
 
-        self.channel.queue_declare(self.name)
+        self.channel.queue_declare(self.name, durable=True)
         for exchange, routing_keys in bindings.items():
-            self.channel.exchange_declare(exchange=exchange, exchange_type=exchange_type)
+            self.channel.exchange_declare(exchange=exchange, exchange_type=exchange_type, durable=True)
             for routing_key in routing_keys:
                 self.channel.queue_bind(exchange=exchange,
                                         queue=self.name,

@@ -6,12 +6,14 @@ from common.processing_node.stateless_node import StatelessNode
 from common.processing_node.queue_consumer.output_processor.forwarding_output_processor import ForwardingOutputProcessor
 from montreal_joiner_input_processor import MontrealJoinerInputProcessor
 from common.processing_node.queue_consumer.eof_handler import EOFHandler
-
 import common.network.constants
 import common.supervisor.utils
-
 from common.env_utils import read_config
 from common.env_utils import parse_queue_bindings
+from common.processing_node.queue_consumer.client_list_storage_handler import ClientListStorageHandler
+
+DIR = '.clients'
+CLIENTS_LIST_FILENAME = 'clients_list'
 
 
 def main():
@@ -34,26 +36,40 @@ def main():
         queue_name=config['JOINED_TRIPS_OUTPUT_QUEUE_NAME']
     )
 
+    clients_list_handler = ClientListStorageHandler(storage_directory=DIR, filename=CLIENTS_LIST_FILENAME)
+    current_client_list = clients_list_handler.get_clients_list()
     output_processor = ForwardingOutputProcessor(
         n_output_peers=int(config['N_DISTANCE_CALCULATORS']),
         output_exchange_writer=trips_output_exchange_writer,
         output_eof=common.network.constants.TRIPS_END_ALL,
         optional_rpc_eof=stations_join_rpc_client,
-        forward_with_routing_key=False
+        forward_with_routing_key=False,
+        current_client_list=current_client_list
     )
-
+    eof_handlers_dict = {}
+    for client_id in current_client_list:
+        eof_handlers_dict[client_id] = EOFHandler('.eof', filename="eof_received", client_id=client_id)
     queue_consumer = QueueConsumer(
         process_input=input_processor.process_input,
         input_eofs=[common.network.constants.TRIPS_END_ALL],
         n_input_peers=1,
         input_queue=trips_input_queue,
         output_processor=output_processor,
-        eof_handler=EOFHandler(".eof", filename="eof_received")
+        eof_handlers_dict=eof_handlers_dict
+    )
+    new_clients_queue_bindings = common.env_utils.parse_queue_bindings(config['NEW_CLIENTS_QUEUE_BINDINGS'])
+    new_clients_queue = Queue(
+        hostname=config['RABBITMQ_HOSTNAME'],
+        name=config['NEW_CLIENTS_QUEUE_NAME'],
+        bindings=new_clients_queue_bindings,
+        exchange_type='fanout'
     )
 
     processing_node = StatelessNode(
         queue_consumer=queue_consumer,
-        supervisor_process=common.supervisor.utils.create_from_config(config)
+        supervisor_process=common.supervisor.utils.create_from_config(config),
+        clients_list_handler=clients_list_handler,
+        new_clients_queue=new_clients_queue
     )
 
     processing_node.run()
