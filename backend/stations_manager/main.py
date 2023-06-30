@@ -39,7 +39,7 @@ def stations_manager_queue_consumer_factory(client_id: str, config):
             'input_eofs': [common.network.constants.STATIONS_END, common.network.constants.TRIPS_END_ALL],
             'n_input_peers': int(config['N_MONTREAL_STATIONS_JOINERS']) + 1,
             'rpc_input_processor': rpc_input_processor,
-            'eof_handler': EOFHandler(storage_directory=".eof", filename=f"eof_received_rpc_{client_id}")
+            'eof_handler': EOFHandler(storage_directory=".eof", filename=f"eof_received_rpc", client_id=client_id)
         }
     )
 
@@ -52,7 +52,7 @@ def stations_manager_queue_consumer_factory(client_id: str, config):
         n_input_peers=3,
         input_queue=stations_queue,
         output_processor=storage_output_processor,
-        eof_handler=EOFHandler(".eof", filename=f"eof_received_{client_id}")
+        eof_handler=EOFHandler(".eof", filename=f"eof_received", client_id=client_id)
     )
 
 

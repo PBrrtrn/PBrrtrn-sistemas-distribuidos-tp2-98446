@@ -38,7 +38,7 @@ def stations_distance_running_avg_queue_consumer_factory(client_id: str, config)
             'input_eofs': [common.network.constants.END_QUERY],
             'n_input_peers': 1,
             'rpc_input_processor': rpc_input_processor,
-            'eof_handler': EOFHandler(storage_directory=".eof", filename=f"eof_received_rpc_{client_id}")
+            'eof_handler': EOFHandler(storage_directory=".eof", filename=f"eof_received_rpc", client_id=client_id)
         }
     )
 
@@ -48,7 +48,7 @@ def stations_distance_running_avg_queue_consumer_factory(client_id: str, config)
         n_input_peers=int(config['N_DISTANCE_CALCULATORS']),
         input_queue=stations_trip_distance_input_queue_reader,
         output_processor=storage_output_processor,
-        eof_handler=EOFHandler(".eof", filename=f"eof_received_{client_id}")
+        eof_handler=EOFHandler(".eof", filename=f"eof_received", client_id=client_id)
     )
 
 
