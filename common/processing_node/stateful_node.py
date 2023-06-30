@@ -1,7 +1,7 @@
 import pickle
 from multiprocessing import Process
 
-from common.supervisor.supervisor_process import SupervisorProcess
+from common.supervisor.simplified_supervisor_process import SupervisorProcess
 from common.processing_node.queue_consumer.client_list_storage_handler import ClientListStorageHandler
 from common.rabbitmq.queue import Queue
 import common.network.constants
@@ -30,7 +30,7 @@ class StatefulNode:
         for client_id in self.clients_queue_handler_dict:
             self.clients_queue_handler_dict[client_id].start()
 
-        # self.supervisor_process.run()
+        self.supervisor_process.run()
         for (channel, method, properties, message) in self.new_clients_queue.read_with_props():
             # message_type = message[:common.network.constants.HEADER_TYPE_LEN]
             # client_id = message[common.network.constants.HEADER_TYPE_LEN:]
