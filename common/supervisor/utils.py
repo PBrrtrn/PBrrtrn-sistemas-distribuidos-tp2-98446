@@ -4,8 +4,8 @@ import common.env_utils
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.supervisor.supervisor_queue import SupervisorQueue
 from common.supervisor.node_restarter import NodeRestarter
-# from common.supervisor.supervisor_process import SupervisorProcess
-from common.supervisor.simplified_supervisor_process import SupervisorProcess
+from common.supervisor.supervisor_process import SupervisorProcess
+# from common.supervisor.simplified_supervisor_process import SupervisorProcess
 
 
 def create_from_config(config):

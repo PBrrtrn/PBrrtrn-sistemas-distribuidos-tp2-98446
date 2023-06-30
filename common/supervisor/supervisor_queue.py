@@ -23,25 +23,18 @@ class SupervisorQueue:
                                         queue=self.name,
                                         routing_key=routing_key)
 
-        self.channel.basic_consume(
-            queue=self.name,
-            on_message_callback=self.on_read_callback,
-            auto_ack=True
-        )
-
-        self.message = None
-
-    def on_read_callback(self, _ch, _method, _props, body):
-        self.message = body
-
     def read(self, timeout: float):
-        if timeout < 0:
-            return None
+        _method, _properties, body = next(self.channel.consume(queue=self.name, inactivity_timeout=timeout))
+        return body
 
-        self.message = None
-        self.connection.process_data_events(time_limit=timeout)
-
-        return self.message
+    # def read(self, timeout: float):
+    #     if timeout < 0:
+    #         return None
+    #
+    #     self.message = None
+    #     self.connection.process_data_events(time_limit=timeout)
+    #
+    #     return self.message
 
     def close(self):
         self.channel.cancel()
