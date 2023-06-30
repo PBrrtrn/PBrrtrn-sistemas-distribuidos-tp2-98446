@@ -3,9 +3,9 @@ from common.processing_node.queue_consumer.output_processor.storage_handler impo
 
 class ForwardingStateStorageHandler(StorageHandler):
 
-    def prepare_last_message_id_increment(self):
+    def prepare_last_message_id_increment(self, message_id):
         self.prepare({
-            "id_last_message_forwarded": self.storage.get("id_last_message_forwarded", 0) + 1,
+            "id_last_message_forwarded": message_id,
             "eofs_sent": self.storage.get("eofs_sent", 0),
             "rpc_eof_sent": self.storage.get("rpc_eof_sent", False)
         })

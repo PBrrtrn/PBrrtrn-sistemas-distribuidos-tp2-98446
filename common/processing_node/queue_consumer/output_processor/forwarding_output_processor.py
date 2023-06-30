@@ -22,20 +22,19 @@ class ForwardingOutputProcessor:
             self.clients_storage_handler_dict[client_id] = \
                 ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
 
-    def process_output(self, channel, message: bytes, method, _properties, client_id, _message_id):
+    def process_output(self, channel, message: bytes, method, _properties, client_id, message_id):
         if message is None:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             return
-
-        # if self.storage["id_last_message_forwarded"] == message.id: # Message id hay q cargarlo
-        #    channel.basic_ack(delivery_tag=method.delivery_tag)
         if client_id not in self.clients_storage_handler_dict:
             self.clients_list_handler.prepare(client_id)
             self.clients_list_handler.commit()
             self.clients_storage_handler_dict[client_id] = \
                 ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
         client_storage_handler = self.clients_storage_handler_dict[client_id]
-        client_storage_handler.prepare_last_message_id_increment()
+        if client_storage_handler.get_storage().get("id_last_message_forwarded", 0) == message_id:
+            channel.basic_ack(delivery_tag=method.delivery_tag)
+        client_storage_handler.prepare_last_message_id_increment(message_id)
         self._forward(self.output_exchange_writer, message, client_id)
         client_storage_handler.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
