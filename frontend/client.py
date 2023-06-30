@@ -20,7 +20,7 @@ class Client:
         self.config = config
 
     def run(self):
-        #sleep(10)
+        sleep(10)
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         retries = 0
         while retries < 5:

@@ -25,8 +25,7 @@ class ForwardingOutputProcessor:
             channel.basic_ack(delivery_tag=method.delivery_tag)
             return
         if client_id not in self.clients_storage_handler_dict:
-            self.clients_storage_handler_dict[client_id] = \
-                ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
+            self._create_clients_storage_handler_for_client(client_id)
         client_storage_handler = self.clients_storage_handler_dict[client_id]
         if client_storage_handler.get_storage().get("id_last_message_forwarded", 0) == message_id:
             channel.basic_ack(delivery_tag=method.delivery_tag)
@@ -37,6 +36,8 @@ class ForwardingOutputProcessor:
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
     def finish_processing(self, client_id, message_id):
+        if client_id not in self.clients_storage_handler_dict:
+            self._create_clients_storage_handler_for_client(client_id)
         client_storage_handler = self.clients_storage_handler_dict[client_id]
         storage = client_storage_handler.get_storage()
         if not storage.get("rpc_eof_sent", False) and self.optional_rpc_eof is not None:
@@ -61,3 +62,8 @@ class ForwardingOutputProcessor:
             exchange_writer.write(output_eof + client_id.encode() + message_id.encode(), routing_key_suffix=client_id)
         else:
             exchange_writer.write(output_eof + client_id.encode() + message_id.encode())
+
+    def _create_clients_storage_handler_for_client(self, client_id):
+        self.clients_storage_handler_dict[client_id] = \
+            ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
+
