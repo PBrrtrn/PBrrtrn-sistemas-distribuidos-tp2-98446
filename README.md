@@ -84,11 +84,18 @@ En el núcleo de la estructura de objetos del programa se encuentra la clase `Pr
 
 Todo `QueueConsumer` se compone de una cola de la cual se leen los mensajes a procesar, una callback de procesamiento con la cual procesar los mensajes, y un OutputProcessor que maneja la salida.
 
-![Diagrama de clases fundamental](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/class_diagram_1.png)
+![Diagrama de clases de ProcessingNode](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/class_diagram_1.png)
 
 La jerarquía de los `OutputProcessor` se divide en tres clases:
 - `ForwardingOutputProcessor` es usado exclusivamente por los nodos de tipo stateless, solamente encolando (guardando en disco el estado a modo de poder recuperarlo) el resultado de la callback de procesamiento de input.
 - `StorageOutputProcessor` guarda el resultado del procesamiento del input en un estado persistente y recuperable a fallas, componiendo el mismo a partir de los datos que llegan provenientes de la ingesta. Cuando la ingesta de datos termina, evento que se señaliza con la llegada de N señales de EOF, el StorageOutputProcessor comienza a ejecutar su propio QueueConsumer a modo de leer una cola de pedidos RPC leyendo del estado final de su storage.
+- `RPCResponderOutputProcessor` permite que un QueueProcessor sea utilizado para leer de una cola de RPC, respondiendo consultas sobre los mensajes recibidos.
+
+En la práctica, un nodo Stateful se instancia con una callback de procesamiento y un StorageOutputProcessor, a modo de llevar a cabo la ingesta de datos. Al terminar de nutrir su almacenamiento, el StorageOutputProcessor mismo comienza a consumir de una cola de RPC usando un QueueConsumer junto a un RPCResponderOutputProcessor.
+
+Internamente, todo OutputProcessor se compone con un StorageHandler, un objeto que provee manejo del directorio de archivos local para lograr resiliencia ante fallos implementando logging, 2-phase-commits, y checkpointing donde sea necesario. De StorageHandler heredan diversas clases que permiten redefinir los métodos para escribir y leer de storage para aplicarlos a las entidades que maneja el nodo en cuestión. Opcionalmente, los ForwardingOutputProcessor pueden recibir un cliente de RPC y el EOF necesario para darlo de bajo. Esto se debe a que puede ser necesario que en el procesamiento de inputs de un nodo se requiera hacer consultas por RPC a otro nodo. Permitiendo pasar un RPC opcional a un OutputProcessor, se puede notificar a ese nodo consultado que ya no se lo consultará más para el cliente en cuestión, así que se puede borrar su data.
+
+![Diagrama de clases de OutputProcessor](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/class_diagram_2.png)
 
 ## Vista de desarrollo
 La completitud del código, tanto el cliente como los componentes del sistema de cálculo distribuido y los scripts de infraestructura de colas, se encuentra en un único repositorio de Git.
