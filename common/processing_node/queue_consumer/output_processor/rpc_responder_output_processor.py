@@ -35,9 +35,9 @@ class RPCResponderOutputProcessor:
         self.forwarding_state_storage_handler.commit()
         channel.basic_ack(delivery_tag=method.delivery_tag)
 
-    def finish_processing(self, _client_id, _message_id):
+    def finish_processing(self, client_id, message_id):
         storage = self.forwarding_state_storage_handler.get_storage()
         if not storage.get("rpc_eof_sent", False) and self.optional_rpc_eof is not None:
             self.forwarding_state_storage_handler.prepare_set_rpc_eof_as_sent()
-            self.optional_rpc_eof.write_eof(self.optional_rpc_eof_byte)
+            self.optional_rpc_eof.write_eof(self.optional_rpc_eof_byte + client_id.encode() + message_id.encode())
             self.forwarding_state_storage_handler.commit()
