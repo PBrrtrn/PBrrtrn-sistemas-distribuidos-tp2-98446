@@ -166,4 +166,8 @@ Al entrar viajes, pasan a un nodo que hace pedidos por RPC a WeatherManager. Wea
 
 ![Diagrama de secuencia para la propagacion de viajes para la consulta de duración de viajes con >30mm de precipitaciones](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/avg_duration_with_precipitations_trip_ingestion_sequence.png)
 
-### Almacenamiento durable y tolerancia a fallas
+### Manejo del estado durable
+
+Los nodos logran tolerancia a fallas y durabilidad haciendo uso de estructuras de almacenamiento durable que internamente implementan el algoritmo de 2-phase-commit. Para lograr una completa recuperación de fallas, es necesario que los nodos que almacenan estado puedan recuperar el estado que tenían antes de caer, pero también es necesario que los nodos sean capaces de recuperar en qué fase del bucle de recibir un mensaje, procesarlo, forwardearlo y darle la señal de ACK se encontraban al momento de fallar. Para el caso de nodos de almacenamiento, podría ser incluso que el nodo haya fallado luego de la ingesta de datos, por lo que se deben guardar también la cantidad de EOF recibidos y enviados, a modo de saber en a qué etapa de su ciclo de vida reincorporarse.
+
+![Diagrama de actividad para storage durable](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/durability_activity.png)
