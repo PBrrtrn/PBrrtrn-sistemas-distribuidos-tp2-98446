@@ -157,7 +157,3 @@ Los registros de clima se propagan desde el servidor de ingesta al sistema pasan
 Al entrar viajes, pasan a un nodo que hace pedidos por RPC a WeatherManager. WeatherManager responde haciendo un Inner Join y devolviendo los viajes que hayan sucedido en una fecha con >30mm de precipitaciones. Al recibir los viajes, el nodo de ingesta los pasa a un nodo que lleva el running average para todos los viajes recibidos. Al recibir una señal de EOF, el nodo de ingesta la pasa al running average para que empiece a recibir pedidos por RPC.
 
 ![Diagrama de secuencia para la propagacion de viajes para la consulta de duración de viajes con >30mm de precipitaciones](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/avg_duration_with_precipitations_trip_ingestion_sequence.png)
-
-## Known Issues
-- El uso de nodos que centralizan el calculo de las queries aumentan el número de RTTs necesarios para distribuir los datos, además de limitar cuanto se puede escalar levantando nodos adicionales
-- Los nodos DistanceCalculator no pueden escalar porque MontrealStationsOver6KmAvgTripDistanceIngestor esperan a terminar los llamados de RPC antes de encolar el próximo pedido, por lo que los pedidos siempre serán atendidos por el mismo nodo. Para escalar, se debería pasar el viaje al DistanceCalculator, este encontrar la distancia y hacer forwarding al nodo DistanceRunningAvg.
