@@ -112,6 +112,8 @@ El directorio **backend** se divide en trece subdirectorios con archivos de conf
 
 El módulo más extenso dentro de **common** es `processing_node`. En este nodo se encuentran las abstracciones que permiten construir un nodo de procesamiento: StatefulNode, StatelessNode, QueueConsumer, los distintos OutputProcessor y funciones universales de ProcessInput, además de los StorageHandler, abstracciones usadas para persistir el estado de un nodo al recuperarse de una falla.
 
+![Diagrama de paquetes de common](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/fd_common.png)
+
 ## Vista de procesos/dinámica
 
 ### Cliente
