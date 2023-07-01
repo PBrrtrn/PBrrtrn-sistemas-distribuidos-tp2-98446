@@ -4,8 +4,9 @@ import common.env_utils
 from common.rabbitmq.exchange_writer import ExchangeWriter
 from common.supervisor.supervisor_queue import SupervisorQueue
 from common.supervisor.node_restarter import NodeRestarter
-# from common.supervisor.supervisor_process import SupervisorProcess
-from common.supervisor.simplified_supervisor_process import SupervisorProcess
+from common.supervisor.supervisor_process import SupervisorProcess
+from common.supervisor.supervisor_exchange_writer import SupervisorExchangeWriter
+# from common.supervisor.simplified_supervisor_process import SupervisorProcess
 
 
 def create_from_config(config):
@@ -15,20 +16,30 @@ def create_from_config(config):
     )
     node_restarter = NodeRestarter(docker_client, node_id_to_container_name_mapping)
 
-    exchange_writer = ExchangeWriter(
+    exchange_writer = SupervisorExchangeWriter(
         hostname=config['RABBITMQ_HOSTNAME'],
         exchange_name=config['SUPERVISOR_EXCHANGE_NAME'])
 
-    queue_name = config['SUPERVISOR_NODE_ID']
+    acks_exchange_writer = SupervisorExchangeWriter(
+        hostname=config['RABBITMQ_HOSTNAME'],
+        exchange_name='ack_exchange_name'
+    )
+
+    acks_queue = SupervisorQueue(
+        hostname=config['RABBITMQ_HOSTNAME'],
+        bindings={'ack_exchange_name': [config['SUPERVISOR_NODE_ID']]}
+    )
+
     supervisor_queue = SupervisorQueue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=queue_name,
-        bindings={config['SUPERVISOR_EXCHANGE_NAME']: [queue_name]}
+        bindings={config['SUPERVISOR_EXCHANGE_NAME']: [config['SUPERVISOR_NODE_ID']]}
     )
 
     supervisor_process = SupervisorProcess(
         exchange_writer=exchange_writer,
         queue=supervisor_queue,
+        acks_exchange_writer=acks_exchange_writer,
+        acks_queue=acks_queue,
         node_restarter=node_restarter,
         node_id=int(config['SUPERVISOR_NODE_ID']),
         network_size=int(config['SUPERVISOR_NETWORK_SIZE'])
@@ -54,7 +65,6 @@ def create_simplified_from_config(config):
     queue_name = config['SUPERVISOR_NODE_ID']
     supervisor_queue = SupervisorQueue(
         hostname=config['RABBITMQ_HOSTNAME'],
-        name=queue_name,
         bindings={config['SUPERVISOR_EXCHANGE_NAME']: [queue_name]}
     )
 

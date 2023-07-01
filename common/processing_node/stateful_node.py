@@ -22,7 +22,7 @@ class StatefulNode:
             self.clients_queue_handler_dict[client_id] = self.create_queue_consumer_process(client_id)
 
     def run(self):
-        #self.supervisor_process.run()
+        self.supervisor_process.run()
         for client_id in self.clients_queue_handler_dict:
             self.clients_queue_handler_dict[client_id].start()
         for (channel, method, properties, message) in self.new_clients_queue.read_with_props():
