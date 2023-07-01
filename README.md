@@ -84,6 +84,8 @@ En el núcleo de la estructura de objetos del programa se encuentra la clase `Pr
 
 Todo `QueueConsumer` se compone de una cola de la cual se leen los mensajes a procesar, una callback de procesamiento con la cual procesar los mensajes, y un OutputProcessor que maneja la salida.
 
+![Diagrama de clases fundamental](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/class_diagram_1.png)
+
 La jerarquía de los `OutputProcessor` se divide en tres clases:
 - `ForwardingOutputProcessor` es usado exclusivamente por los nodos de tipo stateless, solamente encolando (guardando en disco el estado a modo de poder recuperarlo) el resultado de la callback de procesamiento de input.
 - `StorageOutputProcessor` guarda el resultado del procesamiento del input en un estado persistente y recuperable a fallas, componiendo el mismo a partir de los datos que llegan provenientes de la ingesta. Cuando la ingesta de datos termina, evento que se señaliza con la llegada de N señales de EOF, el StorageOutputProcessor comienza a ejecutar su propio QueueConsumer a modo de leer una cola de pedidos RPC leyendo del estado final de su storage.
