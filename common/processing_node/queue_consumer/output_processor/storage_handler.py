@@ -17,7 +17,7 @@ class StorageHandler(ABC):
         self.commits = 0
         filepath = f"{storage_directory}/{filename}_{client_id}"
         self.__load_storage_from_disk(filepath)
-        print(f"INFO - Recovered state from last execution: {self.storage}")
+        #print(f"INFO - Recovered state from last execution: {self.storage}")
         self.file = open(filepath, 'a+')
 
     def prepare(self, message):
