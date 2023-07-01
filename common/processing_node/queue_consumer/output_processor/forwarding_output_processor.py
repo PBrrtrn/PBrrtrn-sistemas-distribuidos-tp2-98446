@@ -7,18 +7,16 @@ DIR = '.eof'
 CLIENT_LOG_FILENAME = 'eof_sent'
 CLIENTS_LIST_FILENAME = 'clients_list'
 
+
 class ForwardingOutputProcessor:
     def __init__(self, n_output_peers: int, output_exchange_writer: ExchangeWriter, output_eof: bytes,
-                 forward_with_routing_key: bool, current_client_list, optional_rpc_eof: RPCClient = None):
+                 forward_with_routing_key: bool, optional_rpc_eof: RPCClient = None):
         self.n_output_peers = n_output_peers
         self.output_exchange_writer = output_exchange_writer
         self.output_eof = output_eof
         self.optional_rpc_eof = optional_rpc_eof
         self.forward_with_routing_key = forward_with_routing_key
         self.clients_storage_handler_dict = {}
-        for client_id in current_client_list:
-            self.clients_storage_handler_dict[client_id] = \
-                ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
 
     def process_output(self, channel, message: bytes, method, _properties, client_id, message_id):
         if message is None:
@@ -66,4 +64,3 @@ class ForwardingOutputProcessor:
     def _create_clients_storage_handler_for_client(self, client_id):
         self.clients_storage_handler_dict[client_id] = \
             ForwardingStateStorageHandler(storage_directory=DIR, filename=CLIENT_LOG_FILENAME, client_id=client_id)
-

@@ -11,8 +11,6 @@ from common.processing_node.queue_consumer.eof_handler import EOFHandler
 import common.network.constants
 from common.processing_node.queue_consumer.client_list_storage_handler import ClientListStorageHandler
 
-DIR = '.clients'
-CLIENTS_LIST_FILENAME = 'clients_list'
 
 def main():
     config = common.env_utils.read_config()
@@ -31,25 +29,19 @@ def main():
         queue_name=config['TRIPS_OUTPUT_QUEUE_NAME'],
     )
 
-    clients_list_handler = ClientListStorageHandler(storage_directory=DIR, filename=CLIENTS_LIST_FILENAME)
-    current_client_list = clients_list_handler.get_clients_list()
     output_processor = ForwardingOutputProcessor(
         n_output_peers=int(config['N_BY_YEAR_TRIPS_FILTERS']),
         output_exchange_writer=trips_output_exchange_writer,
         output_eof=common.network.constants.TRIPS_END_ALL,
         forward_with_routing_key=False,
-        current_client_list=current_client_list
     )
-    eof_handlers_dict = {}
-    for client_id in current_client_list:
-        eof_handlers_dict[client_id] = EOFHandler('.eof', filename="eof_received", client_id=client_id)
+
     queue_consumer = QueueConsumer(
         process_input=identity_process_input,
         input_eofs=[common.network.constants.TRIPS_END_ALL],
         n_input_peers=1,
         input_queue=trips_input_queue,
         output_processor=output_processor,
-        eof_handlers_dict=eof_handlers_dict
     )
     new_clients_queue_bindings = common.env_utils.parse_queue_bindings(config['NEW_CLIENTS_QUEUE_BINDINGS'])
     new_clients_queue = Queue(
@@ -62,8 +54,6 @@ def main():
     processing_node = StatelessNode(
         queue_consumer=queue_consumer,
         supervisor_process=common.supervisor.utils.create_from_config(config),
-        clients_list_handler=clients_list_handler,
-        new_clients_queue=new_clients_queue
     )
 
     processing_node.run()

@@ -142,7 +142,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/by_year_trips_filter/.eof:/.eof
-      - ./backend/by_year_trips_filter/.clients:/.clients
     networks:
       - local_net
 
@@ -167,7 +166,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/weather_filter/.eof_1:/.eof
-      - ./backend/weather_filter/.clients_1:/.clients
     networks:
       - local_net
 
@@ -219,7 +217,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/distance_calculator/.eof_1:/.eof
-      - ./backend/distance_calculator/.clients_1:/.clients
     networks:
       - local_net
 
@@ -245,7 +242,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/distance_calculator/.eof_2:/.eof
-      - ./backend/distance_calculator/.clients_2:/.clients
     networks:
       - local_net
 
@@ -272,7 +268,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/montreal_stations_joiner/.eof_1:/.eof
-      - ./backend/montreal_stations_joiner/.clients_1:/.clients
     networks:
       - local_net
 
@@ -299,7 +294,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/montreal_stations_joiner/.eof_2:/.eof
-      - ./backend/montreal_stations_joiner/.clients_2:/.clients
     networks:
       - local_net
 
@@ -327,7 +321,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/montreal_stations_over_6km_avg_trip_distance_ingestor/.eof:/.eof
-      - ./backend/montreal_stations_over_6km_avg_trip_distance_ingestor/.clients:/.clients
     networks:
       - local_net
 
@@ -353,7 +346,6 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./backend/doubled_yearly_trips_stations_ingestor/.eof:/.eof
-      - ./backend/doubled_yearly_trips_stations_ingestor/.clients:/.clients
     networks:
       - local_net
 
@@ -377,7 +369,6 @@ services:
     privileged: true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./backend/with_precipitations_avg_duration_trip_ingestor/.clients:/.clients
       - ./backend/with_precipitations_avg_duration_trip_ingestor/.eof:/.eof
     networks:
       - local_net
@@ -405,24 +396,6 @@ services:
       - local_net
 
   client:
-    build:
-      context: .
-      dockerfile: ./frontend/client.dockerfile
-    restart: on-failure
-    depends_on:
-       - data-ingestion-server
-    entrypoint: python3 /main.py
-    environment:
-      - PYTHONUNBUFFERED=1
-      - RABBITMQ_HOSTNAME=${RABBITMQ_HOSTNAME}
-      - DATA_PATH=data
-    networks:
-      - local_net
-    volumes:
-      - ./.data:/data
-      - results:/results
-
-  client1:
     build:
       context: .
       dockerfile: ./frontend/client.dockerfile

@@ -24,7 +24,7 @@ class QueueConsumer:
                  n_input_peers: int,
                  input_queue: Queue,
                  output_processor,
-                 eof_handlers_dict: Dict[str, EOFHandler],
+                 eof_handlers_dict: Dict[str, EOFHandler] = {},
                  many_clients: bool = True):
         self.process_input = process_input
         self.input_eofs = input_eofs

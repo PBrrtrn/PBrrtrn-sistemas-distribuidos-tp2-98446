@@ -22,9 +22,9 @@ class StatefulNode:
             self.clients_queue_handler_dict[client_id] = self.create_queue_consumer_process(client_id)
 
     def run(self):
+        #self.supervisor_process.run()
         for client_id in self.clients_queue_handler_dict:
             self.clients_queue_handler_dict[client_id].start()
-        #self.supervisor_process.run()
         for (channel, method, properties, message) in self.new_clients_queue.read_with_props():
             client_id = pickle.loads(message)
             print(f"New client {client_id}.")
