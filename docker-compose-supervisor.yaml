@@ -90,6 +90,60 @@ services:
     networks:
       - supervisor_test_net
 
+  supervisor-node-5:
+    container_name: supervisor-node-5
+    build:
+      context: .
+      dockerfile: supervisor-test/supervisor_node.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq-supervisor
+    environment:
+      - PYTHONUNBUFFERED=1
+      - SUPERVISOR_NODE_ID=5
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - supervisor_test_net
+
+  supervisor-node-6:
+    container_name: supervisor-node-6
+    build:
+      context: .
+      dockerfile: supervisor-test/supervisor_node.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq-supervisor
+    environment:
+      - PYTHONUNBUFFERED=1
+      - SUPERVISOR_NODE_ID=6
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - supervisor_test_net
+
+  supervisor-node-7:
+    container_name: supervisor-node-7
+    build:
+      context: .
+      dockerfile: supervisor-test/supervisor_node.dockerfile
+    entrypoint: python3 /main.py
+    restart: on-failure
+    depends_on:
+      - rabbitmq-supervisor
+    environment:
+      - PYTHONUNBUFFERED=1
+      - SUPERVISOR_NODE_ID=7
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - supervisor_test_net
+
 networks:
   supervisor_test_net:
     ipam:

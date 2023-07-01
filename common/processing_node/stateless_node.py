@@ -9,5 +9,5 @@ class StatelessNode:
         self.supervisor_process = supervisor_process
 
     def run(self):
-        #self.supervisor_process.run()
+        self.supervisor_process.run()
         self.queue_consumer.run()
