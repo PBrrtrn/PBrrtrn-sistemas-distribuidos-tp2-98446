@@ -24,6 +24,10 @@ Para facilitar el escalamiento horizontal del sistema, se busca que el agregar n
 ## Arquitectura
 El front-end del sistema se compone de un programa cliente que sirve de punto de entrada para el usuario tanto para nutrir el sistema de datos como para hacer el pedido de las consultas. El programa cliente se encarga de leer los datos de entrada y enviarlos mediante un socket standard TCP a un programa que hace las de servidor de ingesta de datos. El servidor de ingesta de datos luego se ocupa de distribuir los datos recibidos del cliente al resto del sistema, conectándose a un broker de RabbitMQ y usando las colas del mismo para garantizar la entrega de los datos. Por otro lado, el back-end comprende varios tipos distintos de procesos que se nutren e informan resultados entre ellos mediante colas de RabbitMQ. El cliente puede ser configurado para enviar los datos en batches de distinto tamaño, a modo de aminorar la cantidad de operaciones de send y receive realizadas.
 
+Para tener tolerancia a fallas, los nodos deben estar todos conectados a un broker de rabbitmq que debe ser durable y persistir mensajes hasta que estos sean marcados por el nodo que los consume como que pueden ser eliminados. Los nodos sólo marcan un mensaje como que puede ser eliminado de la cola una vez que el resultado de procesarlo para a la próxima cola de rabbitmq.
+
+Además, para poder persistir su estado de ejecución y de almacenamiento (en el caso de los nodos que lo poseen), es necesario que los nodos dispongan de un almacenamiento durable.
+
 ### Red de procesamiento
 El backend tolera que en el despliegue se declaren nodos adicionales a modo de paralelizar el trabajo y escalar acorde al volumen de datos recibidos. 
 
@@ -134,19 +138,21 @@ Finalmente el cliente imprime los resultados, cierra el socket y termina de ejec
 
 ![Diagrama de secuencia general del protocolo](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/protocol_sequence_diagram.png)
 
-Al ingresar los viajes, estos son enviados a un nodo _MontrealStationsOver6kmAvgTripDistanceIngestor_, el cual filtra los viajes quedandose solo con los batches de Montreal. Acto seguido, el nodo hace un llamado al StationManager para obtener las estaciones de llegada y de partida para ese viaje. Al recibir un viaje, el StationNode lo matchea con su índice de estaciones en un Left Join y lo devuelve con las estaciones. Con ese resultado, el nodo lo envía a un nodo DistanceCalculator para obtener la distancia del viaje, y finalmente todo llega al nodo DistanceRunningAvg. Al terminar de recibir viajes, el nodo de ingesta de datos avisa al DistanceNode y al StationsManager que llegó un EOF para que estos pueden procesarlo.
+Al ser ingresados al sistema, los viajes deben ser forwardeados a toda la red de nodos, de modo que terminen siguiendo una serie de pipes y filtros hasta llegar a un nodo final de almacenamiento que guardará los resultados y responderá una consulta RPC final. Para cada consulta habrá un nodo de almacenamiento que agregará los resultados de los nodos de procesamiento y los hará disponibles para que el servidor los consulte con un RPC.
 
-El DistanceNode terminará al recibir la señal de EOF, pero el StationsManager solo saldrá cuando haya recibido señales de EOF por parte del nodo de ingesta actual, así como el de estaciones que hayan duplicado sus viajes.
+Ya que los viajes son forwardeados con una cola de Fanout, al principio de cada uno de los sistemas de pipes and filters, uno por cada consulta en el sistema, hay un nodo de ingesta que recibe los viajes y los forwardea.
 
-![Diagrama de secuencia de los viajes para calcular la distancia promedio de viaje de las estaciones de Montreal](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/montreal_stations_over_6km_average_sequence.png)
+El pipeline para resolver la consulta sobre estaciones de Montreal cuyos usuarios viajan más de 6km en promedio para llegar a ellas, primero se filtran los viajes recibidos para sólo quedarse con aquellos provenientes de estaciones de Montreal. Luego, los viajes filtrados se forwardean a un nodo MontrealStationsJoiner que hace llamados por RPC al StationsManager para obtener la latitud y longitud de las estaciones de llegada y de salida. El nodo MontrealStationsJoiner luego fowardea esos viajes joineados al nodo DistanceCalculator, que calcula la distancia de cada viaje. Finalmente, los viajes son enviados a un MontrealStationsTripsDistanceRunningAvg, un nodo de almacenamiento que, al recibir la señal por parte del cliente de que ha terminado de enviar viajes, responde mediante una cola de RPC con el resultado de la consulta.
 
-Para ejecutar la Query 3, el cliente envía la consulta al ByStationRunningAvgNode, que calcula el promedio de todas las estaciones de Montreal que guardó, y devuelve las que hayan registrado un viaje promedio mayor a 6km.
+![Diagrama de secuencia para las estaciones de Montreal cuyos viajes promedian 6km o más](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/montreal_stations_over_6km_avg_trip_distance_sequence.png)
 
 ![Diagrama de actividad de los viajes para la Query 3](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/avg_montreal_trip_distance_per_station_activity.png)
 
-Los viajes también son forwardeados a los ByYearFilterNode, donde son filtrados para quedarse sólo con aquellos de los años 2016 y 2017. Acto seguido, los viajes de 2016 y 2017 pasan a un ByStationYearlyTripsNode, que lleva la cuenta de los viajes en cada estación por año, indexandolas primero por ciudad y luego por código de estación.
+Para ejecutar la Query de duración promedio de los viajes en días en los cuales hubieron más de 30mm de precipitaciones, la cola de Fanout es leía por un nodo WithPrecipitationsAvgDurationTripIngestion que hace el join con el nodo WeatherManager y forwardea sólo aquellos viajes que transcurrieron en días de más de 30mm de precipitaciones. Los viajes filtrados son entonces forwardeados al ByStationRunningAvgNode, que calcula el promedio de duración de los viajes en cuestión, y habilita los resultados mediante una RPC.
 
-![Diagrama de secuencia de los viajes para la Query 2](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/stations_doubled_yearly_trips_sequence.png)
+![Diagrama de secuencia de los viajes para la Query 2](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/with_precipitations_avg_duration_sequence_diagram.png)
+
+Los viajes también son forwardeados a los ByYearFilterNode, donde son filtrados para quedarse sólo con aquellos de los años 2016 y 2017. Acto seguido, los viajes de 2016 y 2017 pasan a un ByStationYearlyTripsNode, que lleva la cuenta de los viajes en cada estación por año, indexandolas primero por ciudad y luego por código de estación.
 
 Al ejecutar la Query de estaciones que hayan duplicado el número de viajes anuales entre 2016 y 2017, se envía el pedido al ByStationYearlyTripsNode. En respuesta, el nodo recurre su índice de viajes por estación y se queda sólo con los códigos de aquellas que hayan duplicado sus viajes. Luego, pide a los StationsNode hacer el join de los códigos con los nombres, y devuelve la lista de nombres al cliente que realizó la consulta.
 
@@ -159,3 +165,5 @@ Los registros de clima se propagan desde el servidor de ingesta al sistema pasan
 Al entrar viajes, pasan a un nodo que hace pedidos por RPC a WeatherManager. WeatherManager responde haciendo un Inner Join y devolviendo los viajes que hayan sucedido en una fecha con >30mm de precipitaciones. Al recibir los viajes, el nodo de ingesta los pasa a un nodo que lleva el running average para todos los viajes recibidos. Al recibir una señal de EOF, el nodo de ingesta la pasa al running average para que empiece a recibir pedidos por RPC.
 
 ![Diagrama de secuencia para la propagacion de viajes para la consulta de duración de viajes con >30mm de precipitaciones](https://github.com/PBrrtrn/PBrrtrn-sistemas-distribuidos-tp2-98446/blob/master/.img/avg_duration_with_precipitations_trip_ingestion_sequence.png)
+
+### Almacenamiento durable y tolerancia a fallas
