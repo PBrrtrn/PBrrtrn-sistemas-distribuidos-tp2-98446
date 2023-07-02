@@ -12,10 +12,11 @@ from common.supervisor.supervisor_exchange_writer import SupervisorExchangeWrite
 
 class SupervisorProcess:
     TIMEOUT = 5
-    LEADER_RECEIVE_TIMEOUT = 1
+    LEADER_RECEIVE_TIMEOUT = 5
+    LEADER_HEARTBEAT_ACK_TIMEOUT = 10
     ACK_TIMEOUT = 1
     MAX_MISSED_HEARTBEATS = 3
-    FOLLOWER_SLEEP_TIME = 0.1
+    FOLLOWER_SLEEP_TIME = 1
     FOLLOWER_SLEEP_DELTA = 0.1
 
     def __init__(self,
@@ -83,7 +84,7 @@ class SupervisorProcess:
             self.timers[peer_id] -= elapsed_time
 
     def _process_heartbeat(self, peer_id):
-        print(f"Got heartbeat from {peer_id}")
+        # print(f"Got heartbeat from {peer_id}")
         self.exchange_writer.write(
             message=common.supervisor.messages.heartbeat_ack_message(self.node_id),
             routing_key=str(peer_id)
@@ -92,7 +93,7 @@ class SupervisorProcess:
     def _supervise_followers(self):
         for follower_id, remaining_time in self.timers.items():
             if remaining_time <= 0 and follower_id is not self.node_id:
-                print(f"Follower {follower_id} missed a heartbeat")
+                # print(f"Follower {follower_id} missed a heartbeat")
                 self.missed_heartbeats[follower_id] += 1
                 self.timers[follower_id] = self.TIMEOUT
                 self.exchange_writer.write(
@@ -118,10 +119,10 @@ class SupervisorProcess:
                 self._handle_heartbeat_ack()
 
         if self.timers[self.current_leader] <= 0:
-            print(f"Leader {self.current_leader} missed a heartbeat")
+            # print(f"Leader {self.current_leader} missed a heartbeat")
             self.missed_heartbeats[self.current_leader] += 1
             if self.missed_heartbeats[self.current_leader] > self.MAX_MISSED_HEARTBEATS:
-                print(f"Leader is dead, must run election")
+                print(f" INFO - Leader didn't respond, running election")
                 self._refresh_peer(self.current_leader)
                 self._run_election()
 
@@ -134,12 +135,12 @@ class SupervisorProcess:
         )
 
     def _handle_election_message(self, peer_id):
-        print(f"Got ELECTION from {peer_id} (leader is {self.current_leader})")
+        # print(f"Got ELECTION from {peer_id} (leader is {self.current_leader})")
         self._answer_election_message(peer_id)
         self._run_election()
 
     def _handle_heartbeat_ack(self):
-        self.timers[self.current_leader] = self.TIMEOUT
+        self.timers[self.current_leader] = self.LEADER_HEARTBEAT_ACK_TIMEOUT
         self.missed_heartbeats[self.current_leader] = 0
 
     def _run_election(self):
@@ -157,13 +158,14 @@ class SupervisorProcess:
                 elif response_type == common.supervisor.messages.COORDINATOR:
                     if self._handle_coordinator_message(peer_id):
                         self.current_leader = peer_id
+                        print(f"INFO - Node {self.current_leader} is new leader")
                 elif response_type == common.supervisor.messages.ANSWER:
                     self._await_coordinator_message()
 
     def _send_election_message(self):
         election_message = common.supervisor.messages.election_message(self.node_id)
         for peer_id in range(self.node_id + 1, self.network_size + 1):
-            print(f"Sending election message to peer {peer_id}")
+            # print(f"Sending election message to peer {peer_id}")
             self.exchange_writer.write(message=election_message, routing_key=str(peer_id))
 
     def _await_coordinator_message(self):
@@ -176,16 +178,17 @@ class SupervisorProcess:
 
     def _handle_coordinator_message(self, peer_id):
         if peer_id >= self.node_id and (self.current_leader is None or peer_id >= self.current_leader):
-            print(f"Sending ACK COORDINATOR to {peer_id}")
+            # print(f"Sending ACK COORDINATOR to {peer_id}")
             self.acks_exchange_writer.write(common.supervisor.messages.coordinator_ack_message(self.node_id), routing_key=str(peer_id))
             self.current_leader = peer_id
-            print(f"{peer_id} is new leader")
+            self.timers[self.current_leader] = self.LEADER_HEARTBEAT_ACK_TIMEOUT
+            print(f"INFO - Node {self.current_leader} is new leader")
         else:
-            print(f"Sending DENY COORDINATOR to {peer_id}")
+            # print(f"Sending DENY COORDINATOR to {peer_id}")
             self.acks_exchange_writer.write(common.supervisor.messages.coordinator_deny_message(self.node_id), routing_key=str(peer_id))
 
     def _answer_election_message(self, peer_id):
-        print(f"Answering ELECTION message for peer {peer_id}")
+        # print(f"Answering ELECTION message for peer {peer_id}")
         self.exchange_writer.write(
             message=common.supervisor.messages.answer_message(self.node_id),
             routing_key=str(peer_id)
@@ -205,22 +208,24 @@ class SupervisorProcess:
     def _announce_as_coordinator(self):
         coordinator_message = common.supervisor.messages.coordinator_message(self.node_id)
         for peer_id in range(1, self.network_size):
-            print(f"Sending coordinator message to peer {peer_id}")
+            # print(f"Sending coordinator message to peer {peer_id}")
             self.exchange_writer.write(message=coordinator_message, routing_key=str(peer_id))
             message = self.acks_queue.read(self.ACK_TIMEOUT)
 
             if message is None:
-                print(f"Received no response from coordinator announcement")
+                pass
+                # print(f"Received no response from coordinator announcement")
             else:
                 message_type, peer_id = common.supervisor.messages.parse_message(message)
                 if message_type == common.supervisor.messages.COORDINATOR_DENY:
-                    print(f"RECEIVED DENY, node {self.node_id} cannot be leader")
+                    # print(f"RECEIVED DENY, node {self.node_id} cannot be leader")
                     return False
                 else:
-                    print(f"RECEIVED COORDINATOR ACK from {peer_id}")
+                    pass
+                    # print(f"RECEIVED COORDINATOR ACK from {peer_id}")
 
-        print(f"Node {self.node_id} will be the new leader")
         self.current_leader = self.node_id
+        print(f"INFO - Node {self.current_leader} is new leader")
         return True
 
     def _read_message(self, timeout):

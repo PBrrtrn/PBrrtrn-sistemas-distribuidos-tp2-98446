@@ -350,7 +350,7 @@ services:
       - local_net
 
   with-precipitations-avg-duration-trip-ingestor:
-    container_name: with-precipitations-avg-duration-trip-ingestion
+    container_name: with-precipitations-avg-duration-trip-ingestor
     build:
       context: .
       dockerfile: ./backend/with_precipitations_avg_duration_trip_ingestor/Dockerfile

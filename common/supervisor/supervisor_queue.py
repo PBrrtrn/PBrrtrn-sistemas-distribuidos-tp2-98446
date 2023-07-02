@@ -28,7 +28,10 @@ class SupervisorQueue:
         if timeout < 0:
             return None
 
-        (_method, _properties, body) = next(self.channel.consume(queue=self.queue_name, inactivity_timeout=timeout))
+        (_method, _properties, body) = next(self.channel.consume(
+            queue=self.queue_name,
+            inactivity_timeout=timeout,
+            auto_ack=True))
         return body
 
     def close(self):

@@ -24,8 +24,9 @@ class RPCStationInputProcessor:
         station_codes, city = pickle.loads(raw_message)
         response = []
         for station_code in station_codes:
-            station = self.storage[city][station_code]
-            response.append(station.name)
+            if station_code in self.storage[city]:
+                station = self.storage[city][station_code]
+                response.append(station.name)
         return pickle.dumps(response)
 
     def join_trips(self, raw_message):

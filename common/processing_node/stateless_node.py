@@ -1,4 +1,3 @@
-
 from common.processing_node.queue_consumer.queue_consumer import QueueConsumer
 from common.supervisor.simplified_supervisor_process import SupervisorProcess
 
